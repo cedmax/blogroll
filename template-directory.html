@@ -215,7 +215,7 @@ body {
     <div class="blog-card">
       <div class="blog-card-name"><a href="/sites/{{.Slug}}/">{{.Title}}</a></div>
       <div class="blog-card-desc">{{.Description}}</div>
-      {{if .LatestEntry}}<div class="blog-card-latest"><span class="latest-date">{{italianDateShort .LatestEntry.Published}}</span><a class="latest-title" href="{{.LatestEntry.URL}}">{{.LatestEntry.Title}}</a></div>{{end}}
+      {{if .LatestEntry}}<div class="blog-card-latest"><span class="latest-date">{{italianDateShort .LatestEntry.Published}}</span><a class="latest-title" href="{{.LatestEntry.URL}}" target="_blank" rel="noopener noreferrer">{{.LatestEntry.Title}}</a></div>{{end}}
     </div>
     {{end}}
   </div>
