@@ -227,6 +227,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := renderDirectory(feeds, entries); err != nil {
+		fmt.Fprintf(os.Stderr, "Error rendering directory: %v\n", err)
+		os.Exit(1)
+	}
+
 	fmt.Fprintf(os.Stderr, "Built public/index.html successfully\n")
 }
 
@@ -546,6 +551,24 @@ func deduplicateEntries(entries []Entry) []Entry {
 	return result
 }
 
+var italianMonths = [...]string{
+	"", "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
+	"luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre",
+}
+
+var italianMonthsShort = [...]string{
+	"", "gen", "feb", "mar", "apr", "mag", "giu",
+	"lug", "ago", "set", "ott", "nov", "dic",
+}
+
+func italianDate(t time.Time) string {
+	return fmt.Sprintf("%d %s %d", t.Day(), italianMonths[t.Month()], t.Year())
+}
+
+func italianDateShort(t time.Time) string {
+	return fmt.Sprintf("%d %s %d", t.Day(), italianMonthsShort[t.Month()], t.Year())
+}
+
 func groupByDate(entries []Entry) []DateGroup {
 	groups := make(map[string][]Entry)
 	var order []string
@@ -559,9 +582,8 @@ func groupByDate(entries []Entry) []DateGroup {
 	var result []DateGroup
 	for _, key := range order {
 		t, _ := time.Parse("2006-01-02", key)
-		label := t.Format("Monday, January 2, 2006")
 		result = append(result, DateGroup{
-			Date:    label,
+			Date:    italianDate(t),
 			Entries: groups[key],
 		})
 	}
@@ -569,6 +591,61 @@ func groupByDate(entries []Entry) []DateGroup {
 }
 
 // --- Rendering ---
+
+type FeedWithLatest struct {
+	Feed
+	LatestEntry *Entry
+}
+
+type DirectoryData struct {
+	Feeds     []FeedWithLatest
+	FeedCount int
+	BuiltAt   string
+}
+
+func renderDirectory(feeds []Feed, allEntries []Entry) error {
+	dir := filepath.Join(outputDir, "directory")
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+
+	latest := make(map[string]*Entry)
+	for i := range allEntries {
+		e := &allEntries[i]
+		if prev, ok := latest[e.BlogURL]; !ok || e.Published.After(prev.Published) {
+			latest[e.BlogURL] = e
+		}
+	}
+
+	sorted := make([]FeedWithLatest, len(feeds))
+	for i, f := range feeds {
+		sorted[i] = FeedWithLatest{Feed: f, LatestEntry: latest[f.HTMLURL]}
+	}
+	sort.Slice(sorted, func(i, j int) bool {
+		return strings.ToLower(sorted[i].Title) < strings.ToLower(sorted[j].Title)
+	})
+
+	tmpl, err := template.New("template-directory.html").Funcs(template.FuncMap{
+		"italianDateShort": italianDateShort,
+	}).ParseFiles("template-directory.html")
+	if err != nil {
+		return err
+	}
+
+	data := DirectoryData{
+		Feeds:     sorted,
+		FeedCount: len(feeds),
+		BuiltAt:   time.Now().UTC().Format("2006-01-02 15:04 UTC"),
+	}
+
+	f, err := os.Create(filepath.Join(dir, "index.html"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	return tmpl.Execute(f, data)
+}
 
 func renderHTML(groups []DateGroup, feedCount, entryCount int) error {
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
