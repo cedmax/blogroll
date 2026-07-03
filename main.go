@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha1"
 	"encoding/json"
 	"encoding/xml"
 	"flag"
@@ -8,6 +9,7 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -93,11 +95,13 @@ type Feed struct {
 	XMLURL      string
 	HTMLURL     string
 	Description string
+	Slug        string
 }
 
 type Entry struct {
 	BlogName  string
 	BlogURL   string
+	BlogSlug  string    `json:"-"`
 	Title     string
 	URL       string
 	Published time.Time
@@ -117,10 +121,44 @@ type DateGroup struct {
 }
 
 type TemplateData struct {
-	Groups    []DateGroup
-	FeedCount int
+	Groups     []DateGroup
+	FeedCount  int
 	EntryCount int
-	BuiltAt   string
+	BuiltAt    string
+}
+
+// --- Slug generation ---
+
+func sha1Slug(s string) string {
+	h := sha1.Sum([]byte(s))
+	return fmt.Sprintf("%x", h)[:12]
+}
+
+func slugForFeed(f Feed) string {
+	target := f.HTMLURL
+	if target == "" {
+		target = f.XMLURL
+	}
+	u, err := url.Parse(target)
+	if err != nil || u.Hostname() == "" {
+		return sha1Slug(f.XMLURL)
+	}
+	return strings.TrimPrefix(strings.ToLower(u.Hostname()), "www.")
+}
+
+func buildSlugs(feeds []Feed) map[string]string {
+	seen := make(map[string]bool)
+	result := make(map[string]string)
+	for _, f := range feeds {
+		slug := slugForFeed(f)
+		if seen[slug] {
+			fmt.Fprintf(os.Stderr, "WARNING: duplicate slug %q for %s — check engblogs.opml\n", slug, f.XMLURL)
+			slug = sha1Slug(f.XMLURL)
+		}
+		seen[slug] = true
+		result[f.XMLURL] = slug
+	}
+	return result
 }
 
 func main() {
@@ -149,6 +187,16 @@ func main() {
 		saveCache(cacheFile, cache)
 		fmt.Fprintf(os.Stderr, "Feeds: %d total, %d ok, %d failed\n",
 			stats.total, stats.success, stats.failed)
+	}
+
+	slugMap := buildSlugs(feeds)
+	htmlToSlug := make(map[string]string)
+	for i, f := range feeds {
+		feeds[i].Slug = slugMap[f.XMLURL]
+		htmlToSlug[f.HTMLURL] = slugMap[f.XMLURL]
+	}
+	for i := range entries {
+		entries[i].BlogSlug = htmlToSlug[entries[i].BlogURL]
 	}
 
 	cutoff := time.Now().UTC().AddDate(0, 0, -maxDays)
