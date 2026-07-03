@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Feed.Title}} — Blogroll.it</title>
+<meta name="description" content="{{.Feed.Description}}">
+<meta name="author" content="cedmax">
+<link rel="canonical" href="https://blogroll.it/sites/{{.Feed.Slug}}/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{.Feed.Title}} — Blogroll.it">
+<meta property="og:description" content="{{.Feed.Description}}">
+<meta property="og:url" content="https://blogroll.it/sites/{{.Feed.Slug}}/">
+<meta property="og:site_name" content="Blogroll.it">
+<meta name="theme-color" content="#D6EED8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #D6EED8;
+  --bg-card:   #EAF6EB;
+  --bg-alt:    #F2FAF3;
+  --ink:       #1A2E1C;
+  --ink-mid:   #3E5C41;
+  --ink-muted: #5E7862;
+  --green:     #2E6B36;
+  --green-h:   #245929;
+  --border:    #B8D6BA;
+  --border-l:  #CDE5CF;
+  /* typography scale */
+  --sz-stamp:  12px;
+  --sz-ui:     13px;
+  --sz-desc:   13.5px;
+  --sz-title:  14.5px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+/* ── header ── */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--green);
+  text-decoration: none;
+}
+.site-name:hover { color: var(--green-h); }
+
+.site-nav {
+  display: flex;
+  gap: 1.25rem;
+  font-size: var(--sz-ui);
+}
+.site-nav a { color: var(--ink-mid); text-decoration: none; }
+.site-nav a:hover { color: var(--green); text-decoration: underline; }
+
+/* ── blog intro ── */
+.blog-intro {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 1rem;
+}
+
+.blog-intro-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.blog-intro-name a {
+  color: var(--ink);
+  text-decoration: none;
+}
+.blog-intro-name a:hover { color: var(--green); }
+
+.blog-intro-ext {
+  font-size: var(--sz-stamp);
+  font-weight: 400;
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+.blog-intro-ext:hover { color: var(--green); }
+
+.blog-intro-desc {
+  font-size: var(--sz-desc);
+  color: var(--ink-mid);
+  line-height: 1.45;
+}
+
+/* ── entry list ── */
+.entries {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  border-bottom: 1px solid var(--border-l);
+}
+.entry:last-child { border-bottom: none; }
+.entry:nth-child(even) { background: var(--bg-alt); }
+
+.entry-date {
+  padding: 9px 12px;
+  font-size: var(--sz-stamp);
+  color: var(--ink-muted);
+  white-space: nowrap;
+  border-right: 1px solid var(--border-l);
+  display: flex;
+  align-items: center;
+}
+
+.entry-title {
+  padding: 9px 14px;
+  display: flex;
+  align-items: center;
+}
+.entry-title a {
+  font-size: var(--sz-title);
+  color: var(--ink);
+  text-decoration: none;
+  line-height: 1.35;
+}
+.entry-title a:visited { color: var(--ink-muted); }
+.entry-title a:hover { color: var(--green); text-decoration: underline; }
+
+.no-entries {
+  padding: 16px 14px;
+  font-size: var(--sz-desc);
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+/* ── footer ── */
+.site-footer {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: var(--sz-ui);
+  color: var(--ink-muted);
+}
+.site-footer a { color: var(--green); text-decoration: none; }
+.site-footer a:hover { color: var(--green-h); text-decoration: underline; }
+
+/* ── mobile ── */
+@media (max-width: 560px) {
+  .entry {
+    display: block;
+    padding: 8px 12px;
+  }
+  .entry-date {
+    padding: 0 0 3px;
+    border-right: none;
+    display: block;
+    font-size: var(--sz-stamp);
+  }
+  .entry-title {
+    padding: 0;
+    display: block;
+  }
+  .entry-title a { font-size: var(--sz-title); }
+}
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="site-header">
+    <a class="site-name" href="/">Blogroll.it</a>
+    <nav class="site-nav">
+      <a href="/">post recenti</a>
+      <a href="/directory/">la lista</a>
+      <a href="/engblogs.opml">OPML</a>
+    </nav>
+  </header>
+
+  <div class="blog-intro">
+    <div class="blog-intro-name">
+      {{.Feed.Title}}
+      <a class="blog-intro-ext" href="{{.Feed.HTMLURL}}" rel="noopener noreferrer" target="_blank">{{.Feed.Slug}} ↗</a>
+    </div>
+    {{if .Feed.Description}}<div class="blog-intro-desc">{{.Feed.Description}}</div>{{end}}
+  </div>
+
+  <div class="entries">
+    {{if .Entries}}
+    {{range .Entries}}
+    <div class="entry">
+      <span class="entry-date">{{italianDateShort .Published}}</span>
+      <span class="entry-title"><a href="{{.URL}}">{{.Title}}</a></span>
+    </div>
+    {{end}}
+    {{else}}
+    <div class="no-entries">Nessun post disponibile al momento.</div>
+    {{end}}
+  </div>
+
+  <footer class="site-footer">
+    <a href="https://github.com/cedmax/blogroll/issues">Suggerisci un blog</a> aprendo una issue o una PR su <a href="https://github.com/cedmax/blogroll">GitHub</a>.
+    &middot; Aggiornato il {{.BuiltAt}}.
+  </footer>
+
+</div>
+</body>
+</html>
