@@ -98,17 +98,15 @@ body {
   flex-wrap: wrap;
 }
 
-.blog-intro-name a {
-  color: var(--ink);
-  text-decoration: none;
-}
-.blog-intro-name a:hover { color: var(--green); }
+.blog-intro-title { flex: 1; }
 
 .blog-intro-ext {
   font-size: var(--sz-stamp);
   font-weight: 400;
   color: var(--ink-muted);
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 .blog-intro-ext:hover { color: var(--green); }
 
@@ -212,8 +210,9 @@ body {
 
   <div class="blog-intro">
     <div class="blog-intro-name">
-      {{.Feed.Title}}
-      <a class="blog-intro-ext" href="{{.Feed.HTMLURL}}" rel="noopener noreferrer" target="_blank">{{.Feed.Slug}} ↗</a>
+      <span class="blog-intro-title">{{.Feed.Title}}</span>
+      <a class="blog-intro-ext" href="{{.Feed.HTMLURL}}" rel="noopener noreferrer" target="_blank" aria-label="Visita il sito"><svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7"/><path d="M8 1h3v3"/><line x1="11" y1="1" x2="5.5" y2="6.5"/></svg></a>
+      <a class="blog-intro-ext" href="{{.Feed.XMLURL}}" rel="noopener noreferrer" target="_blank" aria-label="Feed RSS"><svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="10" r="1.5"/><path d="M1 6.5A5.5 5.5 0 0 1 6.5 12H8A6.5 6.5 0 0 0 1 5.5v1z"/><path d="M1 3A9 9 0 0 1 10 12h1.5A10.5 10.5 0 0 0 1 1.5V3z"/></svg></a>
     </div>
     {{if .Feed.Description}}<div class="blog-intro-desc">{{.Feed.Description}}</div>{{end}}
   </div>
