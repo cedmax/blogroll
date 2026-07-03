@@ -1,3 +1,3 @@
-module github.com/peterc/engblogs
+module github.com/cedmax/blogroll
 
 go 1.25.4
