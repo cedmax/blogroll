@@ -109,8 +109,20 @@ body {
   font-size: var(--sz-title);
   font-weight: 600;
 }
-.blog-card-name a { color: var(--green); text-decoration: none; }
-.blog-card-name a:hover { color: var(--green-h); text-decoration: underline; }
+.blog-card-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.blog-card-name a:first-child { color: var(--green); text-decoration: none; flex: 1; }
+.blog-card-name a:first-child:hover { color: var(--green-h); text-decoration: underline; }
+.blog-card-icon {
+  color: var(--ink-muted);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.blog-card-icon:hover { color: var(--green); }
 
 .blog-card-desc {
   font-size: var(--sz-desc);
@@ -213,7 +225,7 @@ body {
   <div class="blog-list">
     {{range .Feeds}}
     <div class="blog-card">
-      <div class="blog-card-name"><a href="/sites/{{.Slug}}/">{{.Title}}</a></div>
+      <div class="blog-card-name"><a href="/sites/{{.Slug}}/">{{.Title}}</a><a class="blog-card-icon" href="{{.HTMLURL}}" rel="noopener noreferrer" target="_blank" aria-label="Visita il sito"><svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7"/><path d="M8 1h3v3"/><line x1="11" y1="1" x2="5.5" y2="6.5"/></svg></a><a class="blog-card-icon" href="{{.XMLURL}}" rel="noopener noreferrer" target="_blank" aria-label="Feed RSS"><svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="10" r="1.5"/><path d="M1 6.5A5.5 5.5 0 0 1 6.5 12H8A6.5 6.5 0 0 0 1 5.5v1z"/><path d="M1 3A9 9 0 0 1 10 12h1.5A10.5 10.5 0 0 0 1 1.5V3z"/></svg></a></div>
       <div class="blog-card-desc">{{.Description}}</div>
       {{if .LatestEntry}}<div class="blog-card-latest"><span class="latest-date">{{italianDateShort .LatestEntry.Published}}</span><a class="latest-title" href="{{.LatestEntry.URL}}" target="_blank" rel="noopener noreferrer">{{.LatestEntry.Title}}</a></div>{{end}}
     </div>
