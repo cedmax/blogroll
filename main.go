@@ -124,6 +124,7 @@ type TemplateData struct {
 	Groups     []DateGroup
 	FeedCount  int
 	EntryCount int
+	MaxDays    int
 	BuiltAt    string
 }
 
@@ -232,7 +233,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Fprintf(os.Stderr, "Built public/index.html successfully\n")
+	if err := renderBlogPages(feeds, entries); err != nil {
+		fmt.Fprintf(os.Stderr, "Error rendering blog pages: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Fprintf(os.Stderr, "Built index, directory, and %d blog pages successfully\n", len(feeds))
 }
 
 // --- OPML parsing ---
@@ -592,6 +598,80 @@ func groupByDate(entries []Entry) []DateGroup {
 
 // --- Rendering ---
 
+type BlogData struct {
+	Feed    Feed
+	Entries []Entry
+	BuiltAt string
+}
+
+func groupEntriesByBlog(entries []Entry) map[string][]Entry {
+	groups := make(map[string][]Entry)
+	for _, e := range entries {
+		groups[e.BlogURL] = append(groups[e.BlogURL], e)
+	}
+	return groups
+}
+
+func renderBlogPages(feeds []Feed, allEntries []Entry) error {
+	cutoff := time.Now().UTC().AddDate(0, 0, -maxDays)
+	byBlog := groupEntriesByBlog(allEntries)
+
+	tmpl, err := template.New("template-blog.html").Funcs(template.FuncMap{
+		"italianDateShort": italianDateShort,
+	}).ParseFiles("template-blog.html")
+	if err != nil {
+		return err
+	}
+
+	builtAt := time.Now().UTC().Format("2006-01-02 15:04 UTC")
+
+	for _, feed := range feeds {
+		all := byBlog[feed.HTMLURL]
+		sort.Slice(all, func(i, j int) bool {
+			return all[i].Published.After(all[j].Published)
+		})
+
+		var recent []Entry
+		for _, e := range all {
+			if e.Published.After(cutoff) {
+				recent = append(recent, e)
+			}
+		}
+
+		if len(recent) < minBlogPosts && len(all) > len(recent) {
+			for _, e := range all[len(recent):] {
+				if len(recent) >= minBlogPosts {
+					break
+				}
+				recent = append(recent, e)
+			}
+		}
+
+		dir := filepath.Join(outputDir, "sites", feed.Slug)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+
+		f, err := os.Create(filepath.Join(dir, "index.html"))
+		if err != nil {
+			return err
+		}
+
+		data := BlogData{
+			Feed:    feed,
+			Entries: recent,
+			BuiltAt: builtAt,
+		}
+
+		if err := tmpl.Execute(f, data); err != nil {
+			f.Close()
+			return err
+		}
+		f.Close()
+	}
+	return nil
+}
+
 type FeedWithLatest struct {
 	Feed
 	LatestEntry *Entry
@@ -661,6 +741,7 @@ func renderHTML(groups []DateGroup, feedCount, entryCount int) error {
 		Groups:     groups,
 		FeedCount:  feedCount,
 		EntryCount: entryCount,
+		MaxDays:    maxDays,
 		BuiltAt:    time.Now().UTC().Format("2006-01-02 15:04 UTC"),
 	}
 
