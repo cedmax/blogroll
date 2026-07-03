@@ -223,7 +223,7 @@ body {
     {{range .Entries}}
     <div class="entry">
       <span class="entry-date">{{italianDateShort .Published}}</span>
-      <span class="entry-title"><a href="{{.URL}}">{{.Title}}</a></span>
+      <span class="entry-title"><a href="{{.URL}}" target="_blank" rel="noopener noreferrer">{{.Title}}</a></span>
     </div>
     {{end}}
     {{else}}
