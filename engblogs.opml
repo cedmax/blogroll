@@ -22,7 +22,7 @@
         text="Fritto Misto"
         description="Una fornace di pensieri (quasi) sensati"
         xmlUrl="https://lowbudget.io/fritto-misto/index.xml"
-        htmlUrl="https://lowbudget.io/"
+        htmlUrl="https://lowbudget.io/fritto-misto/"
       />
       <outline 
         type="rss"
