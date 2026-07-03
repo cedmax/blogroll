@@ -17,11 +17,12 @@ import (
 )
 
 const (
-	userAgent      = "EngBlogs/1.0 (+https://engineeringblogs.xyz)"
+	userAgent      = "Blogroll.it/1.0 (+https://blogroll.it)"
 	maxConcurrency = 30
 	connectTimeout = 10 * time.Second
 	readTimeout    = 15 * time.Second
-	maxDays        = 7
+	maxDays        = 60
+	minBlogPosts   = 10
 	opmlFile       = "engblogs.opml"
 	cacheFile      = "cache.json"
 	outputDir      = "public"
@@ -549,6 +550,6 @@ func copyOPML() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(outputDir, "engblogs.opml"), data, 0644)
+	return os.WriteFile(filepath.Join(outputDir, opmlFile), data, 0644)
 }
 
