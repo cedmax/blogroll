@@ -40,12 +40,13 @@ type OPMLBody struct {
 }
 
 type OPMLOutline struct {
-	Type     string        `xml:"type,attr"`
-	Text     string        `xml:"text,attr"`
-	Title    string        `xml:"title,attr"`
-	XMLURL   string        `xml:"xmlUrl,attr"`
-	HTMLURL  string        `xml:"htmlUrl,attr"`
-	Children []OPMLOutline `xml:"outline"`
+	Type        string        `xml:"type,attr"`
+	Text        string        `xml:"text,attr"`
+	Title       string        `xml:"title,attr"`
+	XMLURL      string        `xml:"xmlUrl,attr"`
+	HTMLURL     string        `xml:"htmlUrl,attr"`
+	Description string        `xml:"description,attr"`
+	Children    []OPMLOutline `xml:"outline"`
 }
 
 // Feed structures (support both RSS and Atom)
@@ -88,9 +89,10 @@ type AtomLink struct {
 // Application types
 
 type Feed struct {
-	Title   string
-	XMLURL  string
-	HTMLURL string
+	Title       string
+	XMLURL      string
+	HTMLURL     string
+	Description string
 }
 
 type Entry struct {
@@ -203,9 +205,10 @@ func parseOPML(path string) ([]Feed, error) {
 					title = o.Text
 				}
 				feeds = append(feeds, Feed{
-					Title:   title,
-					XMLURL:  o.XMLURL,
-					HTMLURL: o.HTMLURL,
+					Title:       title,
+					XMLURL:      o.XMLURL,
+					HTMLURL:     o.HTMLURL,
+					Description: o.Description,
 				})
 			}
 			if len(o.Children) > 0 {
