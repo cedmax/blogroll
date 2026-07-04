@@ -5,11 +5,19 @@ import { fmtLong } from '../utils/dates'
 
 const builtAt = fmtLong(new Date(data.builtAt))
 
-const groupDates = [...new Set(data.entries.map(e => e.published.slice(0, 10)))]
-const byDate = Object.groupBy(data.entries, e => e.published.slice(0, 10))
+const cutoff = Date.now() - data.maxDays * 24 * 60 * 60 * 1000
+const entries = data.feeds
+  .flatMap(feed => feed.entries
+    .filter(e => new Date(e.published).getTime() >= cutoff)
+    .map(e => ({ ...e, blogName: feed.title, blogSlug: feed.slug }))
+  )
+  .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
+const entryCount = entries.length
+const groupDates = [...new Set(entries.map(e => e.published.slice(0, 10)))]
+const byDate = Object.groupBy(entries, e => e.published.slice(0, 10))
 ---
 <Base
-  title={`Blogroll.it — ${data.entryCount} post da ${data.feedCount} blog`}
+  title={`Blogroll.it — ${entryCount} post da ${data.feedCount} blog`}
   description={`Post recenti da ${data.feedCount} blog personali italiani, aggiornati ogni poche ore. Niente algoritmi, niente account, solo link.`}
   canonical="https://blogroll.it/"
   activeNav="home"
@@ -27,7 +35,7 @@ const byDate = Object.groupBy(data.entries, e => e.published.slice(0, 10))
   </Fragment>
 
   <p class="meta-line" slot="meta-line">
-    {data.entryCount} post da {data.feedCount} blog negli ultimi {data.maxDays} giorni &mdash; {builtAt}
+    {entryCount} post da {data.feedCount} blog negli ultimi {data.maxDays} giorni &mdash; {builtAt}
   </p>
 
   {groupDates.map(date => (
