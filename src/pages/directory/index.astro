@@ -7,8 +7,8 @@ import { fmtLong } from '../../utils/dates'
 const builtAt = fmtLong(new Date(data.builtAt))
 ---
 <Base
-  title={`Blogroll.it — La lista (${data.feedCount} blog)`}
-  description={`Tutti i ${data.feedCount} blog personali italiani raccolti in Blogroll.it.`}
+  title={`Blogroll.it — La lista (${data.feeds.length} blog)`}
+  description={`Tutti i ${data.feeds.length} blog personali italiani raccolti in Blogroll.it.`}
   canonical="https://blogroll.it/directory/"
   activeNav="lista"
   opmlFile={data.opmlFile}
@@ -16,13 +16,13 @@ const builtAt = fmtLong(new Date(data.builtAt))
   <Fragment slot="head">
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Blogroll.it — La lista" />
-    <meta property="og:description" content={`Tutti i ${data.feedCount} blog personali italiani raccolti in Blogroll.it.`} />
+    <meta property="og:description" content={`Tutti i ${data.feeds.length} blog personali italiani raccolti in Blogroll.it.`} />
     <meta property="og:url" content="https://blogroll.it/directory/" />
     <meta property="og:site_name" content="Blogroll.it" />
   </Fragment>
 
   <p class="meta-line" slot="meta-line">
-    {data.feedCount} blog — aggiornato il {builtAt}
+    {data.feeds.length} blog — aggiornato il {builtAt}
   </p>
 
   <div class="blog-list">

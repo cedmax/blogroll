@@ -18,8 +18,8 @@ const groupDates = [...new Set(entries.map(e => e.published.slice(0, 10)))]
 const byDate = Object.groupBy(entries, e => e.published.slice(0, 10))
 ---
 <Base
-  title={`Blogroll.it — ${entryCount} post da ${data.feedCount} blog`}
-  description={`Post recenti da ${data.feedCount} blog personali italiani, aggiornati ogni poche ore. Niente algoritmi, niente account, solo link.`}
+  title={`Blogroll.it — ${entryCount} post da ${data.feeds.length} blog`}
+  description={`Post recenti da ${data.feeds.length} blog personali italiani, aggiornati ogni poche ore. Niente algoritmi, niente account, solo link.`}
   canonical="https://blogroll.it/"
   activeNav="home"
   opmlFile={data.opmlFile}
@@ -27,16 +27,16 @@ const byDate = Object.groupBy(entries, e => e.published.slice(0, 10))
   <Fragment slot="head">
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Blogroll.it" />
-    <meta property="og:description" content={`Post recenti da ${data.feedCount} blog personali italiani, aggiornati ogni poche ore.`} />
+    <meta property="og:description" content={`Post recenti da ${data.feeds.length} blog personali italiani, aggiornati ogni poche ore.`} />
     <meta property="og:url" content="https://blogroll.it/" />
     <meta property="og:site_name" content="Blogroll.it" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Blogroll.it" />
-    <meta name="twitter:description" content={`Post recenti da ${data.feedCount} blog personali italiani, aggiornati ogni poche ore.`} />
+    <meta name="twitter:description" content={`Post recenti da ${data.feeds.length} blog personali italiani, aggiornati ogni poche ore.`} />
   </Fragment>
 
   <p class="meta-line" slot="meta-line">
-    {entryCount} post da {data.feedCount} blog negli ultimi {MAX_DAYS} giorni &mdash; {builtAt}
+    {entryCount} post da {data.feeds.length} blog negli ultimi {MAX_DAYS} giorni &mdash; {builtAt}
   </p>
 
   {groupDates.map(date => (
