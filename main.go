@@ -166,9 +166,10 @@ func buildSlugs(feeds []Feed) map[string]string {
 
 func main() {
 	skipFetch := flag.Bool("skip-fetch", false, "Skip fetching feeds, rebuild HTML from cache only")
+	opml := flag.String("opml", opmlFile, "Path to OPML file")
 	flag.Parse()
 
-	feeds, err := parseOPML(opmlFile)
+	feeds, err := parseOPML(*opml)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing OPML: %v\n", err)
 		os.Exit(1)
@@ -228,7 +229,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := copyOPML(); err != nil {
+	if err := copyOPML(*opml); err != nil {
 		fmt.Fprintf(os.Stderr, "Error copying OPML: %v\n", err)
 		os.Exit(1)
 	}
@@ -760,11 +761,11 @@ func renderHTML(groups []DateGroup, feedCount, entryCount int) error {
 	return tmpl.Execute(f, data)
 }
 
-func copyOPML() error {
-	data, err := os.ReadFile(opmlFile)
+func copyOPML(path string) error {
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(outputDir, opmlFile), data, 0644)
+	return os.WriteFile(filepath.Join(outputDir, filepath.Base(path)), data, 0644)
 }
 
