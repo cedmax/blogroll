@@ -143,13 +143,13 @@ func slugForFeed(f Feed) string {
 	return strings.TrimPrefix(strings.ToLower(u.Hostname()), "www.")
 }
 
-func buildSlugs(feeds []Feed) map[string]string {
+func buildSlugs(feeds []Feed, opmlFile string) map[string]string {
 	seen := make(map[string]bool)
 	result := make(map[string]string)
 	for _, f := range feeds {
 		slug := slugForFeed(f)
 		if seen[slug] {
-			fmt.Fprintf(os.Stderr, "WARNING: duplicate slug %q for %s — check itblogs.opml\n", slug, f.XMLURL)
+			fmt.Fprintf(os.Stderr, "WARNING: duplicate slug %q for %s — check %s\n", slug, f.XMLURL, opmlFile)
 			slug = sha1Slug(f.XMLURL)
 		}
 		seen[slug] = true
@@ -187,7 +187,7 @@ func main() {
 			stats.total, stats.success, stats.failed)
 	}
 
-	slugMap := buildSlugs(feeds)
+	slugMap := buildSlugs(feeds, filepath.Base(*opml))
 	for i, f := range feeds {
 		feeds[i].Slug = slugMap[f.XMLURL]
 		if ce, ok := cache[f.XMLURL]; ok && ce.Description != "" {
