@@ -1,3 +1,6 @@
 public/
 cache.json
 .claude/
+src/data/blogroll.json
+dist/
+node_modules/

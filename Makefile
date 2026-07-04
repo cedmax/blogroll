@@ -1,14 +1,13 @@
 .PHONY: build render dev clean
 
 build:
-	go run main.go
+	npm run build
 
 render:
 	go run main.go -skip-fetch
 
-dev: render
-	@echo "Serving public/ at http://localhost:8080"
-	@cd public && python3 -m http.server 8080
+dev:
+	npm run dev
 
 clean:
-	rm -rf public cache.json
+	rm -rf dist src/data/blogroll.json node_modules

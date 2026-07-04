@@ -1,0 +1,17 @@
+{
+  "scripts": {
+    "prebuild": "go run main.go",
+    "build": "astro build",
+    "dev": "go run main.go -skip-fetch && astro dev",
+    "preview": "astro preview"
+  },
+  "devDependencies": {
+    "astro": "^5.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.27.7": true,
+    "esbuild@0.25.12": true,
+    "sharp@0.34.5": true,
+    "fsevents@2.3.3": true
+  }
+}
