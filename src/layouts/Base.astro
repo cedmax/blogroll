@@ -5,7 +5,7 @@ interface Props {
   title: string
   description?: string
   canonical: string
-  activeNav: "home" | "timeline" | ""
+  activeNav: "home" | "lista" | ""
   opmlFile: string
 }
 const { title, description, canonical, activeNav, opmlFile } = Astro.props
@@ -36,21 +36,43 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
   <body class="bg-bg text-ink font-sans text-base leading-normal min-h-screen">
     <div class="max-w-4xl mx-auto px-5 pt-8 pb-16">
       <header
-        class="flex items-center justify-between flex-wrap gap-x-4 gap-y-2 mb-10 pb-4 border-b border-border"
+        class="flex relative items-center justify-between flex-wrap gap-x-4 gap-y-2 mb-16 pb-4 border-b border-border"
       >
         <a
           class="text-xl font-bold tracking-tight text-green no-underline hover:text-green-h"
           href="/">Blogroll.it</a
         >
         <nav class="flex gap-5 text-xs">
+          {
+            activeNav === "home" ? (
+              <span class="text-ink font-semibold">post recenti</span>
+            ) : (
+              <a class="text-ink-mid no-underline hover:text-green hover:underline" href="/">
+                post recenti
+              </a>
+            )
+          }
+          {
+            activeNav === "lista" ? (
+              <span class="text-ink font-semibold">la lista</span>
+            ) : (
+              <a
+                class="text-ink-mid no-underline hover:text-green hover:underline"
+                href="/lista/"
+              >
+                la lista
+              </a>
+            )
+          }
           <a
             class="text-ink-mid no-underline hover:text-green hover:underline"
             href={`/${opmlFile}`}>OPML</a
           >
         </nav>
+        <div class="absolute -bottom-10 left-1">
+          <slot name="meta-line" />
+        </div>
       </header>
-
-      <slot name="meta-line" />
 
       <slot />
 
