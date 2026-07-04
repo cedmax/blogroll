@@ -108,7 +108,6 @@ type Cache map[string]CacheEntry
 type SiteData struct {
 	BuiltAt   string     `json:"builtAt"`
 	OPMLFile  string     `json:"opmlFile"`
-	MaxDays   int        `json:"maxDays"`
 	FeedCount int        `json:"feedCount"`
 	Feeds     []JSONFeed `json:"feeds"`
 }
@@ -593,7 +592,6 @@ func buildSiteData(feeds []Feed, allEntries []Entry, opmlFileName string) SiteDa
 	return SiteData{
 		BuiltAt:   time.Now().UTC().Format(time.RFC3339),
 		OPMLFile:  opmlFileName,
-		MaxDays:   maxDays,
 		FeedCount: len(feeds),
 		Feeds:     jsonFeeds,
 	}
