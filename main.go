@@ -149,7 +149,7 @@ func buildSlugs(feeds []Feed) map[string]string {
 	for _, f := range feeds {
 		slug := slugForFeed(f)
 		if seen[slug] {
-			fmt.Fprintf(os.Stderr, "WARNING: duplicate slug %q for %s — check engblogs.opml\n", slug, f.XMLURL)
+			fmt.Fprintf(os.Stderr, "WARNING: duplicate slug %q for %s — check itblogs.opml\n", slug, f.XMLURL)
 			slug = sha1Slug(f.XMLURL)
 		}
 		seen[slug] = true
