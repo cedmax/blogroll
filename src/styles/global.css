@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #d6eed8;
+  --color-card: #eaf6eb;
+  --color-alt: #f2faf3;
+  --color-ink: #1a2e1c;
+  --color-ink-mid: #3e5c41;
+  --color-ink-muted: #5e7862;
+  --color-green: #2e6b36;
+  --color-green-h: #245929;
+  --color-border: #b8d6ba;
+  --color-border-l: #cde5cf;
+}
+
+@utility entries {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
