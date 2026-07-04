@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="cedmax">
+<link rel="alternate" type="application/opml+xml" title="Blogroll.it OPML" href="https://blogroll.it/{{.OPMLFile}}">
+<meta name="theme-color" content="#D6EED8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+{{block "head" .}}{{end}}
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #D6EED8;
+  --bg-card:   #EAF6EB;
+  --bg-alt:    #F2FAF3;
+  --ink:       #1A2E1C;
+  --ink-mid:   #3E5C41;
+  --ink-muted: #5E7862;
+  --green:     #2E6B36;
+  --green-h:   #245929;
+  --border:    #B8D6BA;
+  --border-l:  #CDE5CF;
+  /* typography scale */
+  --sz-stamp:  12px;
+  --sz-ui:     13px;
+  --sz-desc:   13.5px;
+  --sz-title:  14.5px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+/* ── header ── */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--green);
+  text-decoration: none;
+}
+.site-name:hover { color: var(--green-h); }
+
+.site-nav {
+  display: flex;
+  gap: 1.25rem;
+  font-size: var(--sz-ui);
+}
+.site-nav a { color: var(--ink-mid); text-decoration: none; }
+.site-nav a:hover { color: var(--green); text-decoration: underline; }
+.site-nav .active { color: var(--ink); font-weight: 600; }
+
+/* ── meta line ── */
+.meta-line {
+  font-size: var(--sz-ui);
+  color: var(--ink-muted);
+  margin-bottom: 2rem;
+}
+
+/* ── footer ── */
+.site-footer {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: var(--sz-ui);
+  color: var(--ink-muted);
+}
+.site-footer a { color: var(--green); text-decoration: none; }
+.site-footer a:hover { color: var(--green-h); text-decoration: underline; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+{{block "page-styles" .}}{{end}}
+</head>
+<body>
+<div class="page">
+
+  <header class="site-header">
+    <a class="site-name" href="/">Blogroll.it</a>
+    <nav class="site-nav">
+      {{if eq .ActiveNav "home"}}<span class="active">post recenti</span>{{else}}<a href="/">post recenti</a>{{end}}
+      {{if eq .ActiveNav "lista"}}<span class="active">la lista</span>{{else}}<a href="/directory/">la lista</a>{{end}}
+      <a href="/{{.OPMLFile}}">OPML</a>
+    </nav>
+  </header>
+
+  {{block "meta-line" .}}{{end}}
+
+  {{block "content" .}}{{end}}
+
+  <footer class="site-footer">
+    <a href="https://github.com/cedmax/blogroll/issues">Suggerisci un blog</a> aprendo una issue o una PR su <a href="https://github.com/cedmax/blogroll">GitHub</a>.
+  </footer>
+
+</div>
+</body>
+</html>
