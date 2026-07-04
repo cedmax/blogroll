@@ -42,13 +42,12 @@ type OPMLBody struct {
 }
 
 type OPMLOutline struct {
-	Type        string        `xml:"type,attr"`
-	Text        string        `xml:"text,attr"`
-	Title       string        `xml:"title,attr"`
-	XMLURL      string        `xml:"xmlUrl,attr"`
-	HTMLURL     string        `xml:"htmlUrl,attr"`
-	Description string        `xml:"description,attr"`
-	Children    []OPMLOutline `xml:"outline"`
+	Type     string        `xml:"type,attr"`
+	Text     string        `xml:"text,attr"`
+	Title    string        `xml:"title,attr"`
+	XMLURL   string        `xml:"xmlUrl,attr"`
+	HTMLURL  string        `xml:"htmlUrl,attr"`
+	Children []OPMLOutline `xml:"outline"`
 }
 
 // Feed structures (support both RSS and Atom)
@@ -59,7 +58,8 @@ type RSSFeed struct {
 }
 
 type RSSChannel struct {
-	Items []RSSItem `xml:"item"`
+	Description string    `xml:"description"`
+	Items       []RSSItem `xml:"item"`
 }
 
 type RSSItem struct {
@@ -70,8 +70,9 @@ type RSSItem struct {
 }
 
 type AtomFeed struct {
-	XMLName xml.Name    `xml:"feed"`
-	Entries []AtomEntry `xml:"entry"`
+	XMLName  xml.Name    `xml:"feed"`
+	Subtitle string      `xml:"subtitle"`
+	Entries  []AtomEntry `xml:"entry"`
 }
 
 type AtomEntry struct {
@@ -110,6 +111,7 @@ type Entry struct {
 type CacheEntry struct {
 	ETag         string  `json:"etag,omitempty"`
 	LastModified string  `json:"last_modified,omitempty"`
+	Description  string  `json:"description,omitempty"`
 	Entries      []Entry `json:"entries,omitempty"`
 }
 
@@ -195,6 +197,9 @@ func main() {
 	for i, f := range feeds {
 		feeds[i].Slug = slugMap[f.XMLURL]
 		htmlToSlug[f.HTMLURL] = slugMap[f.XMLURL]
+		if ce, ok := cache[f.XMLURL]; ok && ce.Description != "" {
+			feeds[i].Description = ce.Description
+		}
 	}
 	for i := range entries {
 		entries[i].BlogSlug = htmlToSlug[entries[i].BlogURL]
@@ -264,10 +269,9 @@ func parseOPML(path string) ([]Feed, error) {
 					title = o.Text
 				}
 				feeds = append(feeds, Feed{
-					Title:       title,
-					XMLURL:      o.XMLURL,
-					HTMLURL:     o.HTMLURL,
-					Description: o.Description,
+					Title:   title,
+					XMLURL:  o.XMLURL,
+					HTMLURL: o.HTMLURL,
 				})
 			}
 			if len(o.Children) > 0 {
@@ -400,7 +404,7 @@ func fetchFeed(client *http.Client, feed Feed, cache Cache, mu *sync.Mutex) ([]E
 		return nil, err
 	}
 
-	entries, err := parseFeed(body, feed)
+	entries, desc, err := parseFeed(body, feed)
 	if err != nil {
 		return nil, err
 	}
@@ -409,6 +413,7 @@ func fetchFeed(client *http.Client, feed Feed, cache Cache, mu *sync.Mutex) ([]E
 	cache[feed.XMLURL] = CacheEntry{
 		ETag:         resp.Header.Get("ETag"),
 		LastModified: resp.Header.Get("Last-Modified"),
+		Description:  desc,
 		Entries:      entries,
 	}
 	mu.Unlock()
@@ -416,27 +421,28 @@ func fetchFeed(client *http.Client, feed Feed, cache Cache, mu *sync.Mutex) ([]E
 	return entries, nil
 }
 
-func parseFeed(data []byte, feed Feed) ([]Entry, error) {
+func parseFeed(data []byte, feed Feed) ([]Entry, string, error) {
 	// Try RSS first
 	var rss RSSFeed
 	if err := xml.Unmarshal(data, &rss); err == nil && len(rss.Channel.Items) > 0 {
-		return parseRSSItems(rss.Channel.Items, feed), nil
+		return parseRSSItems(rss.Channel.Items, feed), rss.Channel.Description, nil
 	}
 
 	// Try Atom
 	var atom AtomFeed
 	if err := xml.Unmarshal(data, &atom); err == nil && len(atom.Entries) > 0 {
-		return parseAtomEntries(atom.Entries, feed), nil
+		return parseAtomEntries(atom.Entries, feed), atom.Subtitle, nil
 	}
 
 	// Try RSS without wrapper (some feeds use <rdf:RDF> or bare <channel>)
 	type BareChannel struct {
-		XMLName xml.Name  `xml:"channel"`
-		Items   []RSSItem `xml:"item"`
+		XMLName     xml.Name  `xml:"channel"`
+		Description string    `xml:"description"`
+		Items       []RSSItem `xml:"item"`
 	}
 	var bare BareChannel
 	if err := xml.Unmarshal(data, &bare); err == nil && len(bare.Items) > 0 {
-		return parseRSSItems(bare.Items, feed), nil
+		return parseRSSItems(bare.Items, feed), bare.Description, nil
 	}
 
 	// Try RDF format
@@ -446,10 +452,10 @@ func parseFeed(data []byte, feed Feed) ([]Entry, error) {
 	}
 	var rdf RDFFeed
 	if err := xml.Unmarshal(data, &rdf); err == nil && len(rdf.Items) > 0 {
-		return parseRSSItems(rdf.Items, feed), nil
+		return parseRSSItems(rdf.Items, feed), "", nil
 	}
 
-	return nil, fmt.Errorf("unrecognized feed format")
+	return nil, "", fmt.Errorf("unrecognized feed format")
 }
 
 func parseRSSItems(items []RSSItem, feed Feed) []Entry {
