@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "prebuild": "go run main.go",
+    "postinstall": "go run main.go",
     "build": "astro build",
-    "dev": "go run main.go -skip-fetch && astro dev",
+    "dev": "astro dev",
     "preview": "astro preview"
   },
   "devDependencies": {
