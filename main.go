@@ -24,6 +24,7 @@ const (
 	readTimeout    = 15 * time.Second
 	opmlFile       = "itblogs.opml"
 	cacheFile      = "cache.json"
+	maxPerSite     = 15
 )
 
 type OPML struct {
@@ -109,7 +110,7 @@ type JSONFeed struct {
 	HTMLURL     string      `json:"htmlUrl"`
 	Description string      `json:"description"`
 	Slug        string      `json:"slug"`
-	Entries []JSONEntry `json:"entries"`
+	Entries     []JSONEntry `json:"entries"`
 }
 
 type JSONEntry struct {
@@ -516,10 +517,20 @@ func buildFeedData(feeds []Feed, allEntries []Entry) []JSONFeed {
 	jsonFeeds := make([]JSONFeed, len(feeds))
 	for i, f := range feeds {
 		all := byBlog[f.HTMLURL]
+		valid := all[:0]
+		for _, e := range all {
+			if !e.Published.IsZero() {
+				valid = append(valid, e)
+			}
+		}
+		all = valid
 		sort.Slice(all, func(a, b int) bool {
 			return all[a].Published.After(all[b].Published)
 		})
 
+		if len(all) > maxPerSite {
+			all = all[:maxPerSite]
+		}
 		entries := make([]JSONEntry, len(all))
 		for j, e := range all {
 			entries[j] = toJSONEntry(e)
@@ -560,6 +571,9 @@ func writeFeedFiles(feeds []JSONFeed, dir string) error {
 		return err
 	}
 	for _, feed := range feeds {
+		if len(feed.Entries) == 0 {
+			continue
+		}
 		b, err := json.MarshalIndent(feed, "", "  ")
 		if err != nil {
 			return err

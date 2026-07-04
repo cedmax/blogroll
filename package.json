@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "postinstall": "go run main.go",
+    "postinstall": "rm src/data/feeds/*.json && go run main.go",
     "build": "astro build",
     "dev": "astro dev",
     "preview": "astro preview",
