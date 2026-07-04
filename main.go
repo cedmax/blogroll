@@ -28,8 +28,6 @@ const (
 	cacheFile      = "cache.json"
 )
 
-// OPML structures
-
 type OPML struct {
 	XMLName xml.Name `xml:"opml"`
 	Body    OPMLBody `xml:"body"`
@@ -46,8 +44,6 @@ type OPMLOutline struct {
 	HTMLURL  string        `xml:"htmlUrl,attr"`
 	Children []OPMLOutline `xml:"outline"`
 }
-
-// Feed structures (support both RSS and Atom)
 
 type RSSFeed struct {
 	XMLName xml.Name   `xml:"rss"`
@@ -85,8 +81,6 @@ type AtomLink struct {
 	Rel  string `xml:"rel,attr"`
 }
 
-// Application types
-
 type Feed struct {
 	Title       string
 	XMLURL      string
@@ -112,8 +106,6 @@ type CacheEntry struct {
 }
 
 type Cache map[string]CacheEntry
-
-// JSON output types
 
 type SiteData struct {
 	BuiltAt    string      `json:"builtAt"`
@@ -536,8 +528,6 @@ var timeFormats = []string{
 	"2006-01-02 15:04:05",
 	"Mon, 2 Jan 2006 15:04:05 -0700",
 	"Mon, 2 Jan 2006 15:04:05 MST",
-	"Mon, 02 Jan 2006 15:04:05 -0700",
-	"Mon, 02 Jan 2006 15:04:05 MST",
 	"02 Jan 2006 15:04:05 -0700",
 	"2 Jan 2006 15:04:05 -0700",
 	"2006-01-02",
