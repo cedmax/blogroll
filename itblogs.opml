@@ -3,6 +3,18 @@
   <head><title>Blogroll.it</title></head>
   <body>
     <outline text="Il Blogroll all'italiana" title="Il Blogroll all'italiana">
+     <outline
+        type="rss"
+        text="TiTiNoNero dice cose"
+        htmlUrl="https://77nn.it/"
+        xmlUrl="https://77nn.it/feed.xml"
+      />
+      <outline
+        type="rss"
+        text="Andrea Corinti"
+        htmlUrl="https://www.andreacorinti.com/"
+        xmlUrl="https://www.andreacorinti.com/feed/"
+      />
       <outline 
         type="rss"
         text="cedmax.net"
