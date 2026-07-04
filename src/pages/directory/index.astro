@@ -38,9 +38,9 @@ const builtAt = fmtLong(new Date(data.builtAt))
           </a>
         </div>
         {feed.description && <div class="blog-card-desc">{feed.description}</div>}
-        {feed.latestEntry && (
+        {feed.entries[0] && (
           <div class="blog-card-latest">
-            <EntryRow {...feed.latestEntry} labeled />
+            <EntryRow {...feed.entries[0]} labeled />
           </div>
         )}
       </div>
