@@ -1,92 +1,16 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+{{define "head"}}
 <title>Blogroll.it — La lista ({{.FeedCount}} blog)</title>
 <meta name="description" content="Tutti i {{.FeedCount}} blog personali italiani raccolti in Blogroll.it.">
-<meta name="author" content="cedmax">
 <link rel="canonical" href="https://blogroll.it/directory/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Blogroll.it — La lista">
 <meta property="og:description" content="Tutti i {{.FeedCount}} blog personali italiani raccolti in Blogroll.it.">
 <meta property="og:url" content="https://blogroll.it/directory/">
 <meta property="og:site_name" content="Blogroll.it">
-<meta name="theme-color" content="#D6EED8">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+{{end}}
+
+{{define "page-styles"}}
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --bg:        #D6EED8;
-  --bg-card:   #EAF6EB;
-  --bg-alt:    #F2FAF3;
-  --ink:       #1A2E1C;
-  --ink-mid:   #3E5C41;
-  --ink-muted: #5E7862;
-  --green:     #2E6B36;
-  --green-h:   #245929;
-  --border:    #B8D6BA;
-  --border-l:  #CDE5CF;
-  /* typography scale */
-  --sz-stamp:  12px;
-  --sz-ui:     13px;
-  --sz-desc:   13.5px;
-  --sz-title:  14.5px;
-}
-
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  font-size: 15px;
-  line-height: 1.5;
-  min-height: 100vh;
-}
-
-.page {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
-}
-
-/* ── header ── */
-.site-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  margin-bottom: 2.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.site-name {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--green);
-  text-decoration: none;
-}
-.site-name:hover { color: var(--green-h); }
-
-.site-nav {
-  display: flex;
-  gap: 1.25rem;
-  font-size: var(--sz-ui);
-}
-.site-nav a { color: var(--ink-mid); text-decoration: none; }
-.site-nav a:hover { color: var(--green); text-decoration: underline; }
-.site-nav .active { color: var(--ink); font-weight: 600; }
-
-/* ── meta line ── */
-.meta-line {
-  font-size: var(--sz-ui);
-  color: var(--ink-muted);
-  margin-bottom: 2rem;
-}
-
 /* ── blog cards ── */
 .blog-list {
   display: flex;
@@ -108,8 +32,6 @@ body {
 .blog-card-name {
   font-size: var(--sz-title);
   font-weight: 600;
-}
-.blog-card-name {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -172,17 +94,6 @@ body {
 .latest-title:visited { color: var(--ink-muted); }
 .latest-title:hover { color: var(--green); text-decoration: underline; }
 
-/* ── footer ── */
-.site-footer {
-  margin-top: 3rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-  font-size: var(--sz-ui);
-  color: var(--ink-muted);
-}
-.site-footer a { color: var(--green); text-decoration: none; }
-.site-footer a:hover { color: var(--green-h); text-decoration: underline; }
-
 @media (max-width: 560px) {
   .blog-card { padding: 12px 14px; }
   .blog-card-latest {
@@ -204,38 +115,21 @@ body {
     padding: 0;
   }
 }
-
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
-</head>
-<body>
-<div class="page">
+{{end}}
 
-  <header class="site-header">
-    <a class="site-name" href="/">Blogroll.it</a>
-    <nav class="site-nav">
-      <a href="/">post recenti</a>
-      <span class="active">la lista</span>
-      <a href="/{{.OPMLFile}}">OPML</a>
-    </nav>
-  </header>
+{{define "meta-line"}}
+<p class="meta-line">{{.FeedCount}} blog — aggiornato il {{.BuiltAt}}</p>
+{{end}}
 
-  <p class="meta-line">{{.FeedCount}} blog — aggiornato il {{.BuiltAt}}</p>
-
-  <div class="blog-list">
-    {{range .Feeds}}
-    <div class="blog-card">
-      <div class="blog-card-name"><a href="/sites/{{.Slug}}/">{{.Title}}</a><a class="blog-card-icon" href="{{.HTMLURL}}" rel="noopener noreferrer" target="_blank" aria-label="Visita il sito"><svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7"/><path d="M8 1h3v3"/><line x1="11" y1="1" x2="5.5" y2="6.5"/></svg></a><a class="blog-card-icon" href="{{.XMLURL}}" rel="noopener noreferrer" target="_blank" aria-label="Feed RSS"><svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="10" r="1.5"/><path d="M1 6.5A5.5 5.5 0 0 1 6.5 12H8A6.5 6.5 0 0 0 1 5.5v1z"/><path d="M1 3A9 9 0 0 1 10 12h1.5A10.5 10.5 0 0 0 1 1.5V3z"/></svg></a></div>
-      <div class="blog-card-desc">{{.Description}}</div>
-      {{if .LatestEntry}}<div class="blog-card-latest"><span class="latest-date">{{italianDateShort .LatestEntry.Published}}</span><a class="latest-title" href="{{.LatestEntry.URL}}" target="_blank" rel="noopener noreferrer">{{.LatestEntry.Title}}</a></div>{{end}}
-    </div>
-    {{end}}
+{{define "content"}}
+<div class="blog-list">
+  {{range .Feeds}}
+  <div class="blog-card">
+    <div class="blog-card-name"><a href="/sites/{{.Slug}}/">{{.Title}}</a><a class="blog-card-icon" href="{{.HTMLURL}}" rel="noopener noreferrer" target="_blank" aria-label="Visita il sito"><svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7"/><path d="M8 1h3v3"/><line x1="11" y1="1" x2="5.5" y2="6.5"/></svg></a><a class="blog-card-icon" href="{{.XMLURL}}" rel="noopener noreferrer" target="_blank" aria-label="Feed RSS"><svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="10" r="1.5"/><path d="M1 6.5A5.5 5.5 0 0 1 6.5 12H8A6.5 6.5 0 0 0 1 5.5v1z"/><path d="M1 3A9 9 0 0 1 10 12h1.5A10.5 10.5 0 0 0 1 1.5V3z"/></svg></a></div>
+    <div class="blog-card-desc">{{.Description}}</div>
+    {{if .LatestEntry}}<div class="blog-card-latest"><span class="latest-date">{{italianDateShort .LatestEntry.Published}}</span><a class="latest-title" href="{{.LatestEntry.URL}}" target="_blank" rel="noopener noreferrer">{{.LatestEntry.Title}}</a></div>{{end}}
   </div>
-
-  <footer class="site-footer">
-    <a href="https://github.com/cedmax/blogroll/issues">Suggerisci un blog</a> aprendo una issue o una PR su <a href="https://github.com/cedmax/blogroll">GitHub</a>.
-  </footer>
-
+  {{end}}
 </div>
-</body>
-</html>
+{{end}}

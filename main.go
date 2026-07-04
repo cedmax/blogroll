@@ -128,6 +128,7 @@ type TemplateData struct {
 	EntryCount int
 	MaxDays    int
 	OPMLFile   string
+	ActiveNav  string
 	BuiltAt    string
 }
 
@@ -607,10 +608,11 @@ func groupByDate(entries []Entry) []DateGroup {
 // --- Rendering ---
 
 type BlogData struct {
-	Feed     Feed
-	Entries  []Entry
-	OPMLFile string
-	BuiltAt  string
+	Feed      Feed
+	Entries   []Entry
+	OPMLFile  string
+	ActiveNav string
+	BuiltAt   string
 }
 
 func groupEntriesByBlog(entries []Entry) map[string][]Entry {
@@ -625,9 +627,8 @@ func renderBlogPages(feeds []Feed, allEntries []Entry, opmlFile string) error {
 	cutoff := time.Now().UTC().AddDate(0, 0, -maxDays)
 	byBlog := groupEntriesByBlog(allEntries)
 
-	tmpl, err := template.New("template-blog.html").Funcs(template.FuncMap{
-		"italianDateShort": italianDateShort,
-	}).ParseFiles("template-blog.html")
+	funcMap := template.FuncMap{"italianDateShort": italianDateShort}
+	tmpl, err := template.New("base").Funcs(funcMap).ParseFiles("template-base.html", "template-blog.html")
 	if err != nil {
 		return err
 	}
@@ -667,13 +668,14 @@ func renderBlogPages(feeds []Feed, allEntries []Entry, opmlFile string) error {
 		}
 
 		data := BlogData{
-			Feed:     feed,
-			Entries:  recent,
-			OPMLFile: opmlFile,
-			BuiltAt:  builtAt,
+			Feed:      feed,
+			Entries:   recent,
+			OPMLFile:  opmlFile,
+			ActiveNav: "",
+			BuiltAt:   builtAt,
 		}
 
-		if err := tmpl.Execute(f, data); err != nil {
+		if err := tmpl.ExecuteTemplate(f, "template-base.html", data); err != nil {
 			f.Close()
 			return err
 		}
@@ -691,6 +693,7 @@ type DirectoryData struct {
 	Feeds     []FeedWithLatest
 	FeedCount int
 	OPMLFile  string
+	ActiveNav string
 	BuiltAt   string
 }
 
@@ -726,9 +729,8 @@ func renderDirectory(feeds []Feed, allEntries []Entry, opmlFile string) error {
 		return li.Published.After(lj.Published)
 	})
 
-	tmpl, err := template.New("template-directory.html").Funcs(template.FuncMap{
-		"italianDateShort": italianDateShort,
-	}).ParseFiles("template-directory.html")
+	funcMap := template.FuncMap{"italianDateShort": italianDateShort}
+	tmpl, err := template.New("base").Funcs(funcMap).ParseFiles("template-base.html", "template-directory.html")
 	if err != nil {
 		return err
 	}
@@ -737,6 +739,7 @@ func renderDirectory(feeds []Feed, allEntries []Entry, opmlFile string) error {
 		Feeds:     sorted,
 		FeedCount: len(feeds),
 		OPMLFile:  opmlFile,
+		ActiveNav: "lista",
 		BuiltAt:   time.Now().UTC().Format("2006-01-02 15:04 UTC"),
 	}
 
@@ -746,7 +749,7 @@ func renderDirectory(feeds []Feed, allEntries []Entry, opmlFile string) error {
 	}
 	defer f.Close()
 
-	return tmpl.Execute(f, data)
+	return tmpl.ExecuteTemplate(f, "template-base.html", data)
 }
 
 func renderHTML(groups []DateGroup, feedCount, entryCount int, opmlFile string) error {
@@ -754,7 +757,8 @@ func renderHTML(groups []DateGroup, feedCount, entryCount int, opmlFile string) 
 		return err
 	}
 
-	tmpl, err := template.New("template.html").ParseFiles("template.html")
+	funcMap := template.FuncMap{"italianDateShort": italianDateShort}
+	tmpl, err := template.New("base").Funcs(funcMap).ParseFiles("template-base.html", "template.html")
 	if err != nil {
 		return err
 	}
@@ -765,6 +769,7 @@ func renderHTML(groups []DateGroup, feedCount, entryCount int, opmlFile string) 
 		EntryCount: entryCount,
 		MaxDays:    maxDays,
 		OPMLFile:   opmlFile,
+		ActiveNav:  "home",
 		BuiltAt:    time.Now().UTC().Format("2006-01-02 15:04 UTC"),
 	}
 
@@ -774,7 +779,7 @@ func renderHTML(groups []DateGroup, feedCount, entryCount int, opmlFile string) 
 	}
 	defer f.Close()
 
-	return tmpl.Execute(f, data)
+	return tmpl.ExecuteTemplate(f, "template-base.html", data)
 }
 
 func copyOPML(path string) error {
