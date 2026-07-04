@@ -6,7 +6,7 @@ import BlogRow from "../components/BlogRow.astro"
 
 const feeds = sortFeedsByLatest(await getFeeds())
 
-const MAX_DAYS = 21
+const MAX_DAYS = 7
 const cutoff = Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000
 ---
 
@@ -39,10 +39,10 @@ const cutoff = Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000
           <div class="text-sm font-semibold flex items-center gap-2">
             <BlogRow feed={feed} />
           </div>
-          {/* {feed.description && <div class="text-sm text-ink-mid leading-relaxed">{feed.description}</div>} */}
           {feed.entries.filter((e) => new Date(e.published).getTime() >= cutoff).length ? (
             feed.entries
               .filter((e) => new Date(e.published).getTime() >= cutoff)
+              .slice(0, 3)
               .map((entry) => {
                 return (
                   <div class="-mx-4 -mb-4 mt-2 border-t border-border-l bg-alt max-sm:-mx-3.5 max-sm:-mb-3.5">
