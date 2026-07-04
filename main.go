@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"flag"
 	"fmt"
-	"html/template"
 	"io"
 	"net/http"
 	"net/url"
@@ -27,7 +26,6 @@ const (
 	minBlogPosts   = 10
 	opmlFile       = "itblogs.opml"
 	cacheFile      = "cache.json"
-	outputDir      = "public"
 )
 
 // OPML structures
@@ -76,11 +74,11 @@ type AtomFeed struct {
 }
 
 type AtomEntry struct {
-	Title   string     `xml:"title"`
-	Links   []AtomLink `xml:"link"`
-	Updated string     `xml:"updated"`
-	Published string   `xml:"published"`
-	ID      string     `xml:"id"`
+	Title     string     `xml:"title"`
+	Links     []AtomLink `xml:"link"`
+	Updated   string     `xml:"updated"`
+	Published string     `xml:"published"`
+	ID        string     `xml:"id"`
 }
 
 type AtomLink struct {
@@ -117,19 +115,39 @@ type CacheEntry struct {
 
 type Cache map[string]CacheEntry
 
-type DateGroup struct {
-	Date    string
-	Entries []Entry
+// JSON output types
+
+type SiteData struct {
+	BuiltAt    string      `json:"builtAt"`
+	OPMLFile   string      `json:"opmlFile"`
+	MaxDays    int         `json:"maxDays"`
+	FeedCount  int         `json:"feedCount"`
+	EntryCount int         `json:"entryCount"`
+	Groups     []JSONGroup `json:"groups"`
+	Feeds      []JSONFeed  `json:"feeds"`
 }
 
-type TemplateData struct {
-	Groups     []DateGroup
-	FeedCount  int
-	EntryCount int
-	MaxDays    int
-	OPMLFile   string
-	ActiveNav  string
-	BuiltAt    string
+type JSONGroup struct {
+	Date    string      `json:"date"`
+	Entries []JSONEntry `json:"entries"`
+}
+
+type JSONFeed struct {
+	Title       string      `json:"title"`
+	XMLURL      string      `json:"xmlUrl"`
+	HTMLURL     string      `json:"htmlUrl"`
+	Description string      `json:"description"`
+	Slug        string      `json:"slug"`
+	LatestEntry *JSONEntry  `json:"latestEntry"`
+	Entries     []JSONEntry `json:"entries"`
+}
+
+type JSONEntry struct {
+	BlogName  string    `json:"blogName,omitempty"`
+	BlogSlug  string    `json:"blogSlug,omitempty"`
+	Title     string    `json:"title"`
+	URL       string    `json:"url"`
+	Published time.Time `json:"published"`
 }
 
 // --- Slug generation ---
@@ -222,12 +240,11 @@ func main() {
 		return recent[i].Published.After(recent[j].Published)
 	})
 
-	groups := groupByDate(recent)
+	fmt.Fprintf(os.Stderr, "Entries: %d (last %d days)\n", len(recent), maxDays)
 
-	fmt.Fprintf(os.Stderr, "Entries: %d (last 7 days)\n", len(recent))
-
-	if err := renderHTML(groups, len(feeds), len(recent), filepath.Base(*opml)); err != nil {
-		fmt.Fprintf(os.Stderr, "Error rendering HTML: %v\n", err)
+	siteData := buildSiteData(feeds, entries, recent, filepath.Base(*opml))
+	if err := writeJSON(siteData, "src/data/blogroll.json"); err != nil {
+		fmt.Fprintf(os.Stderr, "Error writing JSON: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -236,17 +253,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := renderDirectory(feeds, entries, filepath.Base(*opml)); err != nil {
-		fmt.Fprintf(os.Stderr, "Error rendering directory: %v\n", err)
-		os.Exit(1)
-	}
-
-	if err := renderBlogPages(feeds, entries, filepath.Base(*opml)); err != nil {
-		fmt.Fprintf(os.Stderr, "Error rendering blog pages: %v\n", err)
-		os.Exit(1)
-	}
-
-	fmt.Fprintf(os.Stderr, "Built index, directory, and %d blog pages successfully\n", len(feeds))
+	fmt.Fprintf(os.Stderr, "Wrote src/data/blogroll.json (%d feeds, %d entries)\n", len(feeds), len(recent))
 }
 
 // --- OPML parsing ---
@@ -551,7 +558,7 @@ func parseTime(s string) time.Time {
 	return time.Time{}
 }
 
-// --- Deduplication & grouping ---
+// --- Deduplication ---
 
 func deduplicateEntries(entries []Entry) []Entry {
 	seen := make(map[string]bool)
@@ -566,54 +573,7 @@ func deduplicateEntries(entries []Entry) []Entry {
 	return result
 }
 
-var italianMonths = [...]string{
-	"", "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
-	"luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre",
-}
-
-var italianMonthsShort = [...]string{
-	"", "gen", "feb", "mar", "apr", "mag", "giu",
-	"lug", "ago", "set", "ott", "nov", "dic",
-}
-
-func italianDate(t time.Time) string {
-	return fmt.Sprintf("%d %s %d", t.Day(), italianMonths[t.Month()], t.Year())
-}
-
-func italianDateShort(t time.Time) string {
-	return fmt.Sprintf("%d %s %d", t.Day(), italianMonthsShort[t.Month()], t.Year())
-}
-
-func groupByDate(entries []Entry) []DateGroup {
-	groups := make(map[string][]Entry)
-	var order []string
-	for _, e := range entries {
-		key := e.Published.Format("2006-01-02")
-		if _, exists := groups[key]; !exists {
-			order = append(order, key)
-		}
-		groups[key] = append(groups[key], e)
-	}
-	var result []DateGroup
-	for _, key := range order {
-		t, _ := time.Parse("2006-01-02", key)
-		result = append(result, DateGroup{
-			Date:    italianDate(t),
-			Entries: groups[key],
-		})
-	}
-	return result
-}
-
-// --- Rendering ---
-
-type BlogData struct {
-	Feed      Feed
-	Entries   []Entry
-	OPMLFile  string
-	ActiveNav string
-	BuiltAt   string
-}
+// --- JSON output ---
 
 func groupEntriesByBlog(entries []Entry) map[string][]Entry {
 	groups := make(map[string][]Entry)
@@ -623,102 +583,85 @@ func groupEntriesByBlog(entries []Entry) map[string][]Entry {
 	return groups
 }
 
-func renderBlogPages(feeds []Feed, allEntries []Entry, opmlFile string) error {
+func toJSONEntry(e Entry) JSONEntry {
+	return JSONEntry{
+		BlogName:  e.BlogName,
+		BlogSlug:  e.BlogSlug,
+		Title:     e.Title,
+		URL:       e.URL,
+		Published: e.Published,
+	}
+}
+
+func buildSiteData(feeds []Feed, allEntries []Entry, recent []Entry, opmlFileName string) SiteData {
+	// Build day groups from recent entries (already sorted desc)
+	groupMap := make(map[string][]JSONEntry)
+	var groupOrder []string
+	for _, e := range recent {
+		key := e.Published.Format("2006-01-02")
+		if _, exists := groupMap[key]; !exists {
+			groupOrder = append(groupOrder, key)
+		}
+		groupMap[key] = append(groupMap[key], toJSONEntry(e))
+	}
+	groups := make([]JSONGroup, len(groupOrder))
+	for i, key := range groupOrder {
+		groups[i] = JSONGroup{Date: key, Entries: groupMap[key]}
+	}
+
+	// Build per-feed data
 	cutoff := time.Now().UTC().AddDate(0, 0, -maxDays)
 	byBlog := groupEntriesByBlog(allEntries)
 
-	funcMap := template.FuncMap{"italianDateShort": italianDateShort}
-	tmpl, err := template.New("base").Funcs(funcMap).ParseFiles("template-base.html", "template-blog.html")
-	if err != nil {
-		return err
-	}
-
-	builtAt := time.Now().UTC().Format("2006-01-02 15:04 UTC")
-
-	for _, feed := range feeds {
-		all := byBlog[feed.HTMLURL]
-		sort.Slice(all, func(i, j int) bool {
-			return all[i].Published.After(all[j].Published)
+	jsonFeeds := make([]JSONFeed, len(feeds))
+	for i, f := range feeds {
+		all := byBlog[f.HTMLURL]
+		sort.Slice(all, func(a, b int) bool {
+			return all[a].Published.After(all[b].Published)
 		})
 
-		var recent []Entry
+		var latestEntry *JSONEntry
+		if len(all) > 0 {
+			je := toJSONEntry(all[0])
+			latestEntry = &je
+		}
+
+		var blogRecent []Entry
 		for _, e := range all {
 			if e.Published.After(cutoff) {
-				recent = append(recent, e)
+				blogRecent = append(blogRecent, e)
 			}
 		}
-
-		if len(recent) < minBlogPosts && len(all) > len(recent) {
-			for _, e := range all[len(recent):] {
-				if len(recent) >= minBlogPosts {
+		if len(blogRecent) < minBlogPosts && len(all) > len(blogRecent) {
+			for _, e := range all[len(blogRecent):] {
+				if len(blogRecent) >= minBlogPosts {
 					break
 				}
-				recent = append(recent, e)
+				blogRecent = append(blogRecent, e)
 			}
 		}
 
-		dir := filepath.Join(outputDir, "sites", feed.Slug)
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			return err
+		entries := make([]JSONEntry, len(blogRecent))
+		for j, e := range blogRecent {
+			entries[j] = toJSONEntry(e)
 		}
 
-		f, err := os.Create(filepath.Join(dir, "index.html"))
-		if err != nil {
-			return err
-		}
-
-		data := BlogData{
-			Feed:      feed,
-			Entries:   recent,
-			OPMLFile:  opmlFile,
-			ActiveNav: "",
-			BuiltAt:   builtAt,
-		}
-
-		if err := tmpl.ExecuteTemplate(f, "template-base.html", data); err != nil {
-			f.Close()
-			return err
-		}
-		f.Close()
-	}
-	return nil
-}
-
-type FeedWithLatest struct {
-	Feed
-	LatestEntry *Entry
-}
-
-type DirectoryData struct {
-	Feeds     []FeedWithLatest
-	FeedCount int
-	OPMLFile  string
-	ActiveNav string
-	BuiltAt   string
-}
-
-func renderDirectory(feeds []Feed, allEntries []Entry, opmlFile string) error {
-	dir := filepath.Join(outputDir, "directory")
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
-	}
-
-	latest := make(map[string]*Entry)
-	for i := range allEntries {
-		e := &allEntries[i]
-		if prev, ok := latest[e.BlogURL]; !ok || e.Published.After(prev.Published) {
-			latest[e.BlogURL] = e
+		jsonFeeds[i] = JSONFeed{
+			Title:       f.Title,
+			XMLURL:      f.XMLURL,
+			HTMLURL:     f.HTMLURL,
+			Description: f.Description,
+			Slug:        f.Slug,
+			LatestEntry: latestEntry,
+			Entries:     entries,
 		}
 	}
 
-	sorted := make([]FeedWithLatest, len(feeds))
-	for i, f := range feeds {
-		sorted[i] = FeedWithLatest{Feed: f, LatestEntry: latest[f.HTMLURL]}
-	}
-	sort.Slice(sorted, func(i, j int) bool {
-		li, lj := sorted[i].LatestEntry, sorted[j].LatestEntry
+	// Sort feeds by latest entry date (directory page order)
+	sort.Slice(jsonFeeds, func(i, j int) bool {
+		li, lj := jsonFeeds[i].LatestEntry, jsonFeeds[j].LatestEntry
 		if li == nil && lj == nil {
-			return strings.ToLower(sorted[i].Title) < strings.ToLower(sorted[j].Title)
+			return strings.ToLower(jsonFeeds[i].Title) < strings.ToLower(jsonFeeds[j].Title)
 		}
 		if li == nil {
 			return false
@@ -729,57 +672,26 @@ func renderDirectory(feeds []Feed, allEntries []Entry, opmlFile string) error {
 		return li.Published.After(lj.Published)
 	})
 
-	funcMap := template.FuncMap{"italianDateShort": italianDateShort}
-	tmpl, err := template.New("base").Funcs(funcMap).ParseFiles("template-base.html", "template-directory.html")
-	if err != nil {
-		return err
+	return SiteData{
+		BuiltAt:    time.Now().UTC().Format(time.RFC3339),
+		OPMLFile:   opmlFileName,
+		MaxDays:    maxDays,
+		FeedCount:  len(feeds),
+		EntryCount: len(recent),
+		Groups:     groups,
+		Feeds:      jsonFeeds,
 	}
-
-	data := DirectoryData{
-		Feeds:     sorted,
-		FeedCount: len(feeds),
-		OPMLFile:  opmlFile,
-		ActiveNav: "lista",
-		BuiltAt:   time.Now().UTC().Format("2006-01-02 15:04 UTC"),
-	}
-
-	f, err := os.Create(filepath.Join(dir, "index.html"))
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	return tmpl.ExecuteTemplate(f, "template-base.html", data)
 }
 
-func renderHTML(groups []DateGroup, feedCount, entryCount int, opmlFile string) error {
-	if err := os.MkdirAll(outputDir, 0755); err != nil {
+func writeJSON(data SiteData, path string) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
 	}
-
-	funcMap := template.FuncMap{"italianDateShort": italianDateShort}
-	tmpl, err := template.New("base").Funcs(funcMap).ParseFiles("template-base.html", "template.html")
+	b, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return err
 	}
-
-	data := TemplateData{
-		Groups:     groups,
-		FeedCount:  feedCount,
-		EntryCount: entryCount,
-		MaxDays:    maxDays,
-		OPMLFile:   opmlFile,
-		ActiveNav:  "home",
-		BuiltAt:    time.Now().UTC().Format("2006-01-02 15:04 UTC"),
-	}
-
-	f, err := os.Create(filepath.Join(outputDir, "index.html"))
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	return tmpl.ExecuteTemplate(f, "template-base.html", data)
+	return os.WriteFile(path, b, 0644)
 }
 
 func copyOPML(path string) error {
@@ -787,6 +699,8 @@ func copyOPML(path string) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(outputDir, filepath.Base(path)), data, 0644)
+	if err := os.MkdirAll("public", 0755); err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join("public", filepath.Base(path)), data, 0644)
 }
-
