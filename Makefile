@@ -10,4 +10,4 @@ dev:
 	npm run dev
 
 clean:
-	rm -rf dist src/data/blogroll.json node_modules
+	rm -rf dist src/data/blogroll.json node_modules public/directory public/sites public/index.html
