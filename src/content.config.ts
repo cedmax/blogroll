@@ -1,5 +1,5 @@
-import { defineCollection, z } from 'astro:content'
-import { glob } from 'astro/loaders'
+import { defineCollection, z } from "astro:content"
+import { glob } from "astro/loaders"
 
 const entrySchema = z.object({
   title: z.string(),
@@ -8,7 +8,7 @@ const entrySchema = z.object({
 })
 
 const feeds = defineCollection({
-  loader: glob({ pattern: '*.json', base: './src/data/feeds' }),
+  loader: glob({ pattern: "*.json", base: "./src/data/feeds" }),
   schema: z.object({
     title: z.string(),
     xmlUrl: z.string(),

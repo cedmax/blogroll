@@ -3,11 +3,14 @@
     "postinstall": "go run main.go",
     "build": "astro build",
     "dev": "astro dev",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.2",
     "astro": "^7.0.6",
+    "prettier": "3.8.4",
+    "prettier-plugin-astro": "0.14.1",
     "tailwindcss": "^4.3.2"
   },
   "allowScripts": {
