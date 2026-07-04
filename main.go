@@ -25,7 +25,7 @@ const (
 	readTimeout    = 15 * time.Second
 	maxDays        = 60
 	minBlogPosts   = 10
-	opmlFile       = "engblogs.opml"
+	opmlFile       = "itblogs.opml"
 	cacheFile      = "cache.json"
 	outputDir      = "public"
 )
@@ -127,6 +127,7 @@ type TemplateData struct {
 	FeedCount  int
 	EntryCount int
 	MaxDays    int
+	OPMLFile   string
 	BuiltAt    string
 }
 
@@ -224,7 +225,7 @@ func main() {
 
 	fmt.Fprintf(os.Stderr, "Entries: %d (last 7 days)\n", len(recent))
 
-	if err := renderHTML(groups, len(feeds), len(recent)); err != nil {
+	if err := renderHTML(groups, len(feeds), len(recent), filepath.Base(*opml)); err != nil {
 		fmt.Fprintf(os.Stderr, "Error rendering HTML: %v\n", err)
 		os.Exit(1)
 	}
@@ -234,12 +235,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := renderDirectory(feeds, entries); err != nil {
+	if err := renderDirectory(feeds, entries, filepath.Base(*opml)); err != nil {
 		fmt.Fprintf(os.Stderr, "Error rendering directory: %v\n", err)
 		os.Exit(1)
 	}
 
-	if err := renderBlogPages(feeds, entries); err != nil {
+	if err := renderBlogPages(feeds, entries, filepath.Base(*opml)); err != nil {
 		fmt.Fprintf(os.Stderr, "Error rendering blog pages: %v\n", err)
 		os.Exit(1)
 	}
@@ -606,9 +607,10 @@ func groupByDate(entries []Entry) []DateGroup {
 // --- Rendering ---
 
 type BlogData struct {
-	Feed    Feed
-	Entries []Entry
-	BuiltAt string
+	Feed     Feed
+	Entries  []Entry
+	OPMLFile string
+	BuiltAt  string
 }
 
 func groupEntriesByBlog(entries []Entry) map[string][]Entry {
@@ -619,7 +621,7 @@ func groupEntriesByBlog(entries []Entry) map[string][]Entry {
 	return groups
 }
 
-func renderBlogPages(feeds []Feed, allEntries []Entry) error {
+func renderBlogPages(feeds []Feed, allEntries []Entry, opmlFile string) error {
 	cutoff := time.Now().UTC().AddDate(0, 0, -maxDays)
 	byBlog := groupEntriesByBlog(allEntries)
 
@@ -665,9 +667,10 @@ func renderBlogPages(feeds []Feed, allEntries []Entry) error {
 		}
 
 		data := BlogData{
-			Feed:    feed,
-			Entries: recent,
-			BuiltAt: builtAt,
+			Feed:     feed,
+			Entries:  recent,
+			OPMLFile: opmlFile,
+			BuiltAt:  builtAt,
 		}
 
 		if err := tmpl.Execute(f, data); err != nil {
@@ -687,10 +690,11 @@ type FeedWithLatest struct {
 type DirectoryData struct {
 	Feeds     []FeedWithLatest
 	FeedCount int
+	OPMLFile  string
 	BuiltAt   string
 }
 
-func renderDirectory(feeds []Feed, allEntries []Entry) error {
+func renderDirectory(feeds []Feed, allEntries []Entry, opmlFile string) error {
 	dir := filepath.Join(outputDir, "directory")
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
@@ -722,6 +726,7 @@ func renderDirectory(feeds []Feed, allEntries []Entry) error {
 	data := DirectoryData{
 		Feeds:     sorted,
 		FeedCount: len(feeds),
+		OPMLFile:  opmlFile,
 		BuiltAt:   time.Now().UTC().Format("2006-01-02 15:04 UTC"),
 	}
 
@@ -734,7 +739,7 @@ func renderDirectory(feeds []Feed, allEntries []Entry) error {
 	return tmpl.Execute(f, data)
 }
 
-func renderHTML(groups []DateGroup, feedCount, entryCount int) error {
+func renderHTML(groups []DateGroup, feedCount, entryCount int, opmlFile string) error {
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return err
 	}
@@ -749,6 +754,7 @@ func renderHTML(groups []DateGroup, feedCount, entryCount int) error {
 		FeedCount:  feedCount,
 		EntryCount: entryCount,
 		MaxDays:    maxDays,
+		OPMLFile:   opmlFile,
 		BuiltAt:    time.Now().UTC().Format("2006-01-02 15:04 UTC"),
 	}
 
