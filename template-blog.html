@@ -58,61 +58,11 @@
   overflow: hidden;
 }
 
-.entry {
-  display: grid;
-  grid-template-columns: 110px 1fr;
-  border-bottom: 1px solid var(--border-l);
-}
-.entry:last-child { border-bottom: none; }
-.entry:nth-child(even) { background: var(--bg-alt); }
-
-.entry-date {
-  padding: 9px 12px;
-  font-size: var(--sz-stamp);
-  color: var(--ink-muted);
-  white-space: nowrap;
-  border-right: 1px solid var(--border-l);
-  display: flex;
-  align-items: center;
-}
-
-.entry-title {
-  padding: 9px 14px;
-  display: flex;
-  align-items: center;
-}
-.entry-title a {
-  font-size: var(--sz-title);
-  color: var(--ink);
-  text-decoration: none;
-  line-height: 1.35;
-}
-.entry-title a:visited { color: var(--ink-muted); }
-.entry-title a:hover { color: var(--green); text-decoration: underline; }
-
 .no-entries {
   padding: 16px 14px;
   font-size: var(--sz-desc);
   color: var(--ink-muted);
   font-style: italic;
-}
-
-@media (max-width: 560px) {
-  .entry {
-    display: block;
-    padding: 8px 12px;
-  }
-  .entry-date {
-    padding: 0 0 3px;
-    border-right: none;
-    display: block;
-    font-size: var(--sz-stamp);
-  }
-  .entry-title {
-    padding: 0;
-    display: block;
-  }
-  .entry-title a { font-size: var(--sz-title); }
 }
 </style>
 {{end}}
@@ -133,12 +83,7 @@
 
 <div class="entries">
   {{if .Entries}}
-  {{range .Entries}}
-  <div class="entry">
-    <span class="entry-date">{{italianDateShort .Published}}</span>
-    <span class="entry-title"><a href="{{.URL}}" target="_blank" rel="noopener noreferrer">{{.Title}}</a></span>
-  </div>
-  {{end}}
+  {{range .Entries}}{{template "entry-row" .}}{{end}}
   {{else}}
   <div class="no-entries">Nessun post disponibile al momento.</div>
   {{end}}
