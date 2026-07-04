@@ -713,7 +713,17 @@ func renderDirectory(feeds []Feed, allEntries []Entry, opmlFile string) error {
 		sorted[i] = FeedWithLatest{Feed: f, LatestEntry: latest[f.HTMLURL]}
 	}
 	sort.Slice(sorted, func(i, j int) bool {
-		return strings.ToLower(sorted[i].Title) < strings.ToLower(sorted[j].Title)
+		li, lj := sorted[i].LatestEntry, sorted[j].LatestEntry
+		if li == nil && lj == nil {
+			return strings.ToLower(sorted[i].Title) < strings.ToLower(sorted[j].Title)
+		}
+		if li == nil {
+			return false
+		}
+		if lj == nil {
+			return true
+		}
+		return li.Published.After(lj.Published)
 	})
 
 	tmpl, err := template.New("template-directory.html").Funcs(template.FuncMap{
