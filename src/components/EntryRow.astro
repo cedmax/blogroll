@@ -1,0 +1,11 @@
+---
+import { fmtShort } from '../utils/dates'
+interface Props { title: string; url: string; published: string; labeled?: boolean }
+const { title, url, published, labeled = false } = Astro.props
+---
+<div class="entry-row">
+  <span class:list={['entry-row-date', { 'entry-row-date--labeled': labeled }]}>
+    {fmtShort(new Date(published))}
+  </span>
+  <a class="entry-row-title" href={url} target="_blank" rel="noopener noreferrer">{title}</a>
+</div>
