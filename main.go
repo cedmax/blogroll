@@ -104,10 +104,9 @@ type CacheEntry struct {
 type Cache map[string]CacheEntry
 
 type SiteData struct {
-	BuiltAt   string     `json:"builtAt"`
-	OPMLFile  string     `json:"opmlFile"`
-	FeedCount int        `json:"feedCount"`
-	Feeds     []JSONFeed `json:"feeds"`
+	BuiltAt  string     `json:"builtAt"`
+	OPMLFile string     `json:"opmlFile"`
+	Feeds    []JSONFeed `json:"feeds"`
 }
 
 type JSONFeed struct {
@@ -160,7 +159,7 @@ func buildSlugs(feeds []Feed) map[string]string {
 }
 
 func main() {
-	skipFetch := flag.Bool("skip-fetch", false, "Skip fetching feeds, rebuild HTML from cache only")
+	skipFetch := flag.Bool("skip-fetch", false, "Skip fetching feeds, rebuild from cache only")
 	opml := flag.String("opml", opmlFile, "Path to OPML file")
 	flag.Parse()
 
@@ -563,10 +562,9 @@ func buildSiteData(feeds []Feed, allEntries []Entry, opmlFileName string) SiteDa
 	})
 
 	return SiteData{
-		BuiltAt:   time.Now().UTC().Format(time.RFC3339),
-		OPMLFile:  opmlFileName,
-		FeedCount: len(feeds),
-		Feeds:     jsonFeeds,
+		BuiltAt:  time.Now().UTC().Format(time.RFC3339),
+		OPMLFile: opmlFileName,
+		Feeds:    jsonFeeds,
 	}
 }
 
