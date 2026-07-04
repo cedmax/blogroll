@@ -53,11 +53,11 @@ const byDate = Object.groupBy(entries, (e) => e.published.slice(0, 10))
   {
     groupDates.map((date) => (
       <div class="mb-6">
-        <h2 class="text-base font-semibold tracking-wider uppercase text-ink-muted mb-2.5 pl-1.5">
+        <h2 class="text-3xl font-black tracking-tight text-ink-muted mb-3 pb-2 border-b-2 border-ink-muted">
           {fmtLong(new Date(date))}
         </h2>
         {byDate[date]!.map((entry) => (
-          <div class="bg-alt border border-border rounded-lg pb-1.5 flex flex-col gap-1 overflow-hidden mb-2">
+          <div class="bg-alt border border-border rounded pb-1.5 flex flex-col gap-1 overflow-hidden mb-2">
             <div class="bg-card block border-b border-border-l">
               <a
                 class="py-2.5 px-3 flex items-center text-base font-semibold text-green no-underline leading-snug visited:text-ink-muted hover:text-green-h hover:underline"

@@ -26,7 +26,7 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
       title="Blogroll.it OPML"
       href={`https://blogroll.it/${opmlFile}`}
     />
-    <meta name="theme-color" content="#D6EED8" />
+    <meta name="theme-color" content="#f5f0e8" />
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>"
@@ -39,15 +39,15 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
         class="flex relative items-center justify-between flex-wrap gap-x-4 gap-y-2 mb-16 pb-4 border-b border-border"
       >
         <a
-          class="text-xl font-bold tracking-tight text-green no-underline hover:text-green-h"
+          class="text-4xl font-black tracking-tighter text-green no-underline hover:text-green-h"
           href="/">Blogroll.it</a
         >
-        <nav class="flex gap-5 text-xs">
+        <nav class="flex gap-5 text-sm">
           {
             activeNav === "home" ? (
               <span class="text-ink font-semibold">post recenti</span>
             ) : (
-              <a class="text-ink-mid no-underline hover:text-green hover:underline" href="/">
+              <a class="text-ink-muted no-underline hover:text-green hover:underline" href="/">
                 post recenti
               </a>
             )
@@ -57,7 +57,7 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
               <span class="text-ink font-semibold">la lista</span>
             ) : (
               <a
-                class="text-ink-mid no-underline hover:text-green hover:underline"
+                class="text-ink-muted no-underline hover:text-green hover:underline"
                 href="/lista/"
               >
                 la lista
@@ -65,7 +65,7 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
             )
           }
           <a
-            class="text-ink-mid no-underline hover:text-green hover:underline"
+            class="text-ink-muted no-underline hover:text-green hover:underline"
             href={`/${opmlFile}`}>OPML</a
           >
         </nav>
