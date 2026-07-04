@@ -1,62 +1,86 @@
 ---
 import Base from "../layouts/Base.astro"
-import EntryRow from "../components/EntryRow.astro"
-import { getFeeds, sortFeedsByLatest, builtAt, opmlFile } from "../utils/feeds"
-import BlogRow from "../components/BlogRow.astro"
+import { getFeeds, builtAt, opmlFile } from "../utils/feeds"
+import { fmtLong } from "../utils/dates"
+import BlogLink from "../components/BlogLink.astro"
+import FeedLink from "../components/FeedLink.astro"
 
-const feeds = sortFeedsByLatest(await getFeeds())
+const feeds = await getFeeds()
 
-const MAX_DAYS = 7
+const MAX_DAYS = 30
 const cutoff = Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000
+const entries = feeds
+  .flatMap(({ entries, ...feed }) =>
+    entries
+      .filter((e) => new Date(e.published).getTime() >= cutoff)
+      .map((e) => ({ ...e, feed })),
+  )
+  .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
+
+const entryCount = entries.length
+const groupDates = [...new Set(entries.map((e) => e.published.slice(0, 10)))]
+const byDate = Object.groupBy(entries, (e) => e.published.slice(0, 10))
 ---
 
 <Base
-  title={`Blogroll.it — La lista (${feeds.length} blog)`}
-  description={`Tutti i ${feeds.length} blog personali italiani raccolti in Blogroll.it.`}
-  canonical="https://blogroll.it/directory/"
+  title={`Blogroll.it — ${entryCount} post da ${feeds.length} blog`}
+  description={`Post recenti da ${feeds.length} blog personali italiani, aggiornati ogni poche ore. Niente algoritmi, niente account, solo link.`}
+  canonical="https://blogroll.it/"
   activeNav="home"
   opmlFile={opmlFile}
 >
   <Fragment slot="head">
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Blogroll.it — La lista" />
+    <meta property="og:title" content="Blogroll.it" />
     <meta
       property="og:description"
-      content={`Tutti i ${feeds.length} blog personali italiani raccolti in Blogroll.it.`}
+      content={`Post recenti da ${feeds.length} blog personali italiani, aggiornati ogni poche ore.`}
     />
-    <meta property="og:url" content="https://blogroll.it/directory/" />
+    <meta property="og:url" content="https://blogroll.it/" />
     <meta property="og:site_name" content="Blogroll.it" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Blogroll.it" />
+    <meta
+      name="twitter:description"
+      content={`Post recenti da ${feeds.length} blog personali italiani, aggiornati ogni poche ore.`}
+    />
   </Fragment>
 
   <p class="text-xs text-ink-muted mb-4" slot="meta-line">
-    {feeds.length} blog — aggiornato il {builtAt}
+    {entryCount} post da {feeds.length} blog negli ultimi {MAX_DAYS} giorni &mdash; {builtAt}
   </p>
 
-  <div class="flex flex-col gap-4">
-    {
-      feeds.map((feed) => (
-        <div class="bg-card border border-border rounded-lg p-4 flex flex-col gap-1 overflow-hidden">
-          <div class="text-sm font-semibold flex items-center gap-2">
-            <BlogRow feed={feed} />
-          </div>
-          {feed.entries.filter((e) => new Date(e.published).getTime() >= cutoff).length ? (
-            feed.entries
-              .filter((e) => new Date(e.published).getTime() >= cutoff)
-              .slice(0, 3)
-              .map((entry) => {
-                return (
-                  <div class="-mx-4 -mb-4 mt-2 border-t border-border-l bg-alt max-sm:-mx-3.5 max-sm:-mb-3.5">
-                    <EntryRow {...entry} />
-                  </div>
-                )
-              })
-          ) : (
-            <div class="-mx-4 -mb-4 mt-2 border-t border-border-l bg-alt max-sm:-mx-3.5 max-sm:-mb-3.5">
-              <EntryRow {...feed.entries[0]} />
+  {
+    groupDates.map((date) => (
+      <div class="mb-6">
+        <h2 class="text-base font-semibold tracking-wider uppercase text-ink-muted mb-2.5 pl-1.5">
+          {fmtLong(new Date(date))}
+        </h2>
+        {byDate[date]!.map((entry) => (
+          <div class="bg-alt border border-border rounded-lg pb-1.5 flex flex-col gap-1 overflow-hidden mb-2">
+            <div class="bg-card block border-b border-border-l">
+              <a
+                class="py-2.5 px-3 flex items-center text-base font-semibold text-green no-underline leading-snug visited:text-ink-muted hover:text-green-h hover:underline"
+                href={entry.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {entry.title}
+              </a>
             </div>
-          )}
-        </div>
-      ))
-    }
-  </div>
+            <div class="px-3 pt-0.5 text-ink-muted flex items-center gap-2 justify-center">
+              <a
+                class=" text-xs no-underline flex-1 hover:text-green-h hover:underline"
+                href={`/sites/${entry.feed.slug}/`}
+              >
+                {entry.feed.title}
+              </a>
+              <BlogLink size="14" url={entry.feed.htmlUrl} />
+              <FeedLink size="14" url={entry.feed.xmlUrl} />
+            </div>
+          </div>
+        ))}
+      </div>
+    ))
+  }
 </Base>
