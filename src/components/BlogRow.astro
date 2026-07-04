@@ -1,4 +1,7 @@
 ---
+import FeedLink from "./FeedLink.astro"
+import BlogLink from "./BlogLink.astro"
+
 const { feed } = Astro.props
 ---
 
@@ -6,37 +9,5 @@ const { feed } = Astro.props
   class="text-green no-underline flex-1 hover:text-green-h hover:underline"
   href={`/sites/${feed.slug}/`}>{feed.title}</a
 >
-<a
-  class="text-ink-muted no-underline inline-flex items-center hover:text-green"
-  href={feed.htmlUrl}
-  rel="noopener noreferrer"
-  target="_blank"
-  aria-label="Visita il sito"
->
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 12 12"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.5"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    aria-hidden="true"
-    ><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7"></path><path d="M8 1h3v3"
-    ></path><line x1="11" y1="1" x2="5.5" y2="6.5"></line></svg
-  >
-</a>
-<a
-  class="text-ink-muted no-underline inline-flex items-center hover:text-green"
-  href={feed.xmlUrl}
-  rel="noopener noreferrer"
-  target="_blank"
-  aria-label="Feed RSS"
->
-  <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"
-    ><circle cx="2" cy="10" r="1.5"></circle><path
-      d="M1 6.5A5.5 5.5 0 0 1 6.5 12H8A6.5 6.5 0 0 0 1 5.5v1z"></path><path
-      d="M1 3A9 9 0 0 1 10 12h1.5A10.5 10.5 0 0 0 1 1.5V3z"></path></svg
-  >
-</a>
+<BlogLink url={feed.htmlUrl} />
+<FeedLink url={feed.xmlUrl} />

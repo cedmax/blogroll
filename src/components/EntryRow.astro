@@ -17,7 +17,7 @@ const { title, url, published } = Astro.props
     {fmtShort(new Date(published))}
   </span>
   <a
-    class="py-2 px-3.5 flex items-center text-sm text-ink no-underline leading-snug visited:text-ink-muted hover:text-green hover:underline max-sm:block max-sm:p-0"
+    class="py-2 px-3 flex items-center text-sm text-ink no-underline leading-snug visited:text-ink-muted hover:text-green hover:underline max-sm:block max-sm:p-0"
     href={url}
     target="_blank"
     rel="noopener noreferrer">{title}</a
