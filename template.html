@@ -7,7 +7,7 @@
 <meta name="description" content="Post recenti da {{.FeedCount}} blog personali italiani, aggiornati ogni poche ore. Niente algoritmi, niente account, solo link.">
 <meta name="author" content="cedmax">
 <link rel="canonical" href="https://blogroll.it/">
-<link rel="alternate" type="application/opml+xml" title="Blogroll.it OPML" href="https://blogroll.it/engblogs.opml">
+<link rel="alternate" type="application/opml+xml" title="Blogroll.it OPML" href="https://blogroll.it/{{.OPMLFile}}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Blogroll.it">
 <meta property="og:description" content="Post recenti da {{.FeedCount}} blog personali italiani, aggiornati ogni poche ore.">
@@ -191,7 +191,7 @@ body {
     <nav class="site-nav">
       <span class="active">post recenti</span>
       <a href="/directory/">la lista</a>
-      <a href="/engblogs.opml">OPML</a>
+      <a href="/{{.OPMLFile}}">OPML</a>
     </nav>
   </header>
 
