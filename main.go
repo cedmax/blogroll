@@ -22,8 +22,6 @@ const (
 	maxConcurrency = 30
 	connectTimeout = 10 * time.Second
 	readTimeout    = 15 * time.Second
-	maxDays        = 60
-	minBlogPosts   = 10
 	opmlFile       = "itblogs.opml"
 	cacheFile      = "cache.json"
 )
@@ -118,8 +116,7 @@ type JSONFeed struct {
 	HTMLURL     string      `json:"htmlUrl"`
 	Description string      `json:"description"`
 	Slug        string      `json:"slug"`
-	LatestEntry *JSONEntry  `json:"latestEntry"`
-	Entries     []JSONEntry `json:"entries"`
+	Entries []JSONEntry `json:"entries"`
 }
 
 type JSONEntry struct {
@@ -526,8 +523,6 @@ func toJSONEntry(e Entry) JSONEntry {
 }
 
 func buildSiteData(feeds []Feed, allEntries []Entry, opmlFileName string) SiteData {
-	// Build per-feed data
-	cutoff := time.Now().UTC().AddDate(0, 0, -maxDays)
 	byBlog := groupEntriesByBlog(allEntries)
 
 	jsonFeeds := make([]JSONFeed, len(feeds))
@@ -537,29 +532,8 @@ func buildSiteData(feeds []Feed, allEntries []Entry, opmlFileName string) SiteDa
 			return all[a].Published.After(all[b].Published)
 		})
 
-		var latestEntry *JSONEntry
-		if len(all) > 0 {
-			je := toJSONEntry(all[0])
-			latestEntry = &je
-		}
-
-		var blogRecent []Entry
-		for _, e := range all {
-			if e.Published.After(cutoff) {
-				blogRecent = append(blogRecent, e)
-			}
-		}
-		if len(blogRecent) < minBlogPosts && len(all) > len(blogRecent) {
-			for _, e := range all[len(blogRecent):] {
-				if len(blogRecent) >= minBlogPosts {
-					break
-				}
-				blogRecent = append(blogRecent, e)
-			}
-		}
-
-		entries := make([]JSONEntry, len(blogRecent))
-		for j, e := range blogRecent {
+		entries := make([]JSONEntry, len(all))
+		for j, e := range all {
 			entries[j] = toJSONEntry(e)
 		}
 
@@ -569,24 +543,23 @@ func buildSiteData(feeds []Feed, allEntries []Entry, opmlFileName string) SiteDa
 			HTMLURL:     f.HTMLURL,
 			Description: f.Description,
 			Slug:        f.Slug,
-			LatestEntry: latestEntry,
 			Entries:     entries,
 		}
 	}
 
 	// Sort feeds by latest entry date (directory page order)
 	sort.Slice(jsonFeeds, func(i, j int) bool {
-		li, lj := jsonFeeds[i].LatestEntry, jsonFeeds[j].LatestEntry
-		if li == nil && lj == nil {
+		ei, ej := jsonFeeds[i].Entries, jsonFeeds[j].Entries
+		if len(ei) == 0 && len(ej) == 0 {
 			return strings.ToLower(jsonFeeds[i].Title) < strings.ToLower(jsonFeeds[j].Title)
 		}
-		if li == nil {
+		if len(ei) == 0 {
 			return false
 		}
-		if lj == nil {
+		if len(ej) == 0 {
 			return true
 		}
-		return li.Published.After(lj.Published)
+		return ei[0].Published.After(ej[0].Published)
 	})
 
 	return SiteData{
