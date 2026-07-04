@@ -90,9 +90,7 @@ type Feed struct {
 }
 
 type Entry struct {
-	BlogName  string
 	BlogURL   string
-	BlogSlug  string    `json:"-"`
 	Title     string
 	URL       string
 	Published time.Time
@@ -108,13 +106,11 @@ type CacheEntry struct {
 type Cache map[string]CacheEntry
 
 type SiteData struct {
-	BuiltAt    string      `json:"builtAt"`
-	OPMLFile   string      `json:"opmlFile"`
-	MaxDays    int         `json:"maxDays"`
-	FeedCount  int         `json:"feedCount"`
-	EntryCount int         `json:"entryCount"`
-	Entries    []JSONEntry `json:"entries"`
-	Feeds      []JSONFeed  `json:"feeds"`
+	BuiltAt   string     `json:"builtAt"`
+	OPMLFile  string     `json:"opmlFile"`
+	MaxDays   int        `json:"maxDays"`
+	FeedCount int        `json:"feedCount"`
+	Feeds     []JSONFeed `json:"feeds"`
 }
 
 type JSONFeed struct {
@@ -128,8 +124,6 @@ type JSONFeed struct {
 }
 
 type JSONEntry struct {
-	BlogName  string    `json:"blogName,omitempty"`
-	BlogSlug  string    `json:"blogSlug,omitempty"`
 	Title     string    `json:"title"`
 	URL       string    `json:"url"`
 	Published time.Time `json:"published"`
@@ -199,35 +193,14 @@ func main() {
 	}
 
 	slugMap := buildSlugs(feeds)
-	htmlToSlug := make(map[string]string)
 	for i, f := range feeds {
 		feeds[i].Slug = slugMap[f.XMLURL]
-		htmlToSlug[f.HTMLURL] = slugMap[f.XMLURL]
 		if ce, ok := cache[f.XMLURL]; ok && ce.Description != "" {
 			feeds[i].Description = ce.Description
 		}
 	}
-	for i := range entries {
-		entries[i].BlogSlug = htmlToSlug[entries[i].BlogURL]
-	}
 
-	cutoff := time.Now().UTC().AddDate(0, 0, -maxDays)
-	var recent []Entry
-	for _, e := range entries {
-		if e.Published.After(cutoff) {
-			recent = append(recent, e)
-		}
-	}
-
-	recent = deduplicateEntries(recent)
-
-	sort.Slice(recent, func(i, j int) bool {
-		return recent[i].Published.After(recent[j].Published)
-	})
-
-	fmt.Fprintf(os.Stderr, "Entries: %d (last %d days)\n", len(recent), maxDays)
-
-	siteData := buildSiteData(feeds, entries, recent, filepath.Base(*opml))
+	siteData := buildSiteData(feeds, entries, filepath.Base(*opml))
 	if err := writeJSON(siteData, "src/data/blogroll.json"); err != nil {
 		fmt.Fprintf(os.Stderr, "Error writing JSON: %v\n", err)
 		os.Exit(1)
@@ -238,7 +211,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Fprintf(os.Stderr, "Wrote src/data/blogroll.json (%d feeds, %d entries)\n", len(feeds), len(recent))
+	fmt.Fprintf(os.Stderr, "Wrote src/data/blogroll.json (%d feeds)\n", len(feeds))
 }
 
 // --- OPML parsing ---
@@ -465,7 +438,6 @@ func parseRSSItems(items []RSSItem, feed Feed) []Entry {
 			continue
 		}
 		entries = append(entries, Entry{
-			BlogName:  feed.Title,
 			BlogURL:   feed.HTMLURL,
 			Title:     strings.TrimSpace(item.Title),
 			URL:       link,
@@ -502,7 +474,6 @@ func parseAtomEntries(items []AtomEntry, feed Feed) []Entry {
 		}
 
 		entries = append(entries, Entry{
-			BlogName:  feed.Title,
 			BlogURL:   feed.HTMLURL,
 			Title:     strings.TrimSpace(item.Title),
 			URL:       strings.TrimSpace(link),
@@ -541,21 +512,6 @@ func parseTime(s string) time.Time {
 	return time.Time{}
 }
 
-// --- Deduplication ---
-
-func deduplicateEntries(entries []Entry) []Entry {
-	seen := make(map[string]bool)
-	var result []Entry
-	for _, e := range entries {
-		normalized := strings.TrimRight(strings.TrimSpace(e.URL), "/")
-		if !seen[normalized] {
-			seen[normalized] = true
-			result = append(result, e)
-		}
-	}
-	return result
-}
-
 // --- JSON output ---
 
 func groupEntriesByBlog(entries []Entry) map[string][]Entry {
@@ -567,21 +523,10 @@ func groupEntriesByBlog(entries []Entry) map[string][]Entry {
 }
 
 func toJSONEntry(e Entry) JSONEntry {
-	return JSONEntry{
-		BlogName:  e.BlogName,
-		BlogSlug:  e.BlogSlug,
-		Title:     e.Title,
-		URL:       e.URL,
-		Published: e.Published,
-	}
+	return JSONEntry{Title: e.Title, URL: e.URL, Published: e.Published}
 }
 
-func buildSiteData(feeds []Feed, allEntries []Entry, recent []Entry, opmlFileName string) SiteData {
-	entries := make([]JSONEntry, len(recent))
-	for i, e := range recent {
-		entries[i] = toJSONEntry(e)
-	}
-
+func buildSiteData(feeds []Feed, allEntries []Entry, opmlFileName string) SiteData {
 	// Build per-feed data
 	cutoff := time.Now().UTC().AddDate(0, 0, -maxDays)
 	byBlog := groupEntriesByBlog(allEntries)
@@ -646,13 +591,11 @@ func buildSiteData(feeds []Feed, allEntries []Entry, recent []Entry, opmlFileNam
 	})
 
 	return SiteData{
-		BuiltAt:    time.Now().UTC().Format(time.RFC3339),
-		OPMLFile:   opmlFileName,
-		MaxDays:    maxDays,
-		FeedCount:  len(feeds),
-		EntryCount: len(recent),
-		Entries:    entries,
-		Feeds:      jsonFeeds,
+		BuiltAt:   time.Now().UTC().Format(time.RFC3339),
+		OPMLFile:  opmlFileName,
+		MaxDays:   maxDays,
+		FeedCount: len(feeds),
+		Feeds:     jsonFeeds,
 	}
 }
 
