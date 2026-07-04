@@ -6,42 +6,36 @@
       <outline 
         type="rss"
         text="cedmax.net"
-        description="un sito fuori tempo massimo"
         htmlUrl="https://cedmax.net/"
         xmlUrl="https://cedmax.net/feeds/rss/" 
       />
       <outline 
         type="rss"
         text="Grab The Blaster"
-        description="di Alessio Biancalana"
         htmlUrl="https://dottorblaster.it/"
         xmlUrl="https://dottorblaster.it/feed/" 
       />
       <outline 
         type="rss"
         text="Fritto Misto"
-        description="Una fornace di pensieri (quasi) sensati"
         xmlUrl="https://lowbudget.io/fritto-misto/index.xml"
         htmlUrl="https://lowbudget.io/fritto-misto/"
       />
       <outline 
         type="rss"
         text="La cantina dell'appartamento al terzo piano (senza ascensore)"
-        description="Il diario di Edoardo Maria Elidoro"
         xmlUrl="https://cantina.ragnate.la/rss/"
         htmlUrl="https://cantina.ragnate.la/"
       />
       <outline 
         type="rss"
         text="Raibaz."
-        description="Raibaz."
         htmlUrl="https://raibaz.it"
         xmlUrl="https://raibaz.it/index.xml" 
       />
       <outline 
         type="rss"
         text="Terzo Livello"
-        description="xlthlx"
         xmlUrl="https://xlthlx.com/feed/"
         htmlUrl="https://xlthlx.com"
       />
