@@ -1,130 +1,164 @@
 ---
-import Base from '../layouts/Base.astro'
-import data from '../data/blogroll.json'
-import { fmtLong } from '../utils/dates'
+import Base from "../layouts/Base.astro";
+import { getFeeds, builtAt, opmlFile } from "../utils/feeds";
+import { fmtLong } from "../utils/dates";
 
-const builtAt = fmtLong(new Date(data.builtAt))
+const feeds = await getFeeds();
 
-const MAX_DAYS = 60
-const cutoff = Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000
-const entries = data.feeds
-  .flatMap(feed => feed.entries
-    .filter(e => new Date(e.published).getTime() >= cutoff)
-    .map(e => ({ ...e, blogName: feed.title, blogSlug: feed.slug }))
+const MAX_DAYS = 60;
+const cutoff = Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000;
+const entries = feeds
+  .flatMap((feed) =>
+    feed.entries
+      .filter((e) => new Date(e.published).getTime() >= cutoff)
+      .map((e) => ({ ...e, blogName: feed.title, blogSlug: feed.slug })),
   )
-  .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
-const entryCount = entries.length
-const groupDates = [...new Set(entries.map(e => e.published.slice(0, 10)))]
-const byDate = Object.groupBy(entries, e => e.published.slice(0, 10))
+  .sort(
+    (a, b) => new Date(b.published).getTime() - new Date(a.published).getTime(),
+  );
+const entryCount = entries.length;
+const groupDates = [...new Set(entries.map((e) => e.published.slice(0, 10)))];
+const byDate = Object.groupBy(entries, (e) => e.published.slice(0, 10));
 ---
+
 <Base
-  title={`Blogroll.it — ${entryCount} post da ${data.feeds.length} blog`}
-  description={`Post recenti da ${data.feeds.length} blog personali italiani, aggiornati ogni poche ore. Niente algoritmi, niente account, solo link.`}
+  title={`Blogroll.it — ${entryCount} post da ${feeds.length} blog`}
+  description={`Post recenti da ${feeds.length} blog personali italiani, aggiornati ogni poche ore. Niente algoritmi, niente account, solo link.`}
   canonical="https://blogroll.it/"
   activeNav="home"
-  opmlFile={data.opmlFile}
+  opmlFile={opmlFile}
 >
   <Fragment slot="head">
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Blogroll.it" />
-    <meta property="og:description" content={`Post recenti da ${data.feeds.length} blog personali italiani, aggiornati ogni poche ore.`} />
+    <meta
+      property="og:description"
+      content={`Post recenti da ${feeds.length} blog personali italiani, aggiornati ogni poche ore.`}
+    />
     <meta property="og:url" content="https://blogroll.it/" />
     <meta property="og:site_name" content="Blogroll.it" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Blogroll.it" />
-    <meta name="twitter:description" content={`Post recenti da ${data.feeds.length} blog personali italiani, aggiornati ogni poche ore.`} />
+    <meta
+      name="twitter:description"
+      content={`Post recenti da ${feeds.length} blog personali italiani, aggiornati ogni poche ore.`}
+    />
   </Fragment>
 
   <p class="meta-line" slot="meta-line">
-    {entryCount} post da {data.feeds.length} blog negli ultimi {MAX_DAYS} giorni &mdash; {builtAt}
+    {entryCount} post da {feeds.length} blog negli ultimi {MAX_DAYS} giorni &mdash;
+    {builtAt}
   </p>
 
-  {groupDates.map(date => (
-    <div class="day-section">
-      <h2 class="day-heading">{fmtLong(new Date(date))}</h2>
-      <div class="entries">
-        {byDate[date]!.map(entry => (
-          <div class="entry">
-            <span class="entry-source">
-              <a href={`/sites/${entry.blogSlug}/`}>{entry.blogName}</a>
-            </span>
-            <span class="entry-title">
-              <a href={entry.url} target="_blank" rel="noopener noreferrer">{entry.title}</a>
-            </span>
-          </div>
-        ))}
+  {
+    groupDates.map((date) => (
+      <div class="day-section">
+        <h2 class="day-heading">{fmtLong(new Date(date))}</h2>
+        <div class="entries">
+          {byDate[date]!.map((entry) => (
+            <div class="entry">
+              <span class="entry-source">
+                <a href={`/sites/${entry.blogSlug}/`}>{entry.blogName}</a>
+              </span>
+              <span class="entry-title">
+                <a href={entry.url} target="_blank" rel="noopener noreferrer">
+                  {entry.title}
+                </a>
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  ))}
+    ))
+  }
 </Base>
 
 <style>
-/* ── day sections ── */
-.day-section { margin-bottom: 1rem; }
-
-.day-heading {
-  font-size: var(--sz-stamp);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-  margin-bottom: 0.4rem;
-  padding-left: 1rem;
-}
-
-/* ── entry list ── */
-.entry {
-  display: grid;
-  grid-template-columns: 185px 1fr;
-  border-bottom: 1px solid var(--border-l);
-}
-.entry:last-child { border-bottom: none; }
-.entry:nth-child(even) { background: var(--bg-alt); }
-
-.entry-source {
-  padding: 9px 12px;
-  font-size: var(--sz-ui);
-  font-weight: 500;
-  color: var(--green);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border-right: 1px solid var(--border-l);
-  display: flex;
-  align-items: center;
-}
-.entry-source a { color: inherit; text-decoration: none; }
-.entry-source a:hover { color: var(--green-h); text-decoration: underline; }
-
-.entry-title {
-  padding: 9px 14px;
-  display: flex;
-  align-items: center;
-}
-.entry-title a {
-  font-size: var(--sz-title);
-  color: var(--ink);
-  text-decoration: none;
-  line-height: 1.35;
-}
-.entry-title a:visited { color: var(--ink-muted); }
-.entry-title a:hover { color: var(--green); text-decoration: underline; }
-
-@media (max-width: 560px) {
-  .entry {
-    display: block;
-    padding: 8px 12px;
+  /* ── day sections ── */
+  .day-section {
+    margin-bottom: 1rem;
   }
-  .entry-source {
-    padding: 0 0 3px;
-    border-right: none;
+
+  .day-heading {
     font-size: var(--sz-stamp);
-    display: block;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 0.4rem;
+    padding-left: 1rem;
   }
+
+  /* ── entry list ── */
+  .entry {
+    display: grid;
+    grid-template-columns: 185px 1fr;
+    border-bottom: 1px solid var(--border-l);
+  }
+  .entry:last-child {
+    border-bottom: none;
+  }
+  .entry:nth-child(even) {
+    background: var(--bg-alt);
+  }
+
+  .entry-source {
+    padding: 9px 12px;
+    font-size: var(--sz-ui);
+    font-weight: 500;
+    color: var(--green);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-right: 1px solid var(--border-l);
+    display: flex;
+    align-items: center;
+  }
+  .entry-source a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .entry-source a:hover {
+    color: var(--green-h);
+    text-decoration: underline;
+  }
+
   .entry-title {
-    padding: 0;
-    display: block;
+    padding: 9px 14px;
+    display: flex;
+    align-items: center;
   }
-  .entry-title a { font-size: var(--sz-title); }
-}
+  .entry-title a {
+    font-size: var(--sz-title);
+    color: var(--ink);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .entry-title a:visited {
+    color: var(--ink-muted);
+  }
+  .entry-title a:hover {
+    color: var(--green);
+    text-decoration: underline;
+  }
+
+  @media (max-width: 560px) {
+    .entry {
+      display: block;
+      padding: 8px 12px;
+    }
+    .entry-source {
+      padding: 0 0 3px;
+      border-right: none;
+      font-size: var(--sz-stamp);
+      display: block;
+    }
+    .entry-title {
+      padding: 0;
+      display: block;
+    }
+    .entry-title a {
+      font-size: var(--sz-title);
+    }
+  }
 </style>

@@ -1,104 +1,166 @@
 ---
-import Base from '../../layouts/Base.astro'
-import EntryRow from '../../components/EntryRow.astro'
-import data from '../../data/blogroll.json'
-import { fmtLong } from '../../utils/dates'
+import Base from "../../layouts/Base.astro";
+import EntryRow from "../../components/EntryRow.astro";
+import { getFeeds, sortFeedsByLatest, builtAt, opmlFile } from "../../utils/feeds";
 
-const builtAt = fmtLong(new Date(data.builtAt))
+const feeds = sortFeedsByLatest(await getFeeds());
 ---
+
 <Base
-  title={`Blogroll.it — La lista (${data.feeds.length} blog)`}
-  description={`Tutti i ${data.feeds.length} blog personali italiani raccolti in Blogroll.it.`}
+  title={`Blogroll.it — La lista (${feeds.length} blog)`}
+  description={`Tutti i ${feeds.length} blog personali italiani raccolti in Blogroll.it.`}
   canonical="https://blogroll.it/directory/"
   activeNav="lista"
-  opmlFile={data.opmlFile}
+  opmlFile={opmlFile}
 >
   <Fragment slot="head">
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Blogroll.it — La lista" />
-    <meta property="og:description" content={`Tutti i ${data.feeds.length} blog personali italiani raccolti in Blogroll.it.`} />
+    <meta
+      property="og:description"
+      content={`Tutti i ${feeds.length} blog personali italiani raccolti in Blogroll.it.`}
+    />
     <meta property="og:url" content="https://blogroll.it/directory/" />
     <meta property="og:site_name" content="Blogroll.it" />
   </Fragment>
 
   <p class="meta-line" slot="meta-line">
-    {data.feeds.length} blog — aggiornato il {builtAt}
+    {feeds.length} blog — aggiornato il {builtAt}
   </p>
 
   <div class="blog-list">
-    {data.feeds.map(feed => (
-      <div class="blog-card">
-        <div class="blog-card-name">
-          <a href={`/sites/${feed.slug}/`}>{feed.title}</a>
-          <a class="blog-card-icon" href={feed.htmlUrl} rel="noopener noreferrer" target="_blank" aria-label="Visita il sito">
-            <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7"/><path d="M8 1h3v3"/><line x1="11" y1="1" x2="5.5" y2="6.5"/></svg>
-          </a>
-          <a class="blog-card-icon" href={feed.xmlUrl} rel="noopener noreferrer" target="_blank" aria-label="Feed RSS">
-            <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><circle cx="2" cy="10" r="1.5"/><path d="M1 6.5A5.5 5.5 0 0 1 6.5 12H8A6.5 6.5 0 0 0 1 5.5v1z"/><path d="M1 3A9 9 0 0 1 10 12h1.5A10.5 10.5 0 0 0 1 1.5V3z"/></svg>
-          </a>
-        </div>
-        {feed.description && <div class="blog-card-desc">{feed.description}</div>}
-        {feed.entries[0] && (
-          <div class="blog-card-latest">
-            <EntryRow {...feed.entries[0]} labeled />
+    {
+      feeds.map((feed) => (
+        <div class="blog-card">
+          <div class="blog-card-name">
+            <a href={`/sites/${feed.slug}/`}>{feed.title}</a>
+            <a
+              class="blog-card-icon"
+              href={feed.htmlUrl}
+              rel="noopener noreferrer"
+              target="_blank"
+              aria-label="Visita il sito"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <>
+                  <path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7" />
+                  <path d="M8 1h3v3" />
+                  <line x1="11" y1="1" x2="5.5" y2="6.5" />
+                </>
+              </svg>
+            </a>
+            <a
+              class="blog-card-icon"
+              href={feed.xmlUrl}
+              rel="noopener noreferrer"
+              target="_blank"
+              aria-label="Feed RSS"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 12 12"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <>
+                  <circle cx="2" cy="10" r="1.5" />
+                  <path d="M1 6.5A5.5 5.5 0 0 1 6.5 12H8A6.5 6.5 0 0 0 1 5.5v1z" />
+                  <path d="M1 3A9 9 0 0 1 10 12h1.5A10.5 10.5 0 0 0 1 1.5V3z" />
+                </>
+              </svg>
+            </a>
           </div>
-        )}
-      </div>
-    ))}
+          {feed.description && (
+            <div class="blog-card-desc">{feed.description}</div>
+          )}
+          {feed.entries[0] && (
+            <div class="blog-card-latest">
+              <EntryRow {...feed.entries[0]} labeled />
+            </div>
+          )}
+        </div>
+      ))
+    }
   </div>
 </Base>
 
 <style>
-/* ── blog cards ── */
-.blog-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
+  /* ── blog cards ── */
+  .blog-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
 
-.blog-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  overflow: hidden;
-}
+  .blog-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    overflow: hidden;
+  }
 
-.blog-card-name {
-  font-size: var(--sz-title);
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.blog-card-name a:first-child { color: var(--green); text-decoration: none; flex: 1; }
-.blog-card-name a:first-child:hover { color: var(--green-h); text-decoration: underline; }
-.blog-card-icon {
-  color: var(--ink-muted);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-}
-.blog-card-icon:hover { color: var(--green); }
+  .blog-card-name {
+    font-size: var(--sz-title);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .blog-card-name a:first-child {
+    color: var(--green);
+    text-decoration: none;
+    flex: 1;
+  }
+  .blog-card-name a:first-child:hover {
+    color: var(--green-h);
+    text-decoration: underline;
+  }
+  .blog-card-icon {
+    color: var(--ink-muted);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+  .blog-card-icon:hover {
+    color: var(--green);
+  }
 
-.blog-card-desc {
-  font-size: var(--sz-desc);
-  color: var(--ink-mid);
-  line-height: 1.45;
-}
+  .blog-card-desc {
+    font-size: var(--sz-desc);
+    color: var(--ink-mid);
+    line-height: 1.45;
+  }
 
-.blog-card-latest {
-  margin: 8px -16px -14px;
-  border-top: 1px solid var(--border-l);
-  background: var(--bg-alt);
-}
+  .blog-card-latest {
+    margin: 8px -16px -14px;
+    border-top: 1px solid var(--border-l);
+    background: var(--bg-alt);
+  }
 
-@media (max-width: 560px) {
-  .blog-card { padding: 12px 14px; }
-  .blog-card-latest { margin: 8px -14px -12px; }
-  .blog-card-latest .entry-row { padding: 0; }
-}
+  @media (max-width: 560px) {
+    .blog-card {
+      padding: 12px 14px;
+    }
+    .blog-card-latest {
+      margin: 8px -14px -12px;
+    }
+    .blog-card-latest .entry-row {
+      padding: 0;
+    }
+  }
 </style>
