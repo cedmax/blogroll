@@ -103,12 +103,6 @@ type CacheEntry struct {
 
 type Cache map[string]CacheEntry
 
-type SiteData struct {
-	BuiltAt  string     `json:"builtAt"`
-	OPMLFile string     `json:"opmlFile"`
-	Feeds    []JSONFeed `json:"feeds"`
-}
-
 type JSONFeed struct {
 	Title       string      `json:"title"`
 	XMLURL      string      `json:"xmlUrl"`
@@ -159,7 +153,6 @@ func buildSlugs(feeds []Feed, opmlFile string) map[string]string {
 }
 
 func main() {
-	skipFetch := flag.Bool("skip-fetch", false, "Skip fetching feeds, rebuild from cache only")
 	opml := flag.String("opml", opmlFile, "Path to OPML file")
 	flag.Parse()
 
@@ -172,20 +165,12 @@ func main() {
 	feeds = deduplicateFeeds(feeds)
 	cache := loadCache(cacheFile)
 
-	var entries []Entry
-	if *skipFetch {
-		fmt.Fprintf(os.Stderr, "Skipping fetch, rebuilding from cache\n")
-		for _, ce := range cache {
-			entries = append(entries, ce.Entries...)
-		}
-	} else {
-		fmt.Fprintf(os.Stderr, "Parsed %d unique feeds from OPML\n", len(feeds))
-		var stats fetchStats
-		entries, stats = fetchAllFeeds(feeds, cache)
-		saveCache(cacheFile, cache)
-		fmt.Fprintf(os.Stderr, "Feeds: %d total, %d ok, %d failed\n",
-			stats.total, stats.success, stats.failed)
-	}
+	fmt.Fprintf(os.Stderr, "Parsed %d unique feeds from OPML\n", len(feeds))
+	var stats fetchStats
+	entries, stats := fetchAllFeeds(feeds, cache)
+	saveCache(cacheFile, cache)
+	fmt.Fprintf(os.Stderr, "Feeds: %d total, %d ok, %d failed\n",
+		stats.total, stats.success, stats.failed)
 
 	slugMap := buildSlugs(feeds, filepath.Base(*opml))
 	for i, f := range feeds {
@@ -195,9 +180,13 @@ func main() {
 		}
 	}
 
-	siteData := buildSiteData(feeds, entries, filepath.Base(*opml))
-	if err := writeJSON(siteData, "src/data/blogroll.json"); err != nil {
-		fmt.Fprintf(os.Stderr, "Error writing JSON: %v\n", err)
+	jsonFeeds := buildFeedData(feeds, entries)
+	if err := writeSiteJSON(filepath.Base(*opml), "src/data/site.json"); err != nil {
+		fmt.Fprintf(os.Stderr, "Error writing site.json: %v\n", err)
+		os.Exit(1)
+	}
+	if err := writeFeedFiles(jsonFeeds, "src/data/feeds"); err != nil {
+		fmt.Fprintf(os.Stderr, "Error writing feed files: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -206,7 +195,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Fprintf(os.Stderr, "Wrote src/data/blogroll.json (%d feeds)\n", len(feeds))
+	fmt.Fprintf(os.Stderr, "Wrote src/data/feeds/ (%d feeds)\n", len(feeds))
 }
 
 // --- OPML parsing ---
@@ -521,7 +510,7 @@ func toJSONEntry(e Entry) JSONEntry {
 	return JSONEntry{Title: e.Title, URL: e.URL, Published: e.Published}
 }
 
-func buildSiteData(feeds []Feed, allEntries []Entry, opmlFileName string) SiteData {
+func buildFeedData(feeds []Feed, allEntries []Entry) []JSONFeed {
 	byBlog := groupEntriesByBlog(allEntries)
 
 	jsonFeeds := make([]JSONFeed, len(feeds))
@@ -545,38 +534,42 @@ func buildSiteData(feeds []Feed, allEntries []Entry, opmlFileName string) SiteDa
 			Entries:     entries,
 		}
 	}
-
-	// Sort feeds by latest entry date (directory page order)
-	sort.Slice(jsonFeeds, func(i, j int) bool {
-		ei, ej := jsonFeeds[i].Entries, jsonFeeds[j].Entries
-		if len(ei) == 0 && len(ej) == 0 {
-			return strings.ToLower(jsonFeeds[i].Title) < strings.ToLower(jsonFeeds[j].Title)
-		}
-		if len(ei) == 0 {
-			return false
-		}
-		if len(ej) == 0 {
-			return true
-		}
-		return ei[0].Published.After(ej[0].Published)
-	})
-
-	return SiteData{
-		BuiltAt:  time.Now().UTC().Format(time.RFC3339),
-		OPMLFile: opmlFileName,
-		Feeds:    jsonFeeds,
-	}
+	return jsonFeeds
 }
 
-func writeJSON(data SiteData, path string) error {
+func writeSiteJSON(opmlFileName, path string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
 	}
-	b, err := json.MarshalIndent(data, "", "  ")
+	type siteJSON struct {
+		BuiltAt  string `json:"builtAt"`
+		OPMLFile string `json:"opmlFile"`
+	}
+	b, err := json.MarshalIndent(siteJSON{
+		BuiltAt:  time.Now().UTC().Format(time.RFC3339),
+		OPMLFile: opmlFileName,
+	}, "", "  ")
 	if err != nil {
 		return err
 	}
 	return os.WriteFile(path, b, 0644)
+}
+
+func writeFeedFiles(feeds []JSONFeed, dir string) error {
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	for _, feed := range feeds {
+		b, err := json.MarshalIndent(feed, "", "  ")
+		if err != nil {
+			return err
+		}
+		path := filepath.Join(dir, feed.Slug+".json")
+		if err := os.WriteFile(path, b, 0644); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func copyOPML(path string) error {

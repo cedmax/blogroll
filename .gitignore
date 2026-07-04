@@ -1,6 +1,8 @@
 public/
 cache.json
 .claude/
-src/data/blogroll.json
+src/data/
 dist/
 node_modules/
+.astro
+blogroll
