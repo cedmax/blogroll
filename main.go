@@ -40,7 +40,6 @@ type OPMLBody struct {
 }
 
 type OPMLOutline struct {
-	Type     string        `xml:"type,attr"`
 	Text     string        `xml:"text,attr"`
 	Title    string        `xml:"title,attr"`
 	XMLURL   string        `xml:"xmlUrl,attr"`
@@ -84,7 +83,6 @@ type AtomEntry struct {
 type AtomLink struct {
 	Href string `xml:"href,attr"`
 	Rel  string `xml:"rel,attr"`
-	Type string `xml:"type,attr"`
 }
 
 // Application types
