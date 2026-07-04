@@ -1,22 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #d6eed8;
-  --color-card: #eaf6eb;
-  --color-alt: #f2faf3;
+  --color-bg: #f5f0e8;
+  --color-card: #fdfcf8;
+  --color-alt: #ede8df;
   --color-ink: #1a2e1c;
-  --color-ink-mid: #3e5c41;
-  --color-ink-muted: #5e7862;
+  --color-ink-muted: #4d6150;
   --color-green: #2e6b36;
-  --color-green-h: #245929;
-  --color-border: #b8d6ba;
-  --color-border-l: #cde5cf;
+  --color-green-h: #1d5029;
+  --color-border: #c8bfb0;
+  --color-border-l: #ddd8ce;
 }
 
 @utility entries {
   background-color: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   overflow: hidden;
 }
 

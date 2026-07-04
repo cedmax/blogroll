@@ -30,7 +30,7 @@ const { feed } = Astro.props
 
   <p class="text-xs text-ink-muted mb-4" slot="meta-line">aggiornato il {builtAt}</p>
 
-  <div class="bg-card border border-border rounded-lg py-4 px-5 mb-4">
+  <div class="bg-card border border-border rounded py-4 px-5 mb-4">
     <div class="text-lg font-bold mb-1 flex items-baseline gap-2 flex-wrap">
       <span class="flex-1">{feed.title}</span>
       <BlogLink size="16" url={feed.htmlUrl} />
@@ -38,7 +38,7 @@ const { feed } = Astro.props
     </div>
     {
       feed.description && (
-        <div class="text-sm text-ink-mid leading-relaxed">
+        <div class="text-sm text-ink-muted leading-relaxed">
           {feed.description.replace(/<[^>]*>?/gm, "")}
         </div>
       )
