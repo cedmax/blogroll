@@ -79,6 +79,13 @@ body {
 .site-nav a { color: var(--ink-mid); text-decoration: none; }
 .site-nav a:hover { color: var(--green); text-decoration: underline; }
 
+/* ── meta line ── */
+.meta-line {
+  font-size: var(--sz-ui);
+  color: var(--ink-muted);
+  margin-bottom: 1rem;
+}
+
 /* ── blog intro ── */
 .blog-intro {
   background: var(--bg-card);
@@ -208,6 +215,8 @@ body {
     </nav>
   </header>
 
+  <p class="meta-line">aggiornato il {{.BuiltAt}}</p>
+
   <div class="blog-intro">
     <div class="blog-intro-name">
       <span class="blog-intro-title">{{.Feed.Title}}</span>
@@ -232,7 +241,6 @@ body {
 
   <footer class="site-footer">
     <a href="https://github.com/cedmax/blogroll/issues">Suggerisci un blog</a> aprendo una issue o una PR su <a href="https://github.com/cedmax/blogroll">GitHub</a>.
-    &middot; Aggiornato il {{.BuiltAt}}.
   </footer>
 
 </div>
