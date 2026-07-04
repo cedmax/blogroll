@@ -4,6 +4,9 @@ import data from '../data/blogroll.json'
 import { fmtLong } from '../utils/dates'
 
 const builtAt = fmtLong(new Date(data.builtAt))
+
+const groupDates = [...new Set(data.entries.map(e => e.published.slice(0, 10)))]
+const byDate = Object.groupBy(data.entries, e => e.published.slice(0, 10))
 ---
 <Base
   title={`Blogroll.it — ${data.entryCount} post da ${data.feedCount} blog`}
@@ -27,11 +30,11 @@ const builtAt = fmtLong(new Date(data.builtAt))
     {data.entryCount} post da {data.feedCount} blog negli ultimi {data.maxDays} giorni &mdash; {builtAt}
   </p>
 
-  {data.groups.map(group => (
+  {groupDates.map(date => (
     <div class="day-section">
-      <h2 class="day-heading">{fmtLong(new Date(group.date))}</h2>
+      <h2 class="day-heading">{fmtLong(new Date(date))}</h2>
       <div class="entries">
-        {group.entries.map(entry => (
+        {byDate[date]!.map(entry => (
           <div class="entry">
             <span class="entry-source">
               <a href={`/sites/${entry.blogSlug}/`}>{entry.blogName}</a>

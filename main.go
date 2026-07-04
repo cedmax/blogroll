@@ -113,13 +113,8 @@ type SiteData struct {
 	MaxDays    int         `json:"maxDays"`
 	FeedCount  int         `json:"feedCount"`
 	EntryCount int         `json:"entryCount"`
-	Groups     []JSONGroup `json:"groups"`
+	Entries    []JSONEntry `json:"entries"`
 	Feeds      []JSONFeed  `json:"feeds"`
-}
-
-type JSONGroup struct {
-	Date    string      `json:"date"`
-	Entries []JSONEntry `json:"entries"`
 }
 
 type JSONFeed struct {
@@ -582,19 +577,9 @@ func toJSONEntry(e Entry) JSONEntry {
 }
 
 func buildSiteData(feeds []Feed, allEntries []Entry, recent []Entry, opmlFileName string) SiteData {
-	// Build day groups from recent entries (already sorted desc)
-	groupMap := make(map[string][]JSONEntry)
-	var groupOrder []string
-	for _, e := range recent {
-		key := e.Published.Format("2006-01-02")
-		if _, exists := groupMap[key]; !exists {
-			groupOrder = append(groupOrder, key)
-		}
-		groupMap[key] = append(groupMap[key], toJSONEntry(e))
-	}
-	groups := make([]JSONGroup, len(groupOrder))
-	for i, key := range groupOrder {
-		groups[i] = JSONGroup{Date: key, Entries: groupMap[key]}
+	entries := make([]JSONEntry, len(recent))
+	for i, e := range recent {
+		entries[i] = toJSONEntry(e)
 	}
 
 	// Build per-feed data
@@ -666,7 +651,7 @@ func buildSiteData(feeds []Feed, allEntries []Entry, recent []Entry, opmlFileNam
 		MaxDays:    maxDays,
 		FeedCount:  len(feeds),
 		EntryCount: len(recent),
-		Groups:     groups,
+		Entries:    entries,
 		Feeds:      jsonFeeds,
 	}
 }
