@@ -1,3 +1,11 @@
 import { defineConfig } from "astro/config";
 
-export default defineConfig({ trailingSlash: "always" });
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({
+  trailingSlash: "always",
+
+  vite: {
+    plugins: [tailwindcss()]
+  }
+});
