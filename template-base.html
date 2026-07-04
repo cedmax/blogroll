@@ -81,6 +81,58 @@ body {
   margin-bottom: 2rem;
 }
 
+/* ── shared entry row ── */
+.entry-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  border-bottom: 1px solid var(--border-l);
+}
+.entry-row:last-child { border-bottom: none; }
+.entry-row:nth-child(even) { background: var(--bg-alt); }
+
+.entry-row-date {
+  padding: 9px 12px 9px 16px;
+  font-size: var(--sz-stamp);
+  color: var(--ink-muted);
+  white-space: nowrap;
+  border-right: 1px solid var(--border-l);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.entry-row-date--labeled::before {
+  content: 'ultimo post';
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  opacity: 0.7;
+  margin-bottom: 2px;
+  line-height: 1;
+}
+
+.entry-row-title {
+  padding: 9px 14px;
+  display: flex;
+  align-items: center;
+  font-size: var(--sz-title);
+  color: var(--ink);
+  text-decoration: none;
+  line-height: 1.35;
+}
+.entry-row-title:visited { color: var(--ink-muted); }
+.entry-row-title:hover { color: var(--green); text-decoration: underline; }
+
+@media (max-width: 560px) {
+  .entry-row { display: block; padding: 8px 14px; }
+  .entry-row-date { display: block; border-right: none; padding: 0 0 3px; }
+  .entry-row-date--labeled::before { display: inline; margin-bottom: 0; margin-right: 6px; }
+  .entry-row-title { display: block; padding: 0; }
+}
+
 /* ── footer ── */
 .site-footer {
   margin-top: 3rem;
@@ -119,3 +171,17 @@ body {
 </div>
 </body>
 </html>
+
+{{define "entry-row"}}
+<div class="entry-row">
+  <span class="entry-row-date">{{italianDateShort .Published}}</span>
+  <a class="entry-row-title" href="{{.URL}}" target="_blank" rel="noopener noreferrer">{{.Title}}</a>
+</div>
+{{end}}
+
+{{define "entry-row-labeled"}}
+<div class="entry-row">
+  <span class="entry-row-date entry-row-date--labeled">{{italianDateShort .Published}}</span>
+  <a class="entry-row-title" href="{{.URL}}" target="_blank" rel="noopener noreferrer">{{.Title}}</a>
+</div>
+{{end}}
