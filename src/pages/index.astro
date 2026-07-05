@@ -55,7 +55,7 @@ const byDate = Object.groupBy(entries, (e) => dayKey(new Date(e.published)))
         </h2>
         {byDate[date]!.map((entry) => (
           <Card class="pb-1.5 mb-2">
-            <div class="bg-card block border-b border-border-l">
+            <div class="bg-card block rounded border-b border-border-l">
               <a
                 class="py-2.5 px-3 flex items-center text-base font-semibold text-green no-underline leading-snug visited:text-ink-muted hover:text-green-h hover:underline"
                 href={entry.url}

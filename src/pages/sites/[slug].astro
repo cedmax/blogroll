@@ -33,7 +33,13 @@ const { feed } = Astro.props
 
   <div class="bg-card border border-border rounded py-4 px-5 mb-4">
     <div class="text-lg font-bold mb-1 flex items-baseline gap-2 flex-wrap">
-      <FeedHeader feed={feed} size="16" linked={false} titleClass="text-lg font-bold" />
+      <FeedHeader
+        feed={feed}
+        size="16"
+        linked={false}
+        titleClass="text-lg font-bold"
+        showReport={true}
+      />
     </div>
     {
       feed.description && (

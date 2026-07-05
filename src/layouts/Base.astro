@@ -73,6 +73,7 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
               </a>
             )
           }
+
           <a
             class="text-ink-muted no-underline hover:text-green hover:underline"
             target="_blank"
@@ -96,3 +97,29 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
     </div>
   </body>
 </html>
+
+<script>
+  document.querySelectorAll(".feed-link").forEach((wrapper) => {
+    const link = wrapper.querySelector("a")
+    const tooltip = wrapper.querySelector("span")
+    if (!link || !tooltip) return
+
+    const originalMessage = tooltip.textContent
+
+    link.addEventListener("click", (e) => {
+      e.preventDefault()
+      navigator.clipboard.writeText(link.href).then(() => {
+        tooltip.textContent = "Link copiato"
+      })
+    })
+
+    const reset = () => {
+      setTimeout(() => {
+        tooltip.textContent = originalMessage
+      }, 300)
+    }
+
+    link.addEventListener("mouseleave", reset)
+    link.addEventListener("blur", reset)
+  })
+</script>

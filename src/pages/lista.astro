@@ -31,10 +31,11 @@ const feeds = sortFeedsByLatest(await getFeeds())
     {
       feeds.map((feed) => (
         <Card>
-          <div class="py-2.5 px-3 bg-card border-b border-border-l flex items-center gap-2 justify-center">
+          <div class="py-2.5 px-3 bg-card rounded border-b border-border-l flex items-center gap-2 justify-center">
             <FeedHeader
               feed={feed}
               titleClass="text-base font-bold text-green leading-snug visited:text-ink-muted"
+              showReport={true}
             />
           </div>
 
