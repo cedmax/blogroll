@@ -1,0 +1,55 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # every 6 hours, to pick up new feed posts
+    - cron: "0 */6 * * *"
+
+# Cancel superseded runs on the same ref (e.g. rapid pushes to a PR).
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      # actions-netlify writes back to GitHub on each deploy:
+      contents: write       # commit comment
+      statuses: write        # commit status (green check)
+      pull-requests: write   # PR preview-link comment
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.4"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # postinstall runs `go run main.go`: fetches feeds, writes src/data/
+      - run: npm ci
+
+      # astro build → dist/ (incl. _redirects from the netlify-redirects integration)
+      - run: npm run build
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3
+        with:
+          publish-dir: dist
+          # prod on push/schedule/dispatch; draft preview on pull_request
+          production-deploy: ${{ github.event_name != 'pull_request' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: ${{ github.event_name }} ${{ github.sha }}
+          # skip the Environments deployment record (not needed)
+          enable-github-deployment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
