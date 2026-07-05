@@ -2,7 +2,7 @@
   "scripts": {
     "postinstall": "go run main.go",
     "build": "astro build",
-    "dev": "astro dev",
+    "dev": "astro dev --host",
     "preview": "astro preview",
     "format": "prettier --write .",
     "lint": "eslint src && stylelint \"src/**/*.{css,astro}\"",

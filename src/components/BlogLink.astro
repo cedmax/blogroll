@@ -8,7 +8,7 @@ const { url, size = "14" } = Astro.props
 ---
 
 <a
-  class="no-underline inline-flex items-center hover:text-green"
+  class="no-underline inline-flex items-center text-ink hover:text-green"
   href={url}
   target="_blank"
   aria-label="Visita il sito"
@@ -16,14 +16,17 @@ const { url, size = "14" } = Astro.props
   <svg
     width={size}
     height={size}
-    viewBox="0 -2 12 14"
+    xmlns="http://www.w3.org/2000/svg"
     fill="none"
-    stroke="currentColor"
-    stroke-width="1.5"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    viewBox="0 0 24 24"
     aria-hidden="true"
-    ><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7"></path><path d="M8 1h3v3"
-    ></path><line x1="11" y1="1" x2="5.5" y2="6.5"></line></svg
   >
+    <path
+      stroke="currentcolor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M10 4H6c-1.10457 0-2 .89543-2 2v12c0 1.1046.89543 2 2 2h12c1.1046 0 2-.8954 2-2v-4m-9-1 9-9m0 0v5m0-5h-5"
+    ></path>
+  </svg>
 </a>

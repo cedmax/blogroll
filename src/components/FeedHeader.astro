@@ -1,22 +1,28 @@
 ---
 import BlogLink from "./BlogLink.astro"
 import FeedLink from "./FeedLink.astro"
+import ReportLink from "./ReportLink.astro"
 import type { Feed } from "../utils/feeds"
+import Tooltip from "./Tooltip.astro"
 
 interface Props {
   feed: Feed
   size?: string
   linked?: boolean
   titleClass?: string
+  showReport?: boolean
 }
 
-const { feed, size, linked = true, titleClass = "" } = Astro.props
+const { feed, size, linked = true, titleClass = "", showReport = false } = Astro.props
 ---
 
 {
   linked ? (
     <a
-      class:list={["flex-1 no-underline hover:underline hover:text-green-h", titleClass]}
+      class:list={[
+        "flex-1 text-ink no-underline hover:underline hover:text-green-h",
+        titleClass,
+      ]}
       href={`/sites/${feed.slug}/`}
     >
       {feed.title}
@@ -25,5 +31,19 @@ const { feed, size, linked = true, titleClass = "" } = Astro.props
     <span class:list={["flex-1", titleClass]}>{feed.title}</span>
   )
 }
-<BlogLink size={size} url={feed.htmlUrl} />
-<FeedLink size={size} url={feed.xmlUrl} />
+{
+  showReport && (
+    <Tooltip message="Segnala il sito">
+      <ReportLink size={size} siteUrl={feed.htmlUrl} />
+    </Tooltip>
+  )
+}
+<Tooltip message="Vai al sito">
+  <BlogLink size={size} url={feed.htmlUrl} />
+</Tooltip>
+
+<div class="feed-link">
+  <Tooltip message="Copia il link del feed">
+    <FeedLink size={size} url={feed.xmlUrl} />
+  </Tooltip>
+</div>
