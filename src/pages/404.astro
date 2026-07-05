@@ -1,0 +1,27 @@
+---
+import NotFoundText from "../components/NotFoundText.astro"
+import Base from "../layouts/Base.astro"
+import { opmlFile } from "../utils/feeds"
+---
+
+<Base
+  title="Pagina non trovata — Blogroll.it"
+  description="La pagina che cerchi non è (o non è più) nella lista."
+  canonical="https://blogroll.it/404/"
+  activeNav=""
+  opmlFile={opmlFile}
+>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex" />
+  </Fragment>
+
+  <div class="bg-card border border-border rounded py-6 px-5">
+    <h1 class="text-lg font-bold mb-3">Pagina non trovata</h1>
+    <p class="text-sm text-ink-muted leading-relaxed mb-3">
+      Questa pagina o questo blog non è (o non è più) nella lista.
+    </p>
+    <p class="text-sm text-ink-muted leading-relaxed">
+      Prova a <NotFoundText />.
+    </p>
+  </div>
+</Base>
