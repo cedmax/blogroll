@@ -1,0 +1,25 @@
+name: Segnala un sito per la rimozione
+description: Segnala un sito da rimuovere dall'aggregatore
+title: "Rimuovi sito: "
+labels: ["feed-removal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per la segnalazione. Le rimozioni vengono valutate manualmente: un moderatore valuterà la richiesta.
+  - type: input
+    id: site-url
+    attributes:
+      label: URL del sito o del feed
+      description: L'indirizzo del sito (o del feed) da rimuovere, così come compare nell'elenco.
+      placeholder: es. https://cedmax.net/
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: Motivo
+      description: Perché il sito dovrebbe essere rimosso? (es. feed non più raggiungibile, contenuti non più in italiano, richiesta dell'autore, violazione del regolamento…)
+      placeholder: Descrivi il motivo della richiesta.
+    validations:
+      required: true
