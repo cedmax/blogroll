@@ -38,9 +38,20 @@ jobs:
           ISSUE_JSON: ${{ steps.parse.outputs.jsonString }}
         run: node .github/scripts/add-feed-to-opml.mjs
 
+      # A GitHub App token so the opened PR triggers pull_request workflows
+      # (Validate submitted feed, Netlify preview). Events raised by the default
+      # GITHUB_TOKEN never start new runs, which would skip those checks.
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.FEED_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.FEED_BOT_PRIVATE_KEY }}
+
       - name: Open pull request
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ steps.app-token.outputs.token }}
           branch: feed/issue-${{ github.event.issue.number }}
           title: "Aggiungi sito: ${{ steps.opml.outputs.name }}"
           commit-message: "Aggiungi sito: ${{ steps.opml.outputs.name }}"
