@@ -1,20 +1,38 @@
-# Engineering Blogs
+# Blogroll.it
 
-Source for [engineeringblogs.xyz](https://engineeringblogs.xyz/) -- a single-page aggregator of engineering blog posts from the past seven days.
+Source for [blogroll.it](https://blogroll.it/) — a feed aggregator for Italian tech blogs.
 
 ## Requirements
 
 - Go 1.21+
-- Python 3 (for the local dev server)
+- Node.js 18+ (for Astro/npm)
 
-## Usage
+## Commands
 
-`make build` -- Fetches all feeds from `engblogs.opml`, collects posts from the last 7 days, and generates `public/index.html`. A `cache.json` file is written alongside the binary to store ETags for conditional GET on subsequent runs.
+```bash
+npm install      # fetch feeds and write src/data/ (runs go run main.go via postinstall)
+npm run build    # Astro build → dist/
+npm run dev      # start Astro dev server at localhost:4321
+npm run preview  # serve dist/ locally
+```
 
-`make dev` -- Runs the build, then serves `public/` at http://localhost:8080.
+To fetch feeds manually without going through npm:
 
-`make clean` -- Removes the `public/` directory and `cache.json`.
+```bash
+go run main.go              # fetch feeds, write src/data/, copy OPML
+go run main.go -opml <file> # use a different OPML file
+```
+
+## Architecture
+
+Two-stage build: Go fetches the RSS/Atom feeds and writes JSON to `src/data/`; Astro reads that JSON and generates the static site in `dist/`.
+
+Feed results are cached in `cache.json` using ETag/Last-Modified headers for efficient conditional GET on subsequent runs.
 
 ## Adding a feed
 
-Edit `engblogs.opml` directly or open a PR. The build picks up changes on the next run.
+Edit `itblogs.opml` directly or open a PR. The next build picks up the change.
+
+## Credits
+
+`main.go` is a fork of [peterc/engblogs](https://github.com/peterc/engblogs) by Peter Cooper.
