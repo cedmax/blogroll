@@ -1,6 +1,7 @@
 ---
-import NotFoundText from "../../components/NotFoundText.astro"
 import Base from "../../layouts/Base.astro"
+import Prose from "../../components/Prose.astro"
+import { Content } from "../../content/pages/non-disponibile.md"
 import { opmlFile } from "../../utils/feeds"
 ---
 
@@ -15,14 +16,7 @@ import { opmlFile } from "../../utils/feeds"
     <meta name="robots" content="noindex" />
   </Fragment>
 
-  <div class="bg-card border border-border rounded py-6 px-5">
-    <h1 class="text-lg font-bold mb-3">Blog temporaneamente non disponibile</h1>
-    <p class="text-sm text-ink-muted leading-relaxed mb-3">
-      Questo blog fa parte della lista, ma l'ultimo tentativo di recupero del suo feed non è
-      andato a buon fine. Non è sparito: dovrebbe tornare al prossimo aggiornamento.
-    </p>
-    <p class="text-sm text-ink-muted leading-relaxed">
-      Nel frattempo puoi <NotFoundText />.
-    </p>
-  </div>
+  <Prose>
+    <Content />
+  </Prose>
 </Base>

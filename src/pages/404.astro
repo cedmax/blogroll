@@ -1,6 +1,7 @@
 ---
-import NotFoundText from "../components/NotFoundText.astro"
 import Base from "../layouts/Base.astro"
+import Prose from "../components/Prose.astro"
+import { Content } from "../content/pages/404.md"
 import { opmlFile } from "../utils/feeds"
 ---
 
@@ -15,13 +16,7 @@ import { opmlFile } from "../utils/feeds"
     <meta name="robots" content="noindex" />
   </Fragment>
 
-  <div class="bg-card border border-border rounded py-6 px-5">
-    <h1 class="text-lg font-bold mb-3">Pagina non trovata</h1>
-    <p class="text-sm text-ink-muted leading-relaxed mb-3">
-      Questa pagina o questo blog non è (o non è più) nella lista.
-    </p>
-    <p class="text-sm text-ink-muted leading-relaxed">
-      Prova a <NotFoundText />.
-    </p>
-  </div>
+  <Prose>
+    <Content />
+  </Prose>
 </Base>
