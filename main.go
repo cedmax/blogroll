@@ -178,6 +178,20 @@ func main() {
 
 	fmt.Fprintf(os.Stderr, "Parsed %d unique feeds from OPML\n", len(feeds))
 	entries, stats := fetchAllFeeds(feeds, cache)
+
+	// Prune cache keys for feeds no longer in the OPML: they'd otherwise grow
+	// the cache unboundedly, and a re-added feed would send a stale ETag and
+	// could serve old entries via a 304.
+	activeFeedURLs := make(map[string]bool, len(feeds))
+	for _, f := range feeds {
+		activeFeedURLs[f.XMLURL] = true
+	}
+	for key := range cache {
+		if !activeFeedURLs[key] {
+			delete(cache, key)
+		}
+	}
+
 	saveCache(cacheFile, cache)
 	fmt.Fprintf(os.Stderr, "Feeds: %d total, %d ok, %d failed\n",
 		stats.total, stats.success, stats.failed)
