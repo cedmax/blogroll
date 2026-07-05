@@ -177,7 +177,6 @@ func main() {
 	cache := loadCache(cacheFile)
 
 	fmt.Fprintf(os.Stderr, "Parsed %d unique feeds from OPML\n", len(feeds))
-	var stats fetchStats
 	entries, stats := fetchAllFeeds(feeds, cache)
 	saveCache(cacheFile, cache)
 	fmt.Fprintf(os.Stderr, "Feeds: %d total, %d ok, %d failed\n",
@@ -213,6 +212,10 @@ func validateFeed(rawURL string) {
 	entries, err := fetchFeed(client, Feed{Title: rawURL, XMLURL: rawURL}, Cache{}, &sync.Mutex{})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "INVALID %s: %v\n", rawURL, err)
+		os.Exit(1)
+	}
+	if len(entries) == 0 {
+		fmt.Fprintf(os.Stderr, "INVALID %s: parsed but yielded no entries\n", rawURL)
 		os.Exit(1)
 	}
 	fmt.Fprintf(os.Stderr, "OK %s (%d entries)\n", rawURL, len(entries))
@@ -542,12 +545,18 @@ func toJSONEntry(e Entry) JSONEntry {
 func buildFeedData(feeds []Feed, allEntries []Entry) []JSONFeed {
 	byBlog := groupEntriesByBlog(allEntries)
 
+	// Drop entries dated in the future: a bogus future pubDate would otherwise
+	// pin a post to the top of the site forever. 24h slack tolerates a just-
+	// published post whose feed timestamp leads the build clock (max real
+	// timezone offset is +14:00) without admitting clearly-bogus dates.
+	futureCutoff := time.Now().UTC().Add(24 * time.Hour)
+
 	jsonFeeds := make([]JSONFeed, len(feeds))
 	for i, f := range feeds {
 		all := byBlog[f.HTMLURL]
 		valid := all[:0]
 		for _, e := range all {
-			if !e.Published.IsZero() {
+			if !e.Published.IsZero() && e.Published.Before(futureCutoff) {
 				valid = append(valid, e)
 			}
 		}
