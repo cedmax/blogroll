@@ -65,7 +65,10 @@ jobs:
       # astro build → dist/ (incl. _redirects from the netlify-redirects integration)
       - run: npm run build
 
+      # Fork PRs can't read the Netlify secrets, so the deploy would fail red;
+      # skip it there (the build and feed checks above still run).
       - name: Deploy to Netlify
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: nwtgck/actions-netlify@v3
         with:
           publish-dir: dist
