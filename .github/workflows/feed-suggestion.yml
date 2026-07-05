@@ -1,0 +1,56 @@
+name: Feed suggestion → PR
+
+# When someone files a "Proponi un sito" issue, parse it and open a PR that
+# adds the feed to itblogs.opml for a maintainer to review. Re-runs (edits)
+# update the same PR because the branch is keyed by issue number.
+on:
+  issues:
+    types: [opened, edited, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: feed-suggestion-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  open-pr:
+    if: contains(github.event.issue.labels.*.name, 'feed-suggestion')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse issue form
+        id: parse
+        uses: stefanbuck/github-issue-parser@v3
+        with:
+          template-path: .github/ISSUE_TEMPLATE/add-feed.yml
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Add feed to OPML
+        id: opml
+        env:
+          ISSUE_JSON: ${{ steps.parse.outputs.jsonString }}
+        run: node .github/scripts/add-feed-to-opml.mjs
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: feed/issue-${{ github.event.issue.number }}
+          title: "Aggiungi sito: ${{ steps.opml.outputs.name }}"
+          commit-message: "Aggiungi sito: ${{ steps.opml.outputs.name }}"
+          labels: feed-suggestion
+          body: |
+            Aggiunge **${{ steps.opml.outputs.name }}** a `itblogs.opml`, dalla issue #${{ github.event.issue.number }}.
+
+            - Sito: ${{ steps.opml.outputs.site_url }}
+            - Feed: ${{ steps.opml.outputs.feed_url }}
+
+            La build su questa PR fa il fetch del feed: se il feed non è valido o non raggiungibile, il check fallisce.
+
+            Closes #${{ github.event.issue.number }}

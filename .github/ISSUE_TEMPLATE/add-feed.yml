@@ -1,0 +1,46 @@
+name: Proponi un sito
+description: Segnala un sito italiano da aggiungere all'aggregatore
+title: "Aggiungi sito: "
+labels: ["feed-suggestion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per il contributo! Blogroll.it raccoglie **siti in lingua italiana**.
+
+        Prima di procedere, un paio di note:
+        - I feed con contenuti in inglese **non** vengono pubblicati.
+        - Se il sito pubblica in più lingue, indica un feed che contenga **solo** i post in italiano (molti CMS espongono un feed per categoria/lingua, es. `.../category/italiano/feed/`).
+
+        Alla conferma dell'issue, verrà automaticamente aperta una pull request con la modifica, che verrà poi revisionata.
+  - type: input
+    id: site-name
+    attributes:
+      label: Nome del sito
+      description: Come dovrebbe comparire nell'elenco.
+      placeholder: es. cedmax.net
+    validations:
+      required: true
+  - type: input
+    id: site-url
+    attributes:
+      label: URL del sito
+      description: L'indirizzo della homepage (non del feed).
+      placeholder: es. https://cedmax.net/
+    validations:
+      required: true
+  - type: input
+    id: feed-url
+    attributes:
+      label: URL del feed RSS/Atom
+      description: Il feed da cui leggere i post. Deve contenere solo contenuti in italiano.
+      placeholder: es. https://cedmax.net/feeds/rssit
+    validations:
+      required: true
+  - type: checkboxes
+    id: acknowledgment
+    attributes:
+      label: Conferma
+      options:
+        - label: I contenuti del feed sono solo in Italiano
+          required: true

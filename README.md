@@ -1,6 +1,6 @@
 # Blogroll.it
 
-Source for [blogroll.it](https://blogroll.it/) — a feed aggregator for Italian tech blogs.
+Source for [blogroll.it](https://blogroll.it/) — a feed aggregator for Italian sites.
 
 ## Requirements
 
@@ -31,7 +31,15 @@ Feed results are cached in `cache.json` using ETag/Last-Modified headers for eff
 
 ## Adding a feed
 
-Edit `itblogs.opml` directly or open a PR. The next build picks up the change.
+The easiest way is to [open a "Proponi un sito" issue](../../issues/new?template=add-feed.yml): fill in the site name, URL, and Italian-only feed URL. An automation parses the issue and opens a PR that adds the entry to `itblogs.opml` for review — the PR build fetches the feed, so an invalid one fails the check.
+
+Blogroll.it lists **Italian-language sites only**; sites with English content aren't published, so submit a feed that contains only Italian posts.
+
+You can also edit `itblogs.opml` directly and open a PR yourself. Either way, the next build picks up the change.
+
+## Removing a site
+
+To report a site for removal, [open a "Segnala un sito per la rimozione" issue](../../issues/new?template=remove-feed.yml) with the URL and reason. Removals are reviewed manually — no automated PR is opened.
 
 ## Credits
 
