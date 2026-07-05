@@ -110,6 +110,7 @@ type JSONFeed struct {
 	HTMLURL     string      `json:"htmlUrl"`
 	Description string      `json:"description"`
 	Slug        string      `json:"slug"`
+	Available   bool        `json:"available"`
 	Entries     []JSONEntry `json:"entries"`
 }
 
@@ -542,6 +543,7 @@ func buildFeedData(feeds []Feed, allEntries []Entry) []JSONFeed {
 			HTMLURL:     f.HTMLURL,
 			Description: f.Description,
 			Slug:        f.Slug,
+			Available:   len(entries) > 0,
 			Entries:     entries,
 		}
 	}
@@ -571,9 +573,6 @@ func writeFeedFiles(feeds []JSONFeed, dir string) error {
 		return err
 	}
 	for _, feed := range feeds {
-		if len(feed.Entries) == 0 {
-			continue
-		}
 		b, err := json.MarshalIndent(feed, "", "  ")
 		if err != nil {
 			return err
