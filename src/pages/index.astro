@@ -2,8 +2,7 @@
 import Base from "../layouts/Base.astro"
 import { getFeeds, builtAt, opmlFile } from "../utils/feeds"
 import { fmtLong } from "../utils/dates"
-import BlogLink from "../components/BlogLink.astro"
-import FeedLink from "../components/FeedLink.astro"
+import FeedHeader from "../components/FeedHeader.astro"
 
 const feeds = await getFeeds()
 
@@ -69,14 +68,7 @@ const byDate = Object.groupBy(entries, (e) => e.published.slice(0, 10))
               </a>
             </div>
             <div class="px-3 pt-0.5 text-ink-muted flex items-center gap-2 justify-center">
-              <a
-                class=" text-xs no-underline flex-1 hover:text-green-h hover:underline"
-                href={`/sites/${entry.feed.slug}/`}
-              >
-                {entry.feed.title}
-              </a>
-              <BlogLink size="14" url={entry.feed.htmlUrl} />
-              <FeedLink size="14" url={entry.feed.xmlUrl} />
+              <FeedHeader feed={entry.feed} titleClass="text-xs" />
             </div>
           </div>
         ))}

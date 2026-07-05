@@ -2,8 +2,7 @@
 import Base from "../../layouts/Base.astro"
 import EntryRow from "../../components/EntryRow.astro"
 import { getFeeds, builtAt, opmlFile } from "../../utils/feeds"
-import BlogLink from "../../components/BlogLink.astro"
-import FeedLink from "../../components/FeedLink.astro"
+import FeedHeader from "../../components/FeedHeader.astro"
 
 export async function getStaticPaths() {
   const feeds = await getFeeds()
@@ -32,9 +31,7 @@ const { feed } = Astro.props
 
   <div class="bg-card border border-border rounded py-4 px-5 mb-4">
     <div class="text-lg font-bold mb-1 flex items-baseline gap-2 flex-wrap">
-      <span class="flex-1">{feed.title}</span>
-      <BlogLink size="16" url={feed.htmlUrl} />
-      <FeedLink size="16" url={feed.xmlUrl} />
+      <FeedHeader feed={feed} size="16" linked={false} titleClass="text-lg font-bold" />
     </div>
     {
       feed.description && (

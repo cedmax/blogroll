@@ -1,0 +1,29 @@
+---
+import BlogLink from "./BlogLink.astro"
+import FeedLink from "./FeedLink.astro"
+import type { Feed } from "../utils/feeds"
+
+interface Props {
+  feed: Feed
+  size?: string
+  linked?: boolean
+  titleClass?: string
+}
+
+const { feed, size = "14", linked = true, titleClass = "" } = Astro.props
+---
+
+{
+  linked ? (
+    <a
+      class:list={["flex-1 no-underline hover:underline hover:text-green-h", titleClass]}
+      href={`/sites/${feed.slug}/`}
+    >
+      {feed.title}
+    </a>
+  ) : (
+    <span class:list={["flex-1", titleClass]}>{feed.title}</span>
+  )
+}
+<BlogLink size={size} url={feed.htmlUrl} />
+<FeedLink size={size} url={feed.xmlUrl} />
