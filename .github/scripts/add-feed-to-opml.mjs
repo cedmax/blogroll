@@ -68,6 +68,23 @@ if (existingFeeds.has(normalizeUrl(feedUrl))) {
   fail(`Feed already present in ${OPML}: ${feedUrl}`)
 }
 
+// Two feeds must never share an htmlUrl: main.go groups entries by it (and
+// fails the build on duplicates), so reject the suggestion up front.
+const existingSites = new Set(
+  [...opml.matchAll(/htmlUrl="([^"]+)"/g)].map(([, v]) =>
+    normalizeUrl(
+      v
+        .replace(/&quot;/g, '"')
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&"),
+    ),
+  ),
+)
+if (existingSites.has(normalizeUrl(siteUrl))) {
+  fail(`Site already present in ${OPML}: ${siteUrl}`)
+}
+
 const line = `      <outline type="rss" text="${escapeAttr(name)}" htmlUrl="${escapeAttr(siteUrl)}" xmlUrl="${escapeAttr(feedUrl)}" />`
 
 // Insert before the closing tag of the outer group outline (indented 4 spaces).
