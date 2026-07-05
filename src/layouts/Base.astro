@@ -27,10 +27,7 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
       href={`https://blogroll.it/${opmlFile}`}
     />
     <meta name="theme-color" content="#f5f0e8" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>"
-    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <slot name="head" />
   </head>
   <body class="bg-bg text-ink font-sans text-base leading-normal min-h-screen">

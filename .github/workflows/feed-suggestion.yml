@@ -1,7 +1,7 @@
 name: Feed suggestion → PR
 
 # When someone files a "Proponi un sito" issue, parse it and open a PR that
-# adds the feed to itblogs.opml for a maintainer to review. Re-runs (edits)
+# adds the feed to public/ita.opml for a maintainer to review. Re-runs (edits)
 # update the same PR because the branch is keyed by issue number.
 on:
   issues:
@@ -57,7 +57,7 @@ jobs:
           commit-message: "Aggiungi sito: ${{ steps.opml.outputs.name }}"
           labels: feed-suggestion
           body: |
-            Aggiunge **${{ steps.opml.outputs.name }}** a `itblogs.opml`, dalla issue #${{ github.event.issue.number }}.
+            Aggiunge **${{ steps.opml.outputs.name }}** a `public/ita.opml`, dalla issue #${{ github.event.issue.number }}.
 
             - Sito: ${{ steps.opml.outputs.site_url }}
             - Feed: ${{ steps.opml.outputs.feed_url }}

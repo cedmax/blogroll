@@ -19,7 +19,7 @@ npm run preview  # serve dist/ locally
 To fetch feeds manually without going through npm:
 
 ```bash
-go run main.go              # fetch feeds, write src/data/, copy OPML
+go run main.go              # fetch feeds, write src/data/
 go run main.go -opml <file> # use a different OPML file
 ```
 
@@ -31,11 +31,11 @@ Feed results are cached in `cache.json` using ETag/Last-Modified headers for eff
 
 ## Adding a feed
 
-The easiest way is to [open a "Proponi un sito" issue](../../issues/new?template=add-feed.yml): fill in the site name, URL, and Italian-only feed URL. An automation parses the issue and opens a PR that adds the entry to `itblogs.opml` for review — a separate **Validate submitted feed** check fetches the added feed and fails the PR if it's unreachable or unparseable.
+The easiest way is to [open a "Proponi un sito" issue](../../issues/new?template=add-feed.yml): fill in the site name, URL, and Italian-only feed URL. An automation parses the issue and opens a PR that adds the entry to `public/ita.opml` for review — a separate **Validate submitted feed** check fetches the added feed and fails the PR if it's unreachable or unparseable.
 
 Blogroll.it lists **Italian-language sites only**; sites with English content aren't published, so submit a feed that contains only Italian posts.
 
-You can also edit `itblogs.opml` directly and open a PR yourself. Either way, the next build picks up the change.
+You can also edit `public/ita.opml` directly and open a PR yourself. Either way, the next build picks up the change.
 
 ## Removing a site
 

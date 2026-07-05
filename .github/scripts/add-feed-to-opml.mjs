@@ -1,10 +1,10 @@
 // Reads a parsed feed-suggestion issue (JSON in ISSUE_JSON) and inserts a new
-// <outline> into itblogs.opml. Exposes name/site_url/feed_url on GITHUB_OUTPUT
+// <outline> into public/ita.opml. Exposes name/site_url/feed_url on GITHUB_OUTPUT
 // for the PR title/body. Fails loudly on missing/invalid/duplicate input so the
 // workflow surfaces the problem instead of opening a broken PR.
 import { readFileSync, writeFileSync, appendFileSync } from "node:fs"
 
-const OPML = "itblogs.opml"
+const OPML = "public/ita.opml"
 
 const fail = (msg) => {
   console.error(msg)
