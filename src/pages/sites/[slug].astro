@@ -38,7 +38,7 @@ const { feed } = Astro.props
     {
       feed.description && (
         <div class="text-sm text-ink-muted leading-relaxed">
-          {feed.description.replace(/<[^>]*>?/gm, "")}
+          {feed.description.replace(/<[^>]*>/g, "")}
         </div>
       )
     }
