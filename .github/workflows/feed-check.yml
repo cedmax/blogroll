@@ -38,13 +38,14 @@ jobs:
           # Added (^+) outline lines' xmlUrl values. Regex on the attribute is
           # order-independent (handles htmlUrl-first and xmlUrl-first styles).
           # OPML stores XML-escaped values (see add-feed-to-opml.mjs), so unescape
-          # back to raw URLs before fetching.
+          # back to raw URLs before fetching. &amp; is unescaped last so a
+          # sequence like &amp;lt; doesn't get double-unescaped into <.
           mapfile -t urls < <(
             git diff "origin/$BASE_REF" HEAD -- public/ita.opml \
               | grep '^+' \
               | grep -oE 'xmlUrl="[^"]+"' \
               | sed -E 's/^xmlUrl="(.*)"$/\1/' \
-              | sed -e 's/&amp;/\&/g' -e 's/&quot;/"/g' -e 's/&lt;/</g' -e 's/&gt;/>/g'
+              | sed -e 's/&quot;/"/g' -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&amp;/\&/g'
           )
 
           if [ ${#urls[@]} -eq 0 ]; then
