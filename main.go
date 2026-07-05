@@ -29,6 +29,7 @@ const (
 	opmlFile       = "public/ita.opml"
 	cacheFile      = "cache.json"
 	maxPerSite     = 15
+	maxBodySize    = 10 << 20 // 10 MB cap on feed responses
 )
 
 type OPML struct {
@@ -317,7 +318,9 @@ func saveCache(path string, cache Cache) {
 		fmt.Fprintf(os.Stderr, "Warning: could not marshal cache: %v\n", err)
 		return
 	}
-	os.WriteFile(path, data, 0644)
+	if err := os.WriteFile(path, data, 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: could not write cache: %v\n", err)
+	}
 }
 
 // --- Feed fetching ---
@@ -401,9 +404,12 @@ func fetchFeed(client *http.Client, feed Feed, cache Cache, mu *sync.Mutex) ([]E
 		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxBodySize+1))
 	if err != nil {
 		return nil, err
+	}
+	if len(body) > maxBodySize {
+		return nil, fmt.Errorf("response larger than %d bytes", maxBodySize)
 	}
 
 	entries, desc, err := parseFeed(body, feed)
@@ -469,6 +475,14 @@ func parseFeed(data []byte, feed Feed) ([]Entry, string, error) {
 	return nil, "", fmt.Errorf("unrecognized feed format")
 }
 
+// validLink reports whether s is an absolute http(s) URL. Feed content is
+// untrusted: anything else (javascript:, data:, relative paths) is dropped
+// rather than rendered as a clickable href.
+func validLink(s string) bool {
+	u, err := url.Parse(s)
+	return err == nil && (u.Scheme == "http" || u.Scheme == "https") && u.Host != ""
+}
+
 func parseRSSItems(items []RSSItem, feed Feed) []Entry {
 	var entries []Entry
 	for _, item := range items {
@@ -477,7 +491,7 @@ func parseRSSItems(items []RSSItem, feed Feed) []Entry {
 		if link == "" {
 			link = strings.TrimSpace(item.GUID)
 		}
-		if link == "" {
+		if !validLink(link) {
 			continue
 		}
 		entries = append(entries, Entry{
@@ -512,14 +526,15 @@ func parseAtomEntries(items []AtomEntry, feed Feed) []Entry {
 		if link == "" {
 			link = item.ID
 		}
-		if link == "" {
+		link = strings.TrimSpace(link)
+		if !validLink(link) {
 			continue
 		}
 
 		entries = append(entries, Entry{
 			BlogURL:   feed.HTMLURL,
 			Title:     strings.TrimSpace(item.Title),
-			URL:       strings.TrimSpace(link),
+			URL:       link,
 			Published: t,
 		})
 	}
