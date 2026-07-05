@@ -34,8 +34,33 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
+      # PR and merge builds reuse the newest feed cache so build churn hits the
+      # blogs with conditional GETs (mostly 304s) instead of full fetches. A 304
+      # never hides new content — only unchanged feeds are skipped. Scheduled
+      # and manual builds skip the restore on purpose: they refetch everything
+      # from scratch, so a bad ETag can never outlive one cycle.
+      - name: Restore feed cache (PR and merge builds)
+        if: github.event_name == 'pull_request' || github.event_name == 'push'
+        uses: actions/cache/restore@v4
+        with:
+          path: cache.json
+          # the key never matches exactly; the prefix picks the newest cache
+          key: feed-cache-
+          restore-keys: feed-cache-
+
       # postinstall runs `go run main.go`: fetches feeds, writes src/data/
       - run: npm ci
+
+      # Save the just-written cache as the new baseline. Keys are immutable, so
+      # save under a per-run key; the prefix restore above picks the newest. PR
+      # builds don't save — their caches would be branch-scoped and invisible
+      # to every other build anyway.
+      - name: Save feed cache
+        if: github.event_name != 'pull_request'
+        uses: actions/cache/save@v4
+        with:
+          path: cache.json
+          key: feed-cache-${{ github.run_id }}
 
       # astro build → dist/ (incl. _redirects from the netlify-redirects integration)
       - run: npm run build
