@@ -20,6 +20,9 @@ const entries = feeds
   .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
 
 const entryCount = entries.length
+// The YYYY-MM-DD day keys are parsed back with new Date(), i.e. UTC midnight;
+// fmtLong then renders them in Europe/Rome on the same calendar day only
+// because Rome is always at or ahead of UTC.
 const groupDates = [...new Set(entries.map((e) => dayKey(new Date(e.published))))]
 const byDate = Object.groupBy(entries, (e) => dayKey(new Date(e.published)))
 ---

@@ -48,9 +48,10 @@ responses are capped at 10 MB. `buildFeedData` drops entries with a zero or
 future (`> now + 24h`) publish date and strips HTML tags from descriptions, so
 the JSON (and everything downstream) is plain text.
 
-Two feeds must never share an `htmlUrl` (entries are grouped by it): `main.go`
-exits 1 on duplicates and `add-feed-to-opml.mjs` rejects suggestions whose site
-URL is already in the OPML.
+Every feed must have an `htmlUrl` and two feeds must never share one (entries
+are grouped by it): `main.go` exits 1 on a missing or duplicate `htmlUrl`, and
+`add-feed-to-opml.mjs` rejects suggestions whose site URL is already in the
+OPML.
 
 `main.go -validate <url>` fetches and parses a single feed and exits non-zero if
 it is unreachable, unparseable, or yields no entries. Used by the

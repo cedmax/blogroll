@@ -177,11 +177,15 @@ func main() {
 
 	feeds = deduplicateFeeds(feeds)
 
-	// Two feeds sharing an htmlUrl would merge their entries (grouping is keyed
-	// by htmlUrl) — that's never intended, so fail the build instead.
+	// Entries are grouped by htmlUrl, so every feed must have one and no two
+	// feeds may share one (they'd merge their entries) — fail the build on either.
 	seenHTML := make(map[string]bool)
 	for _, f := range feeds {
-		if f.HTMLURL != "" && seenHTML[f.HTMLURL] {
+		if f.HTMLURL == "" {
+			fmt.Fprintf(os.Stderr, "Error: missing htmlUrl for %s in %s\n", f.XMLURL, *opml)
+			os.Exit(1)
+		}
+		if seenHTML[f.HTMLURL] {
 			fmt.Fprintf(os.Stderr, "Error: duplicate htmlUrl %q in %s\n", f.HTMLURL, *opml)
 			os.Exit(1)
 		}
@@ -574,7 +578,7 @@ func parseTime(s string) time.Time {
 
 // tagRE matches only well-formed tags, so a stray "<" in prose (e.g. "<3")
 // survives stripping.
-var tagRE = regexp.MustCompile(`<[^>]*>`)
+var tagRE = regexp.MustCompile(`</?[a-zA-Z][^>]*>`)
 
 func groupEntriesByBlog(entries []Entry) map[string][]Entry {
 	groups := make(map[string][]Entry)
