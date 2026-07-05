@@ -1,13 +1,13 @@
 name: Validate submitted feed
 
-# On any PR that edits itblogs.opml, fetch only the newly-added feed(s) and fail
+# On any PR that edits public/ita.opml, fetch only the newly-added feed(s) and fail
 # if one is unreachable or unparseable. This is a separate check from the build:
 # the build stays tolerant of dead feeds (one bad blog must not block a deploy),
 # while this gate holds a submission to a higher bar before merge.
 on:
   pull_request:
     paths:
-      - itblogs.opml
+      - public/ita.opml
 
 permissions:
   contents: read
@@ -40,7 +40,7 @@ jobs:
           # OPML stores XML-escaped values (see add-feed-to-opml.mjs), so unescape
           # back to raw URLs before fetching.
           mapfile -t urls < <(
-            git diff "origin/$BASE_REF" HEAD -- itblogs.opml \
+            git diff "origin/$BASE_REF" HEAD -- public/ita.opml \
               | grep '^+' \
               | grep -oE 'xmlUrl="[^"]+"' \
               | sed -E 's/^xmlUrl="(.*)"$/\1/' \

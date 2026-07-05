@@ -10,7 +10,7 @@ npm run build   # astro build → dist/  (requires src/data/ from install)
 npm run dev     # start Astro dev server (localhost:4321)
 npm run preview # serve dist/ locally
 
-go run main.go              # fetch feeds manually + write src/data/ + copy OPML
+go run main.go              # fetch feeds manually + write src/data/
 go run main.go -opml <file> # use a different OPML file
 ```
 
@@ -19,19 +19,20 @@ go run main.go -opml <file> # use a different OPML file
 Two-stage build: Go fetches feeds and writes JSON; Astro reads JSON and generates all HTML.
 
 ```
-main.go      → fetches feeds → writes src/data/site.json + src/data/feeds/*.json + public/itblogs.opml
+main.go      → fetches feeds → writes src/data/site.json + src/data/feeds/*.json
 astro build  → reads src/data/ via Content Layer → outputs dist/
 ```
 
 **Data flow:**
 
-1. `parseOPML(itblogs.opml)` → `[]Feed`
+1. `parseOPML(public/ita.opml)` → `[]Feed`
 2. `fetchAllFeeds()` — parallel HTTP with conditional GET (ETag/Last-Modified), results written to `cache.json`
 3. `buildFeedData()` — groups entries by feed, sorts each feed's entries desc, sorts feeds by latest entry date
 4. `writeSiteJSON()` → `src/data/site.json` (builtAt, opmlFile)
 5. `writeFeedFiles()` → `src/data/feeds/<slug>.json` (one file per feed)
-6. `copyOPML()` → `public/itblogs.opml` (Astro copies `public/` into `dist/` as-is)
-7. Astro reads the `feeds` collection via `src/content/config.ts` and generates all HTML in `dist/`
+6. Astro reads the `feeds` collection via `src/content/config.ts` and generates all HTML in `dist/`
+
+The OPML source of truth is `public/ita.opml` — Astro copies `public/` into `dist/` as-is, so it's both the build input and the published, downloadable file (no copy step).
 
 **Key types in `main.go`:**
 

@@ -22,7 +22,7 @@ const (
 	maxConcurrency = 30
 	connectTimeout = 10 * time.Second
 	readTimeout    = 15 * time.Second
-	opmlFile       = "itblogs.opml"
+	opmlFile       = "public/ita.opml"
 	cacheFile      = "cache.json"
 	maxPerSite     = 15
 )
@@ -195,11 +195,6 @@ func main() {
 	}
 	if err := writeFeedFiles(jsonFeeds, "src/data/feeds"); err != nil {
 		fmt.Fprintf(os.Stderr, "Error writing feed files: %v\n", err)
-		os.Exit(1)
-	}
-
-	if err := copyOPML(*opml); err != nil {
-		fmt.Fprintf(os.Stderr, "Error copying OPML: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -603,15 +598,4 @@ func writeFeedFiles(feeds []JSONFeed, dir string) error {
 		}
 	}
 	return nil
-}
-
-func copyOPML(path string) error {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll("public", 0755); err != nil {
-		return err
-	}
-	return os.WriteFile(filepath.Join("public", filepath.Base(path)), data, 0644)
 }
