@@ -639,6 +639,17 @@ func writeFeedFiles(feeds []JSONFeed, dir string) error {
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
+	// Clear previous output so a feed removed from the OPML doesn't leave a
+	// stale JSON file (and thus a stale page) behind.
+	stale, err := filepath.Glob(filepath.Join(dir, "*.json"))
+	if err != nil {
+		return err
+	}
+	for _, path := range stale {
+		if err := os.Remove(path); err != nil {
+			return err
+		}
+	}
 	for _, feed := range feeds {
 		b, err := json.MarshalIndent(feed, "", "  ")
 		if err != nil {
