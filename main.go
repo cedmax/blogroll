@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"encoding/json"
 	"encoding/xml"
@@ -15,6 +16,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/net/html/charset"
 )
 
 const (
@@ -390,16 +393,25 @@ func fetchFeed(client *http.Client, feed Feed, cache Cache, mu *sync.Mutex) ([]E
 	return entries, nil
 }
 
+// decodeXML unmarshals XML into v, honouring any encoding declared in the
+// document (e.g. iso-8859-1) via charset.NewReaderLabel, so non-UTF-8 feeds
+// parse instead of failing as "unrecognized format".
+func decodeXML(data []byte, v any) error {
+	dec := xml.NewDecoder(bytes.NewReader(data))
+	dec.CharsetReader = charset.NewReaderLabel
+	return dec.Decode(v)
+}
+
 func parseFeed(data []byte, feed Feed) ([]Entry, string, error) {
 	// Try RSS first
 	var rss RSSFeed
-	if err := xml.Unmarshal(data, &rss); err == nil && len(rss.Channel.Items) > 0 {
+	if err := decodeXML(data, &rss); err == nil && len(rss.Channel.Items) > 0 {
 		return parseRSSItems(rss.Channel.Items, feed), rss.Channel.Description, nil
 	}
 
 	// Try Atom
 	var atom AtomFeed
-	if err := xml.Unmarshal(data, &atom); err == nil && len(atom.Entries) > 0 {
+	if err := decodeXML(data, &atom); err == nil && len(atom.Entries) > 0 {
 		return parseAtomEntries(atom.Entries, feed), atom.Subtitle, nil
 	}
 
@@ -410,7 +422,7 @@ func parseFeed(data []byte, feed Feed) ([]Entry, string, error) {
 		Items       []RSSItem `xml:"item"`
 	}
 	var bare BareChannel
-	if err := xml.Unmarshal(data, &bare); err == nil && len(bare.Items) > 0 {
+	if err := decodeXML(data, &bare); err == nil && len(bare.Items) > 0 {
 		return parseRSSItems(bare.Items, feed), bare.Description, nil
 	}
 
@@ -420,7 +432,7 @@ func parseFeed(data []byte, feed Feed) ([]Entry, string, error) {
 		Items   []RSSItem `xml:"item"`
 	}
 	var rdf RDFFeed
-	if err := xml.Unmarshal(data, &rdf); err == nil && len(rdf.Items) > 0 {
+	if err := decodeXML(data, &rdf); err == nil && len(rdf.Items) > 0 {
 		return parseRSSItems(rdf.Items, feed), "", nil
 	}
 
