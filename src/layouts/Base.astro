@@ -5,7 +5,7 @@ interface Props {
   title: string
   description?: string
   canonical: string
-  activeNav: "home" | "lista" | ""
+  activeNav: "home" | "lista" | "info" | ""
   opmlFile: string
 }
 const { title, description, canonical, activeNav, opmlFile } = Astro.props
@@ -64,6 +64,18 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
               </a>
             )
           }
+          {
+            activeNav === "info" ? (
+              <span class="text-ink font-semibold">il progetto</span>
+            ) : (
+              <a
+                class="text-ink-muted no-underline hover:text-green hover:underline"
+                href="/info/"
+              >
+                il progetto
+              </a>
+            )
+          }
           <a
             class="text-ink-muted no-underline hover:text-green hover:underline"
             target="_blank"
@@ -80,10 +92,7 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
       <footer class="mt-12 pt-4 text-right border-t border-border text-xs text-ink-muted">
         <a
           class="text-green no-underline hover:text-green-h hover:underline"
-          href="https://github.com/cedmax/blogroll/issues">Suggerisci un blog</a
-        > aprendo un issue o una PR su <a
-          class="text-green no-underline hover:text-green-h hover:underline"
-          href="https://github.com/cedmax/blogroll">GitHub</a
+          href="https://github.com/cedmax/blogroll/issues/new/">Suggerisci un blog</a
         >.
       </footer>
     </div>

@@ -1,0 +1,52 @@
+---
+import Base from "../layouts/Base.astro"
+import Prose from "../components/Prose.astro"
+import { Content } from "../content/pages/info.md"
+import { opmlFile } from "../utils/feeds"
+---
+
+<Base
+  title="Il progetto — Blogroll.it"
+  description="Cos'è Blogroll.it e come proporre un blog per la lista."
+  canonical="https://blogroll.it/info/"
+  activeNav="info"
+  opmlFile={opmlFile}
+>
+  <Prose>
+    <Content />
+  </Prose>
+
+  <p class="text-xs h-3.5 group text-center text-ink-muted mt-12">
+    Gestito con {" "}
+    <span class="w-3.5 relative inline-flex items-center align-middle">
+      <span class="group-hover:hidden" aria-hidden="true">❤</span>
+      <span class="hidden group-hover:block text-green -mt-0.5" aria-hidden="true">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="12"
+          xml:space="preserve"
+          viewBox="0 0 32 32"
+        >
+          <path
+            fill="#ea9d3f"
+            d="M6 21c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5M5.8 1c-1.2 0-2.5.1-4 .3-.4.1-.8.5-.8 1v5.1c0 .3.1.6.4.8s.5.3.8.2C3.4 8.2 4.6 8 5.8 8c10 0 18.1 8.1 18.1 18.1 0 1.2-.1 2.4-.4 3.6-.1.3 0 .6.2.8s.5.4.8.4h5.1c.5 0 .9-.4 1-.8.2-1.4.3-2.7.3-4C31 12.3 19.7 1 5.8 1"
+            class="st29"></path>
+          <path
+            fill="#ea9d3f"
+            d="M5.9 11c-1.4 0-2.8.2-4.1.6-.4.1-.7.5-.7 1V18c0 .3.2.7.5.8.3.2.7.2 1 .1 1.1-.5 2.2-.8 3.4-.8 4.4 0 8 3.6 8 8 0 1.2-.3 2.3-.8 3.4-.1.3-.1.7.1 1s.5.5.8.5h5.5c.4 0 .8-.3 1-.7.4-1.4.6-2.8.6-4.1C21 17.8 14.2 11 5.9 11"
+            class="st29"></path>
+        </svg>
+      </span>
+      <span class="sr-only">amore</span>
+    </span>{" "}
+    da <a
+      class="text-green underline hover:text-green-h"
+      target="_blank"
+      href="https://cedmax.net">cedmax</a
+    > & <a
+      class="text-green underline hover:text-green-h"
+      target="_blank"
+      href="https://cantina.ragnate.la/">Ed</a
+    >
+  </p>
+</Base>
