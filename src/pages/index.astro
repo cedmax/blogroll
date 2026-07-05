@@ -3,6 +3,7 @@ import Base from "../layouts/Base.astro"
 import { getFeeds, builtAt, opmlFile } from "../utils/feeds"
 import { fmtLong } from "../utils/dates"
 import FeedHeader from "../components/FeedHeader.astro"
+import Card from "../components/Card.astro"
 
 const feeds = await getFeeds()
 
@@ -56,7 +57,7 @@ const byDate = Object.groupBy(entries, (e) => e.published.slice(0, 10))
           {fmtLong(new Date(date))}
         </h2>
         {byDate[date]!.map((entry) => (
-          <div class="bg-alt border border-border rounded pb-1.5 flex flex-col gap-1 overflow-hidden mb-2">
+          <Card class="pb-1.5 mb-2">
             <div class="bg-card block border-b border-border-l">
               <a
                 class="py-2.5 px-3 flex items-center text-base font-semibold text-green no-underline leading-snug visited:text-ink-muted hover:text-green-h hover:underline"
@@ -70,7 +71,7 @@ const byDate = Object.groupBy(entries, (e) => e.published.slice(0, 10))
             <div class="px-3 pt-0.5 text-ink-muted flex items-center gap-2 justify-center">
               <FeedHeader feed={entry.feed} titleClass="text-xs" />
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     ))

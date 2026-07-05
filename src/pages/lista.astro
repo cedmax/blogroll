@@ -3,6 +3,7 @@ import Base from "../layouts/Base.astro"
 import EntryRow from "../components/EntryRow.astro"
 import { getFeeds, sortFeedsByLatest, builtAt, opmlFile } from "../utils/feeds"
 import FeedHeader from "../components/FeedHeader.astro"
+import Card from "../components/Card.astro"
 
 const feeds = sortFeedsByLatest(await getFeeds())
 ---
@@ -32,7 +33,7 @@ const feeds = sortFeedsByLatest(await getFeeds())
   <div class="flex flex-col gap-4">
     {
       feeds.map((feed) => (
-        <div class="bg-alt border border-border rounded  flex flex-col gap-1 overflow-hidden">
+        <Card>
           <div class="py-2.5 px-3 bg-card border-b border-border-l flex items-center gap-2 justify-center">
             <FeedHeader
               feed={feed}
@@ -43,7 +44,7 @@ const feeds = sortFeedsByLatest(await getFeeds())
           <div class="-mt-1">
             <EntryRow {...feed.entries[0]} />
           </div>
-        </div>
+        </Card>
       ))
     }
   </div>
