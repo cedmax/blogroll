@@ -4,13 +4,43 @@
     "build": "astro build",
     "dev": "astro dev",
     "preview": "astro preview",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "lint": "eslint src && stylelint \"src/**/*.{css,astro}\"",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,mjs,json,md,ts}": [
+      "eslint",
+      "prettier --write"
+    ],
+    "*.css": [
+      "stylelint",
+      "prettier --write"
+    ],
+    "*.astro": [
+      "eslint",
+      "stylelint",
+      "prettier --write"
+    ]
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "@tailwindcss/vite": "^4.3.2",
+    "@typescript-eslint/eslint-plugin": "8.61.1",
+    "@typescript-eslint/parser": "8.61.1",
     "astro": "^7.0.6",
+    "astro-eslint-parser": "1.4.0",
+    "eslint": "10.5.0",
+    "eslint-plugin-astro": "1.7.0",
+    "globals": "17.6.0",
+    "husky": "9.1.7",
+    "lint-staged": "17.0.7",
     "prettier": "3.8.4",
     "prettier-plugin-astro": "0.14.1",
+    "stylelint": "17.13.0",
+    "stylelint-config-html": "1.1.0",
+    "stylelint-config-standard": "40.0.0",
+    "stylelint-config-tailwindcss": "1.0.1",
     "tailwindcss": "^4.3.2"
   },
   "allowScripts": {
