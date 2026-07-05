@@ -30,42 +30,62 @@ astro build  → reads src/data/ via Content Layer → outputs dist/
 3. `buildFeedData()` — groups entries by feed, sorts each feed's entries desc, sorts feeds by latest entry date
 4. `writeSiteJSON()` → `src/data/site.json` (builtAt, opmlFile)
 5. `writeFeedFiles()` → `src/data/feeds/<slug>.json` (one file per feed)
-6. Astro reads the `feeds` collection via `src/content/config.ts` and generates all HTML in `dist/`
+6. Astro reads the `feeds` collection via `src/content.config.ts` and generates all HTML in `dist/`
 
 The OPML source of truth is `public/ita.opml` — Astro copies `public/` into `dist/` as-is, so it's both the build input and the published, downloadable file (no copy step).
 
 **Key types in `main.go`:**
 
 - `Feed` — title, XML URL, HTML URL, description, slug
-- `Entry` — blogURL, post title/URL, published time
+- `Entry` — blogURL (the feed's HTML URL, used to group entries by site), post title/URL, published time
 - `CacheEntry` — ETag, Last-Modified, description, entries per feed URL (keyed in `cache.json`)
 - `JSONFeed` / `JSONEntry` — JSON output types written to `src/data/feeds/`
 
-**Slug generation:** derived from the feed's HTML URL hostname (e.g. `cedmax.net`); SHA1 fallback for collisions or unparseable URLs.
+`parseFeed` accepts RSS, Atom, bare `<channel>`, and RDF, decoding via a
+`CharsetReader` so non-UTF-8 (e.g. iso-8859-1) feeds parse. `buildFeedData`
+drops entries with a zero or future (`> now + 24h`) publish date.
 
-**Astro source layout:**
+`main.go -validate <url>` fetches and parses a single feed and exits non-zero if
+it is unreachable, unparseable, or yields no entries. Used by the
+"Validate submitted feed" PR check (`.github/workflows/feed-check.yml`).
+
+**Slug generation:** derived from the feed's HTML URL hostname, minus a leading
+`www.` (e.g. `cedmax.net`); SHA1 fallback for collisions or unparseable URLs.
+
+**Astro source layout (Tailwind CSS v4, utility classes in markup):**
 
 ```
 src/
-  content.config.ts         ← defines 'feeds' collection (glob loader over src/data/feeds/)
+  content.config.ts          ← defines 'feeds' collection (glob loader over src/data/feeds/)
   data/
-    site.json               ← generated: { builtAt, opmlFile }, gitignored
-    feeds/<slug>.json       ← generated: one file per feed, gitignored
-  layouts/Base.astro        ← HTML shell, all shared CSS (is:global), nav, footer
-  components/EntryRow.astro ← shared date|title row; labeled prop adds "ultimo post" eyebrow
+    site.json                ← generated: { builtAt, opmlFile }, gitignored
+    feeds/<slug>.json        ← generated: one file per feed, gitignored
+  styles/global.css          ← Tailwind import + @theme design tokens (bg/ink/green/border…)
+  layouts/Base.astro         ← HTML shell, nav, footer; imports global.css
+  components/
+    EntryRow.astro           ← date|title grid row (blog pages + la lista)
+    FeedHeader.astro         ← feed title + BlogLink + FeedLink
+    Card.astro, BlogLink.astro, FeedLink.astro, MetaLine.astro, SocialMeta.astro
+    Prose.astro              ← styles Markdown via scoped `.prose :global(...)` (see below)
   pages/
-    index.astro             ← homepage (recent entries grouped by day)
-    directory/index.astro   ← all blogs sorted by last post date
-    sites/[slug].astro      ← one page per feed (getStaticPaths over feeds collection)
-  utils/dates.ts            ← fmtShort/fmtLong using Intl.DateTimeFormat('it-IT')
+    index.astro              ← homepage (recent entries grouped by day)
+    lista.astro              ← all blogs sorted by last post date (sortFeedsByLatest)
+    info.astro               ← "il progetto" page (renders src/content/pages/info.md)
+    404.astro                ← renders src/content/pages/404.md
+    sites/[slug].astro       ← one page per feed (getStaticPaths over feeds collection)
+    sites/non-disponibile.astro ← "temporarily unavailable" explainer (302 target)
+  utils/
+    dates.ts                 ← fmtShort/fmtLong using Intl.DateTimeFormat('it-IT')
+    feeds.ts                 ← getFeeds (filters available), sortFeedsByLatest, builtAt, opmlFile
+integrations/netlify-redirects.mjs ← build hook: writes dist/_redirects (302s for unavailable feeds)
 ```
 
-**`activeNav` prop** on `Base.astro` drives nav active state (`"home"`, `"lista"`, or `""` for blog pages).
+Feeds are sorted by latest-entry date at render time in `sortFeedsByLatest`
+(`src/utils/feeds.ts`), not in Go.
 
-**Shared CSS components in `Base.astro` (`<style is:global>`):**
+**`activeNav` prop** on `Base.astro` drives nav active state (`"home"`, `"lista"`, `"info"`, or `""` for blog pages).
 
-- `.entry-row` / `.entry-row-date` / `.entry-row-title` — the date|title grid row used on blog pages and directory
-- `.entry-row-date--labeled` modifier adds the "ultimo post" eyebrow label (directory only)
-- `.entries` — the card container (white background, border, border-radius)
-
-Page-specific CSS lives in each page's scoped `<style>` block.
+**Styling:** Tailwind utility classes live directly in the markup; shared design
+tokens are defined in `src/styles/global.css`'s `@theme` block. Markdown/slotted
+HTML is styled with scoped `<style>` `.prose :global(...)` rules (see
+`Prose.astro`), not `is:global`.
