@@ -1,0 +1,66 @@
+name: Validate submitted feed
+
+# On any PR that edits itblogs.opml, fetch only the newly-added feed(s) and fail
+# if one is unreachable or unparseable. This is a separate check from the build:
+# the build stays tolerant of dead feeds (one bad blog must not block a deploy),
+# while this gate holds a submission to a higher bar before merge.
+on:
+  pull_request:
+    paths:
+      - itblogs.opml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: feed-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need base history to diff added feeds
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.4"
+
+      - name: Validate newly-added feeds
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+
+          # Added (^+) outline lines' xmlUrl values. Regex on the attribute is
+          # order-independent (handles htmlUrl-first and xmlUrl-first styles).
+          # OPML stores XML-escaped values (see add-feed-to-opml.mjs), so unescape
+          # back to raw URLs before fetching.
+          mapfile -t urls < <(
+            git diff "origin/$BASE_REF" HEAD -- itblogs.opml \
+              | grep '^+' \
+              | grep -oE 'xmlUrl="[^"]+"' \
+              | sed -E 's/^xmlUrl="(.*)"$/\1/' \
+              | sed -e 's/&amp;/\&/g' -e 's/&quot;/"/g' -e 's/&lt;/</g' -e 's/&gt;/>/g'
+          )
+
+          if [ ${#urls[@]} -eq 0 ]; then
+            echo "No feeds added — nothing to validate."
+            exit 0
+          fi
+
+          failed=0
+          for url in "${urls[@]}"; do
+            echo "::group::Validating $url"
+            if go run main.go -validate "$url"; then
+              echo "::endgroup::"
+            else
+              echo "::endgroup::"
+              echo "::error::Feed failed validation: $url"
+              failed=1
+            fi
+          done
+          exit $failed
