@@ -174,6 +174,18 @@ func main() {
 	}
 
 	feeds = deduplicateFeeds(feeds)
+
+	// Two feeds sharing an htmlUrl would merge their entries (grouping is keyed
+	// by htmlUrl) — that's never intended, so fail the build instead.
+	seenHTML := make(map[string]bool)
+	for _, f := range feeds {
+		if f.HTMLURL != "" && seenHTML[f.HTMLURL] {
+			fmt.Fprintf(os.Stderr, "Error: duplicate htmlUrl %q in %s\n", f.HTMLURL, *opml)
+			os.Exit(1)
+		}
+		seenHTML[f.HTMLURL] = true
+	}
+
 	cache := loadCache(cacheFile)
 
 	fmt.Fprintf(os.Stderr, "Parsed %d unique feeds from OPML\n", len(feeds))
