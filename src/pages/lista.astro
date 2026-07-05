@@ -2,8 +2,7 @@
 import Base from "../layouts/Base.astro"
 import EntryRow from "../components/EntryRow.astro"
 import { getFeeds, sortFeedsByLatest, builtAt, opmlFile } from "../utils/feeds"
-import BlogLink from "../components/BlogLink.astro"
-import FeedLink from "../components/FeedLink.astro"
+import FeedHeader from "../components/FeedHeader.astro"
 
 const feeds = sortFeedsByLatest(await getFeeds())
 ---
@@ -35,14 +34,10 @@ const feeds = sortFeedsByLatest(await getFeeds())
       feeds.map((feed) => (
         <div class="bg-alt border border-border rounded  flex flex-col gap-1 overflow-hidden">
           <div class="py-2.5 px-3 bg-card border-b border-border-l flex items-center gap-2 justify-center">
-            <a
-              class="flex-1 items-center text-base font-bold text-green no-underline leading-snug visited:text-ink-muted hover:text-green-h hover:underline"
-              href={`/sites/${feed.slug}/`}
-            >
-              {feed.title}
-            </a>
-            <BlogLink size="14" url={feed.htmlUrl} />
-            <FeedLink size="14" url={feed.xmlUrl} />
+            <FeedHeader
+              feed={feed}
+              titleClass="text-base font-bold text-green leading-snug visited:text-ink-muted"
+            />
           </div>
 
           <div class="-mt-1">
