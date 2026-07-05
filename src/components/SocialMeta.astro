@@ -1,0 +1,25 @@
+---
+interface Props {
+  title: string
+  description: string
+  url: string
+  twitter?: boolean
+}
+
+const { title, description, url, twitter = false } = Astro.props
+---
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={url} />
+<meta property="og:site_name" content="Blogroll.it" />
+{
+  twitter && (
+    <>
+      <meta name="twitter:card" content="summary" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+    </>
+  )
+}
