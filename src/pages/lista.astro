@@ -2,7 +2,6 @@
 import Base from "../layouts/Base.astro"
 import EntryRow from "../components/EntryRow.astro"
 import { getFeeds, sortFeedsByLatest, builtAt, opmlFile } from "../utils/feeds"
-import BlogRow from "../components/BlogRow.astro"
 import BlogLink from "../components/BlogLink.astro"
 import FeedLink from "../components/FeedLink.astro"
 
@@ -12,7 +11,7 @@ const feeds = sortFeedsByLatest(await getFeeds())
 <Base
   title={`Blogroll.it — La lista (${feeds.length} blog)`}
   description={`Tutti i ${feeds.length} blog personali italiani raccolti in Blogroll.it.`}
-  canonical="https://blogroll.it/directory/"
+  canonical="https://blogroll.it/lista/"
   activeNav="lista"
   opmlFile={opmlFile}
 >
