@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -556,6 +557,10 @@ func parseTime(s string) time.Time {
 
 // --- JSON output ---
 
+// tagRE matches only well-formed tags, so a stray "<" in prose (e.g. "<3")
+// survives stripping.
+var tagRE = regexp.MustCompile(`<[^>]*>`)
+
 func groupEntriesByBlog(entries []Entry) map[string][]Entry {
 	groups := make(map[string][]Entry)
 	for _, e := range entries {
@@ -603,7 +608,7 @@ func buildFeedData(feeds []Feed, allEntries []Entry) []JSONFeed {
 			Title:       f.Title,
 			XMLURL:      f.XMLURL,
 			HTMLURL:     f.HTMLURL,
-			Description: f.Description,
+			Description: strings.TrimSpace(tagRE.ReplaceAllString(f.Description, "")),
 			Slug:        f.Slug,
 			Available:   len(entries) > 0,
 			Entries:     entries,
