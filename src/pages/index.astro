@@ -4,6 +4,8 @@ import { getFeeds, builtAt, opmlFile } from "../utils/feeds"
 import { fmtLong } from "../utils/dates"
 import FeedHeader from "../components/FeedHeader.astro"
 import Card from "../components/Card.astro"
+import SocialMeta from "../components/SocialMeta.astro"
+import MetaLine from "../components/MetaLine.astro"
 
 const feeds = await getFeeds()
 
@@ -30,25 +32,17 @@ const byDate = Object.groupBy(entries, (e) => e.published.slice(0, 10))
   opmlFile={opmlFile}
 >
   <Fragment slot="head">
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Blogroll.it" />
-    <meta
-      property="og:description"
-      content={`Post recenti da ${feeds.length} blog personali italiani, aggiornati ogni poche ore.`}
-    />
-    <meta property="og:url" content="https://blogroll.it/" />
-    <meta property="og:site_name" content="Blogroll.it" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Blogroll.it" />
-    <meta
-      name="twitter:description"
-      content={`Post recenti da ${feeds.length} blog personali italiani, aggiornati ogni poche ore.`}
+    <SocialMeta
+      title="Blogroll.it"
+      description={`Post recenti da ${feeds.length} blog personali italiani, aggiornati ogni poche ore.`}
+      url="https://blogroll.it/"
+      twitter
     />
   </Fragment>
 
-  <p class="text-xs text-ink-muted mb-4" slot="meta-line">
+  <MetaLine slot="meta-line">
     {entryCount} post da {feeds.length} blog negli ultimi {MAX_DAYS} giorni &mdash; {builtAt}
-  </p>
+  </MetaLine>
 
   {
     groupDates.map((date) => (

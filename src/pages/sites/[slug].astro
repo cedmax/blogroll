@@ -3,6 +3,8 @@ import Base from "../../layouts/Base.astro"
 import EntryRow from "../../components/EntryRow.astro"
 import { getFeeds, builtAt, opmlFile } from "../../utils/feeds"
 import FeedHeader from "../../components/FeedHeader.astro"
+import SocialMeta from "../../components/SocialMeta.astro"
+import MetaLine from "../../components/MetaLine.astro"
 
 export async function getStaticPaths() {
   const feeds = await getFeeds()
@@ -20,14 +22,14 @@ const { feed } = Astro.props
   opmlFile={opmlFile}
 >
   <Fragment slot="head">
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={`${feed.title} — Blogroll.it`} />
-    <meta property="og:description" content={feed.description} />
-    <meta property="og:url" content={`https://blogroll.it/sites/${feed.slug}/`} />
-    <meta property="og:site_name" content="Blogroll.it" />
+    <SocialMeta
+      title={`${feed.title} — Blogroll.it`}
+      description={feed.description}
+      url={`https://blogroll.it/sites/${feed.slug}/`}
+    />
   </Fragment>
 
-  <p class="text-xs text-ink-muted mb-4" slot="meta-line">aggiornato il {builtAt}</p>
+  <MetaLine slot="meta-line">aggiornato il {builtAt}</MetaLine>
 
   <div class="bg-card border border-border rounded py-4 px-5 mb-4">
     <div class="text-lg font-bold mb-1 flex items-baseline gap-2 flex-wrap">

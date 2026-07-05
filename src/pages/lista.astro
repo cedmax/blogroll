@@ -4,6 +4,8 @@ import EntryRow from "../components/EntryRow.astro"
 import { getFeeds, sortFeedsByLatest, builtAt, opmlFile } from "../utils/feeds"
 import FeedHeader from "../components/FeedHeader.astro"
 import Card from "../components/Card.astro"
+import SocialMeta from "../components/SocialMeta.astro"
+import MetaLine from "../components/MetaLine.astro"
 
 const feeds = sortFeedsByLatest(await getFeeds())
 ---
@@ -16,19 +18,14 @@ const feeds = sortFeedsByLatest(await getFeeds())
   opmlFile={opmlFile}
 >
   <Fragment slot="head">
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Blogroll.it — La lista" />
-    <meta
-      property="og:description"
-      content={`Tutti i ${feeds.length} blog personali italiani raccolti in Blogroll.it.`}
+    <SocialMeta
+      title="Blogroll.it — La lista"
+      description={`Tutti i ${feeds.length} blog personali italiani raccolti in Blogroll.it.`}
+      url="https://blogroll.it/lista/"
     />
-    <meta property="og:url" content="https://blogroll.it/directory/" />
-    <meta property="og:site_name" content="Blogroll.it" />
   </Fragment>
 
-  <p class="text-xs text-ink-muted mb-4" slot="meta-line">
-    {feeds.length} blog — aggiornato il {builtAt}
-  </p>
+  <MetaLine slot="meta-line">{feeds.length} blog — aggiornato il {builtAt}</MetaLine>
 
   <div class="flex flex-col gap-4">
     {
