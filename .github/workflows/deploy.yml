@@ -19,9 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       # actions-netlify writes back to GitHub on each deploy:
-      contents: write       # commit comment
-      statuses: write        # commit status (green check)
-      pull-requests: write   # PR preview-link comment
+      contents: write # commit comment
+      statuses: write # commit status (green check)
+      pull-requests: write # PR preview-link comment
     steps:
       - uses: actions/checkout@v4
 
