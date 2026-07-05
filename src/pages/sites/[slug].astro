@@ -45,7 +45,7 @@ const { feed } = Astro.props
     }
   </div>
 
-  <div class="entries">
+  <div class="bg-card border border-border rounded overflow-hidden">
     {feed.entries.map((entry) => <EntryRow {...entry} />)}
   </div>
 </Base>
