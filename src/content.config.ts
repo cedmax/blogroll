@@ -15,6 +15,7 @@ const feeds = defineCollection({
     htmlUrl: z.string(),
     description: z.string(),
     slug: z.string(),
+    available: z.boolean().default(true),
     entries: z.array(entrySchema),
   }),
 })

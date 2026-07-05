@@ -4,7 +4,7 @@ import { fmtLong } from "./dates"
 
 export async function getFeeds() {
   const entries = await getCollection("feeds")
-  return entries.map((e) => e.data)
+  return entries.filter((e) => !!e.data.available).map((e) => e.data)
 }
 
 export type Feed = Awaited<ReturnType<typeof getFeeds>>[number]
