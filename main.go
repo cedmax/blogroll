@@ -156,7 +156,13 @@ func buildSlugs(feeds []Feed, opmlFile string) map[string]string {
 
 func main() {
 	opml := flag.String("opml", opmlFile, "Path to OPML file")
+	validate := flag.String("validate", "", "Fetch and parse a single feed URL, then exit (no data written). Exits non-zero if unreachable or unparseable.")
 	flag.Parse()
+
+	if *validate != "" {
+		validateFeed(*validate)
+		return
+	}
 
 	feeds, err := parseOPML(*opml)
 	if err != nil {
@@ -198,6 +204,20 @@ func main() {
 	}
 
 	fmt.Fprintf(os.Stderr, "Wrote src/data/feeds/ (%d feeds)\n", len(feeds))
+}
+
+// validateFeed fetches and parses a single feed URL, writing nothing. It reuses
+// the same fetch/parse path as the build so it accepts exactly what the build
+// consumes. Exits 0 if the feed is reachable and yields ≥1 entry, 1 otherwise.
+// Used by the "Validate submitted feed" PR check.
+func validateFeed(rawURL string) {
+	client := &http.Client{Timeout: connectTimeout + readTimeout}
+	entries, err := fetchFeed(client, Feed{Title: rawURL, XMLURL: rawURL}, Cache{}, &sync.Mutex{})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "INVALID %s: %v\n", rawURL, err)
+		os.Exit(1)
+	}
+	fmt.Fprintf(os.Stderr, "OK %s (%d entries)\n", rawURL, len(entries))
 }
 
 // --- OPML parsing ---

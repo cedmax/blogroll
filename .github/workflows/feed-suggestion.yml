@@ -51,6 +51,6 @@ jobs:
             - Sito: ${{ steps.opml.outputs.site_url }}
             - Feed: ${{ steps.opml.outputs.feed_url }}
 
-            La build su questa PR fa il fetch del feed: se il feed non è valido o non raggiungibile, il check fallisce.
+            Un controllo dedicato (**Validate submitted feed**) fa il fetch del feed aggiunto: se non è raggiungibile o non è un feed RSS/Atom valido, il check fallisce.
 
             Closes #${{ github.event.issue.number }}
