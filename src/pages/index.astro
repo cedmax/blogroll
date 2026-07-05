@@ -1,7 +1,7 @@
 ---
 import Base from "../layouts/Base.astro"
 import { getFeeds, builtAt, opmlFile } from "../utils/feeds"
-import { fmtLong } from "../utils/dates"
+import { fmtLong, dayKey } from "../utils/dates"
 import FeedHeader from "../components/FeedHeader.astro"
 import Card from "../components/Card.astro"
 import SocialMeta from "../components/SocialMeta.astro"
@@ -20,8 +20,8 @@ const entries = feeds
   .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
 
 const entryCount = entries.length
-const groupDates = [...new Set(entries.map((e) => e.published.slice(0, 10)))]
-const byDate = Object.groupBy(entries, (e) => e.published.slice(0, 10))
+const groupDates = [...new Set(entries.map((e) => dayKey(new Date(e.published))))]
+const byDate = Object.groupBy(entries, (e) => dayKey(new Date(e.published)))
 ---
 
 <Base
