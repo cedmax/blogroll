@@ -99,27 +99,34 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
 </html>
 
 <script>
-  document.querySelectorAll(".feed-link").forEach((wrapper) => {
-    const link = wrapper.querySelector("a")
-    const tooltip = wrapper.querySelector("span")
-    if (!link || !tooltip) return
-
-    const originalMessage = tooltip.textContent
-
+  const wireCopy = (link: HTMLAnchorElement | null, label: Element | null) => {
+    if (!link || !label) return
+    const original = label.textContent
     link.addEventListener("click", (e) => {
       e.preventDefault()
       navigator.clipboard.writeText(link.href).then(() => {
-        tooltip.textContent = "Link copiato"
+        label.textContent = "Link copiato"
+        setTimeout(() => {
+          label.textContent = original
+        }, 1500)
       })
     })
+  }
 
-    const reset = () => {
-      setTimeout(() => {
-        tooltip.textContent = originalMessage
-      }, 300)
-    }
+  // Desktop: RSS icon + hover tooltip (feedback = tooltip span)
+  document.querySelectorAll(".feed-link").forEach((wrapper) => {
+    wireCopy(wrapper.querySelector("a"), wrapper.querySelector("span"))
+  })
 
-    link.addEventListener("mouseleave", reset)
-    link.addEventListener("blur", reset)
+  // Touch: menu row (feedback = the row label)
+  document.querySelectorAll<HTMLAnchorElement>(".feed-copy").forEach((link) => {
+    wireCopy(link, link.querySelector(".copy-label"))
+  })
+
+  // Close any open touch menu when tapping outside it
+  document.addEventListener("click", (e) => {
+    document.querySelectorAll<HTMLDetailsElement>("details.feed-menu[open]").forEach((menu) => {
+      if (!menu.contains(e.target as Node)) menu.removeAttribute("open")
+    })
   })
 </script>

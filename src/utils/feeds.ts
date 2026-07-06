@@ -20,5 +20,9 @@ export function sortFeedsByLatest(feeds: Feed[]) {
   })
 }
 
+export function reportUrl(siteUrl: string) {
+  return `https://github.com/cedmax/blogroll/issues/new?template=remove-feed.yml&title=${encodeURIComponent("Rimuovi sito: " + siteUrl)}`
+}
+
 export const builtAt = fmtLong(new Date(site.builtAt))
 export const opmlFile = site.opmlFile
