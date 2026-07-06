@@ -15,7 +15,7 @@ const { feed, linked = true, titleClass = "" } = Astro.props
   linked ? (
     <a
       class:list={[
-        "flex-1 text-ink no-underline hover:underline hover:text-green-h",
+        "flex-1 text-ink no-underline hover:underline hover:text-accent-h",
         titleClass,
       ]}
       href={`/sites/${feed.slug}/`}

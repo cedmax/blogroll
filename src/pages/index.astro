@@ -74,7 +74,7 @@ const collapsedByDate = Object.fromEntries(
           <Card class="pb-1.5 mb-2">
             <div class="bg-card block rounded border-b border-border-l">
               <a
-                class="py-2.5 pl-3 pr inline-flex items-center text-base font-semibold text-green no-underline leading-snug visited:text-ink-muted hover:text-green-h hover:underline"
+                class="py-2.5 pl-3 pr inline-flex items-center text-base font-semibold text-accent no-underline leading-snug visited:text-ink-muted hover:text-accent-h hover:underline"
                 href={entry.url}
                 target="_blank"
               >
@@ -82,7 +82,7 @@ const collapsedByDate = Object.fromEntries(
               </a>{" "}
               {entry.extraCount > 0 && (
                 <a
-                  class="pr-3 text-xs text-ink-muted hover:text-green-h inline"
+                  class="pr-3 text-xs text-ink-muted hover:text-accent-h inline"
                   href={`/sites/${entry.feed.slug}/`}
                 >
                   + {entry.extraCount === 1 ? "un altro" : `altri ${entry.extraCount}`} post
