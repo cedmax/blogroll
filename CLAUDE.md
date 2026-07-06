@@ -12,6 +12,7 @@ npm run preview # serve dist/ locally
 
 go run main.go              # fetch feeds manually + write src/data/
 go run main.go -opml <file> # use a different OPML file
+npm run reset               # delete cache.json (forces the next run to refetch all)
 ```
 
 ## Architecture
@@ -26,7 +27,7 @@ astro build  → reads src/data/ via Content Layer → outputs dist/
 **Data flow:**
 
 1. `parseOPML(public/ita.opml)` → `[]Feed`
-2. `fetchAllFeeds()` — parallel HTTP with conditional GET (ETag/Last-Modified), results written to `cache.json`
+2. `fetchAllFeeds()` — parallel HTTP with conditional GET (ETag/Last-Modified), results written to `cache.json`. **If `cache.json` already exists when the build starts, existing feeds are served from it with no network request** and only feeds missing from the cache (newly added) are fetched; if it's absent, everything is refetched. CI drives this via the cache restore step: PR/merge builds restore a `cache.json` so warm builds serve from cache and never touch the blogs' servers, while scheduled/dispatch builds start without one and refetch everything fresh (`.github/workflows/deploy.yml`). Locally, `npm run reset` deletes `cache.json` to force a full refetch.
 3. `buildFeedData()` — groups entries by feed, sorts each feed's entries desc, sorts feeds by latest entry date
 4. `writeSiteJSON()` → `src/data/site.json` (builtAt, opmlFile)
 5. `writeFeedFiles()` → `src/data/feeds/<slug>.json` (one file per feed; clears existing `*.json` first so removed feeds don't leave stale pages)

@@ -192,10 +192,22 @@ func main() {
 		seenHTML[f.HTMLURL] = true
 	}
 
+	// A present cache.json means "serve from cache": every already-cached feed is
+	// used as-is with no network request, and only feeds missing from it (newly
+	// added) are fetched. CI arranges this — PR/merge builds restore a cache.json
+	// so they never touch the blogs' servers, while scheduled/dispatch builds
+	// start without one and refetch everything fresh. Locally, `npm run reset`
+	// deletes cache.json to force a full refetch.
+	_, statErr := os.Stat(cacheFile)
+	cacheOnly := statErr == nil
 	cache := loadCache(cacheFile)
 
-	fmt.Fprintf(os.Stderr, "Parsed %d unique feeds from OPML\n", len(feeds))
-	entries, stats := fetchAllFeeds(feeds, cache)
+	mode := "full fetch"
+	if cacheOnly {
+		mode = "cache-only (fetching misses)"
+	}
+	fmt.Fprintf(os.Stderr, "Parsed %d unique feeds from OPML — %s\n", len(feeds), mode)
+	entries, stats := fetchAllFeeds(feeds, cache, cacheOnly)
 
 	// Prune cache keys for feeds no longer in the OPML: they'd otherwise grow
 	// the cache unboundedly, and a re-added feed would send a stale ETag and
@@ -211,8 +223,8 @@ func main() {
 	}
 
 	saveCache(cacheFile, cache)
-	fmt.Fprintf(os.Stderr, "Feeds: %d total, %d ok, %d failed\n",
-		stats.total, stats.success, stats.failed)
+	fmt.Fprintf(os.Stderr, "Feeds: %d total, %d ok, %d failed (%d from cache)\n",
+		stats.total, stats.success, stats.failed, stats.cached)
 
 	slugMap := buildSlugs(feeds, filepath.Base(*opml))
 	for i, f := range feeds {
@@ -333,9 +345,13 @@ type fetchStats struct {
 	total   int
 	success int
 	failed  int
+	cached  int // served from cache without a network request (cache-only mode)
 }
 
-func fetchAllFeeds(feeds []Feed, cache Cache) ([]Entry, fetchStats) {
+// fetchAllFeeds fetches every feed in parallel. In cacheOnly mode, feeds already
+// present in the cache are served straight from it with no network request; only
+// feeds missing from the cache (newly added) are actually fetched.
+func fetchAllFeeds(feeds []Feed, cache Cache, cacheOnly bool) ([]Entry, fetchStats) {
 	var (
 		mu      sync.Mutex
 		entries []Entry
@@ -355,6 +371,20 @@ func fetchAllFeeds(feeds []Feed, cache Cache) ([]Entry, fetchStats) {
 		go func(f Feed) {
 			defer wg.Done()
 			defer func() { <-sem }()
+
+			if cacheOnly {
+				mu.Lock()
+				cached, ok := cache[f.XMLURL]
+				if ok {
+					stats.success++
+					stats.cached++
+					entries = append(entries, cached.Entries...)
+					mu.Unlock()
+					return
+				}
+				mu.Unlock()
+				// cache miss (new feed): fall through and fetch it fresh.
+			}
 
 			fetched, err := fetchFeed(client, f, cache, &mu)
 			mu.Lock()
