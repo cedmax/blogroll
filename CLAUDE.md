@@ -72,8 +72,10 @@ src/
   layouts/Base.astro         ← HTML shell, nav, footer; imports global.css
   components/
     EntryRow.astro           ← date|title grid row (blog pages + la lista)
-    FeedHeader.astro         ← feed title + BlogLink + FeedLink
-    Card.astro, BlogLink.astro, FeedLink.astro, MetaLine.astro, SocialMeta.astro
+    FeedHeader.astro         ← feed title + FeedActions
+    FeedActions.astro        ← kebab (⋮) <details> menu: report / visit / copy-feed rows
+    icons/                   ← ExternalIcon, RssIcon, WarningIcon (shared SVGs)
+    Card.astro, MetaLine.astro, SocialMeta.astro
     Prose.astro              ← styles Markdown via scoped `.prose :global(...)` (see below)
   pages/
     index.astro              ← homepage (recent entries grouped by day)
