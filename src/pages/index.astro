@@ -25,6 +25,24 @@ const entryCount = entries.length
 // because Rome is always at or ahead of UTC.
 const groupDates = [...new Set(entries.map((e) => dayKey(new Date(e.published))))]
 const byDate = Object.groupBy(entries, (e) => dayKey(new Date(e.published)))
+
+function collapseByFeed(dayEntries: typeof entries) {
+  const feedGroups = new Map<string, typeof entries>()
+  for (const e of dayEntries) {
+    const slug = e.feed.slug
+    if (!feedGroups.has(slug)) feedGroups.set(slug, [])
+    feedGroups.get(slug)!.push(e)
+  }
+  const keep = new Map<(typeof entries)[0], number>()
+  for (const group of feedGroups.values()) {
+    keep.set(group[group.length - 1], group.length - 1)
+  }
+  return dayEntries.filter((e) => keep.has(e)).map((e) => ({ ...e, extraCount: keep.get(e)! }))
+}
+
+const collapsedByDate = Object.fromEntries(
+  groupDates.map((date) => [date, collapseByFeed(byDate[date]!)]),
+)
 ---
 
 <Base
@@ -52,16 +70,24 @@ const byDate = Object.groupBy(entries, (e) => dayKey(new Date(e.published)))
         <h2 class="text-3xl font-black tracking-tight text-ink-muted mb-3 pb-2 border-b-2 border-ink-muted">
           {fmtLong(new Date(date))}
         </h2>
-        {byDate[date]!.map((entry) => (
+        {collapsedByDate[date]!.map((entry) => (
           <Card class="pb-1.5 mb-2">
             <div class="bg-card block rounded border-b border-border-l">
               <a
-                class="py-2.5 px-3 flex items-center text-base font-semibold text-green no-underline leading-snug visited:text-ink-muted hover:text-green-h hover:underline"
+                class="py-2.5 pl-3 pr inline-flex items-center text-base font-semibold text-green no-underline leading-snug visited:text-ink-muted hover:text-green-h hover:underline"
                 href={entry.url}
                 target="_blank"
               >
-                {entry.title}
-              </a>
+                {entry.title}{" "}
+              </a>{" "}
+              {entry.extraCount > 0 && (
+                <a
+                  class="pr-3 text-xs text-ink-muted hover:text-green-h inline"
+                  href={`/sites/${entry.feed.slug}/`}
+                >
+                  + {entry.extraCount === 1 ? "un altro" : `altri ${entry.extraCount}`} post
+                </a>
+              )}
             </div>
             <div class="px-3 pt-0.5 text-ink-muted flex items-center gap-2 justify-center">
               <FeedHeader feed={entry.feed} titleClass="text-xs" />
