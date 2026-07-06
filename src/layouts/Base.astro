@@ -41,16 +41,13 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
       <header
         class="flex relative items-center justify-between flex-wrap gap-x-4 gap-y-2 mb-16 pb-4 border-b border-border"
       >
-        <a
-          class="text-4xl font-black tracking-tighter text-accent no-underline hover:text-accent-h"
-          href="/">blogroll.it</a
-        >
+        <a class="text-4xl font-black tracking-tighter no-underline" href="/">blogroll.it</a>
         <nav class="flex gap-5 text-sm">
           {
             activeNav === "home" ? (
               <span class="text-ink font-semibold">post recenti</span>
             ) : (
-              <a class="text-ink-muted no-underline hover:text-accent hover:underline" href="/">
+              <a class="text-ink-muted hover:text-accent" href="/">
                 post recenti
               </a>
             )
@@ -59,10 +56,7 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
             activeNav === "lista" ? (
               <span class="text-ink font-semibold">la lista</span>
             ) : (
-              <a
-                class="text-ink-muted no-underline hover:text-accent hover:underline"
-                href="/lista/"
-              >
+              <a class="text-ink-muted hover:text-accent" href="/lista/">
                 la lista
               </a>
             )
@@ -71,19 +65,14 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
             activeNav === "info" ? (
               <span class="text-ink font-semibold">il progetto</span>
             ) : (
-              <a
-                class="text-ink-muted no-underline hover:text-accent hover:underline"
-                href="/info/"
-              >
+              <a class="text-ink-muted  hover:text-accent" href="/info/">
                 il progetto
               </a>
             )
           }
 
-          <a
-            class="text-ink-muted no-underline hover:text-accent hover:underline"
-            target="_blank"
-            href={`/${opmlFile}`}>OPML</a
+          <a class="text-ink-muted hover:text-accent" target="_blank" href={`/${opmlFile}`}
+            >OPML</a
           >
           <button
             id="theme-toggle"
@@ -101,9 +90,7 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
       <slot />
 
       <footer class="mt-12 pt-4 text-right border-t border-border text-xs text-ink-muted">
-        <a
-          class="text-accent no-underline hover:text-accent-h hover:underline"
-          href="https://github.com/cedmax/blogroll/issues/new?template=add-feed.yml"
+        <a href="https://github.com/cedmax/blogroll/issues/new?template=add-feed.yml"
           >Suggerisci un sito</a
         >.
       </footer>
