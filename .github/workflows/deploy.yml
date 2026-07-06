@@ -34,11 +34,13 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
-      # PR and merge builds reuse the newest feed cache so build churn hits the
-      # blogs with conditional GETs (mostly 304s) instead of full fetches. A 304
-      # never hides new content — only unchanged feeds are skipped. Scheduled
-      # and manual builds skip the restore on purpose: they refetch everything
-      # from scratch, so a bad ETag can never outlive one cycle.
+      # PR and merge builds restore the newest feed cache. main.go keys off its
+      # presence (see below): it serves every cached feed straight from the file
+      # with no network at all, fetching only feeds missing from it (newly
+      # added). This keeps build churn entirely off the blogs' servers and immune
+      # to their transient failures. Scheduled and manual builds skip the restore
+      # on purpose: with no cache.json they refetch everything from scratch, so a
+      # bad ETag can never outlive one cycle. Freshness is owned by the 6h build.
       - name: Restore feed cache (PR and merge builds)
         if: github.event_name == 'pull_request' || github.event_name == 'push'
         uses: actions/cache/restore@v4
@@ -48,7 +50,10 @@ jobs:
           key: feed-cache-
           restore-keys: feed-cache-
 
-      # postinstall runs `go run main.go`: fetches feeds, writes src/data/
+      # postinstall runs `go run main.go`: writes src/data/. It keys off whether
+      # cache.json exists — present (PR/merge builds, from the restore above)
+      # means serve cached feeds and fetch only misses; absent (scheduled and
+      # dispatch builds) means refetch everything fresh.
       - run: npm ci
 
       # Save the just-written cache as the new baseline. Keys are immutable, so

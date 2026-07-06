@@ -1,6 +1,7 @@
 {
   "scripts": {
     "postinstall": "go run main.go",
+    "reset": "rm -f cache.json",
     "build": "astro build",
     "dev": "astro dev --host",
     "preview": "astro preview",
