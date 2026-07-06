@@ -113,17 +113,12 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
     })
   }
 
-  // Desktop: RSS icon + hover tooltip (feedback = tooltip span)
-  document.querySelectorAll(".feed-link").forEach((wrapper) => {
-    wireCopy(wrapper.querySelector("a"), wrapper.querySelector("span"))
-  })
-
-  // Touch: menu row (feedback = the row label)
+  // Copy the feed URL from the actions menu (feedback = the row label)
   document.querySelectorAll<HTMLAnchorElement>(".feed-copy").forEach((link) => {
     wireCopy(link, link.querySelector(".copy-label"))
   })
 
-  // Close any open touch menu when tapping outside it
+  // Close any open menu when clicking outside it
   document.addEventListener("click", (e) => {
     document.querySelectorAll<HTMLDetailsElement>("details.feed-menu[open]").forEach((menu) => {
       if (!menu.contains(e.target as Node)) menu.removeAttribute("open")

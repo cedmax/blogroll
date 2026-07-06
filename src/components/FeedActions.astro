@@ -1,8 +1,4 @@
 ---
-import BlogLink from "./BlogLink.astro"
-import FeedLink from "./FeedLink.astro"
-import ReportLink from "./ReportLink.astro"
-import Tooltip from "./Tooltip.astro"
 import ExternalIcon from "./icons/ExternalIcon.astro"
 import RssIcon from "./icons/RssIcon.astro"
 import WarningIcon from "./icons/WarningIcon.astro"
@@ -14,32 +10,12 @@ interface Props {
   showReport?: boolean
 }
 
-const { feed, size, showReport = false } = Astro.props
+const { feed, showReport = false } = Astro.props
 ---
 
-<!-- hover / mouse devices: icons + tooltips -->
-<div class="flex items-center gap-3 [@media(hover:none)]:hidden">
-  {
-    showReport && (
-      <Tooltip message="Segnala il sito">
-        <ReportLink size={size} siteUrl={feed.htmlUrl} />
-      </Tooltip>
-    )
-  }
-  <Tooltip message="Vai al sito">
-    <BlogLink size={size} url={feed.htmlUrl} />
-  </Tooltip>
-  <div class="feed-link">
-    <Tooltip message="Copia il link del feed">
-      <FeedLink size={size} url={feed.xmlUrl} />
-    </Tooltip>
-  </div>
-</div>
-
-<!-- touch devices: labeled dropdown menu -->
-<details class="hidden [@media(hover:none)]:block relative feed-menu">
+<details class="relative feed-menu">
   <summary
-    class="flex items-center justify-center w-11 h-11 -my-2 -mr-2 cursor-pointer list-none text-ink [&::-webkit-details-marker]:hidden"
+    class="flex items-center justify-center w-9 h-9 -my-1 -mr-2 cursor-pointer list-none text-ink hover:text-green [&::-webkit-details-marker]:hidden"
   >
     <span class="sr-only">Azioni</span>
     <svg
@@ -57,20 +33,8 @@ const { feed, size, showReport = false } = Astro.props
   </summary>
 
   <div
-    class="absolute right-0 top-full z-20 mt-1 min-w-56 rounded-md border border-border bg-card shadow-lg py-1"
+    class="absolute font-light text-sm right-0 top-full z-20 mt-1 min-w-56 rounded-md border border-border bg-card shadow-lg overflow-hidden"
   >
-    {
-      showReport && (
-        <a
-          href={reportUrl(feed.htmlUrl)}
-          target="_blank"
-          class="flex items-center gap-3 px-4 py-3 min-h-11 text-ink no-underline hover:bg-bg"
-        >
-          <WarningIcon size="18" />
-          Segnala il sito
-        </a>
-      )
-    }
     <a
       href={feed.htmlUrl}
       target="_blank"
@@ -87,5 +51,17 @@ const { feed, size, showReport = false } = Astro.props
       <RssIcon size="18" />
       <span class="copy-label">Copia il link del feed</span>
     </a>
+    {
+      showReport && (
+        <a
+          href={reportUrl(feed.htmlUrl)}
+          target="_blank"
+          class="flex items-center gap-3 px-4 py-3 min-h-11 text-ink no-underline hover:bg-bg"
+        >
+          <WarningIcon size="18" />
+          Segnala il sito
+        </a>
+      )
+    }
   </div>
 </details>
