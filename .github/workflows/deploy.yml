@@ -63,7 +63,11 @@ jobs:
           key: feed-cache-${{ github.run_id }}
 
       # astro build → dist/ (incl. _redirects from the netlify-redirects integration)
+      # PR builds bake the deploy-preview origin into absolute URLs (og:image);
+      # the matching `alias` on the deploy step makes Netlify serve that URL.
       - run: npm run build
+        env:
+          SITE_URL: ${{ github.event_name == 'pull_request' && format('https://deploy-preview-{0}--blogroll-it.netlify.app', github.event.number) || '' }}
 
       # Fork PRs can't read the Netlify secrets, so the deploy would fail red;
       # skip it there (the build and feed checks above still run).
@@ -76,6 +80,8 @@ jobs:
           production-deploy: ${{ github.event_name != 'pull_request' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: ${{ github.event_name }} ${{ github.sha }}
+          # deterministic preview URL, must match SITE_URL in the build step
+          alias: ${{ github.event_name == 'pull_request' && format('deploy-preview-{0}', github.event.number) || '' }}
           # skip the Environments deployment record (not needed)
           enable-github-deployment: false
         env:

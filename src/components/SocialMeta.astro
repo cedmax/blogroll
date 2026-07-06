@@ -7,7 +7,7 @@ interface Props {
 
 const { title, description, url } = Astro.props
 
-const image = "https://blogroll.it/og.png"
+const image = new URL("/og.png", Astro.site).href
 const imageAlt = "blogroll.it — siti personali italiani, on a roll"
 ---
 
