@@ -28,7 +28,7 @@ const byDate = Object.groupBy(entries, (e) => dayKey(new Date(e.published)))
 ---
 
 <Base
-  title={`Blogroll.it — ${entryCount} post da ${feeds.length} siti`}
+  title={`blogroll.it — ${entryCount} post da ${feeds.length} siti`}
   description={`Post recenti da ${feeds.length} siti personali italiani, aggiornati ogni poche ore. Niente algoritmi, niente account, solo link.`}
   canonical="https://blogroll.it/"
   activeNav="home"
@@ -36,7 +36,7 @@ const byDate = Object.groupBy(entries, (e) => dayKey(new Date(e.published)))
 >
   <Fragment slot="head">
     <SocialMeta
-      title="Blogroll.it"
+      title="blogroll.it"
       description={`Post recenti da ${feeds.length} siti personali italiani, aggiornati ogni poche ore.`}
       url="https://blogroll.it/"
       twitter
