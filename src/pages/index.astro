@@ -28,8 +28,8 @@ const byDate = Object.groupBy(entries, (e) => dayKey(new Date(e.published)))
 ---
 
 <Base
-  title={`Blogroll.it — ${entryCount} post da ${feeds.length} blog`}
-  description={`Post recenti da ${feeds.length} blog personali italiani, aggiornati ogni poche ore. Niente algoritmi, niente account, solo link.`}
+  title={`Blogroll.it — ${entryCount} post da ${feeds.length} siti`}
+  description={`Post recenti da ${feeds.length} siti personali italiani, aggiornati ogni poche ore. Niente algoritmi, niente account, solo link.`}
   canonical="https://blogroll.it/"
   activeNav="home"
   opmlFile={opmlFile}
@@ -37,14 +37,14 @@ const byDate = Object.groupBy(entries, (e) => dayKey(new Date(e.published)))
   <Fragment slot="head">
     <SocialMeta
       title="Blogroll.it"
-      description={`Post recenti da ${feeds.length} blog personali italiani, aggiornati ogni poche ore.`}
+      description={`Post recenti da ${feeds.length} siti personali italiani, aggiornati ogni poche ore.`}
       url="https://blogroll.it/"
       twitter
     />
   </Fragment>
 
   <MetaLine slot="meta-line">
-    {entryCount} post da {feeds.length} blog negli ultimi {MAX_DAYS} giorni &mdash; {builtAt}
+    {entryCount} post da {feeds.length} siti negli ultimi {MAX_DAYS} giorni &mdash; {builtAt}
   </MetaLine>
 
   {

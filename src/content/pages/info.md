@@ -1,10 +1,10 @@
 # Il progetto
 
-Blogroll.it è un aggregatore di feed di siti personali italiani: nasce come risposta al risorgimento dei siti personali, e con l'ispirazione di [Ye Olde Blogroll](https://blogroll.org) e [Engineering Blogs](https://engineeringblogs.xyz/).
+Blogroll.it è un aggregatore di feed di siti personali italiani: nasce come risposta al risorgimento dei siti personali, e che trae l'ispirazione da [Ye Olde Blogroll](https://blogroll.org) e [Engineering Blogs](https://engineeringblogs.xyz/).
 
 ## Come aggiungere un sito
 
-Apri un [issue](https://github.com/cedmax/blogroll/issues/new?template=add-feed.yml) su github, le applicazioni verranno curate manualmente.
+Apri un [issue](https://github.com/cedmax/blogroll/issues/new?template=add-feed.yml) su github. Le applicazioni verranno curate manualmente.
 
 ## Regolamento
 

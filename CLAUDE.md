@@ -71,7 +71,7 @@ src/
   styles/global.css          ← Tailwind import + @theme design tokens (bg/ink/green/border…)
   layouts/Base.astro         ← HTML shell, nav, footer; imports global.css
   components/
-    EntryRow.astro           ← date|title grid row (blog pages + la lista)
+    EntryRow.astro           ← date|title grid row (site pages + la lista)
     FeedHeader.astro         ← feed title + FeedActions
     FeedActions.astro        ← kebab (⋮) <details> menu: report / visit / copy-feed rows
     icons/                   ← ExternalIcon, RssIcon, WarningIcon (shared SVGs)
@@ -79,7 +79,7 @@ src/
     Prose.astro              ← styles Markdown via scoped `.prose :global(...)` (see below)
   pages/
     index.astro              ← homepage (recent entries grouped by day)
-    lista.astro              ← all blogs sorted by last post date (sortFeedsByLatest)
+    lista.astro              ← all sites sorted by last post date (sortFeedsByLatest)
     info.astro               ← "il progetto" page (renders src/content/pages/info.md)
     404.astro                ← renders src/content/pages/404.md
     sites/[slug].astro       ← one page per feed (getStaticPaths over feeds collection)
@@ -93,7 +93,7 @@ integrations/netlify-redirects.mjs ← build hook: writes dist/_redirects (302s 
 Feeds are sorted by latest-entry date at render time in `sortFeedsByLatest`
 (`src/utils/feeds.ts`), not in Go.
 
-**`activeNav` prop** on `Base.astro` drives nav active state (`"home"`, `"lista"`, `"info"`, or `""` for blog pages).
+**`activeNav` prop** on `Base.astro` drives nav active state (`"home"`, `"lista"`, `"info"`, or `""` for site pages).
 
 **Styling:** Tailwind utility classes live directly in the markup; shared design
 tokens are defined in `src/styles/global.css`'s `@theme` block. Markdown/slotted
