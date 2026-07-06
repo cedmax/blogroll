@@ -5,7 +5,7 @@ Source for [blogroll.it](https://blogroll.it/) — a feed aggregator for Italian
 ## Requirements
 
 - Go 1.25+
-- Node.js 22+ (for Astro/npm)
+- Node.js 24+ (for Astro/npm)
 
 ## Commands
 
