@@ -11,16 +11,16 @@ const feeds = sortFeedsByLatest(await getFeeds())
 ---
 
 <Base
-  title={`Blogroll.it — La lista (${feeds.length} siti)`}
-  description={`Tutti i ${feeds.length} siti personali italiani raccolti in Blogroll.it.`}
+  title={`blogroll.it — La lista (${feeds.length} siti)`}
+  description={`Tutti i ${feeds.length} siti personali italiani raccolti in blogroll.it.`}
   canonical="https://blogroll.it/lista/"
   activeNav="lista"
   opmlFile={opmlFile}
 >
   <Fragment slot="head">
     <SocialMeta
-      title="Blogroll.it — La lista"
-      description={`Tutti i ${feeds.length} siti personali italiani raccolti in Blogroll.it.`}
+      title="blogroll.it — La lista"
+      description={`Tutti i ${feeds.length} siti personali italiani raccolti in blogroll.it.`}
       url="https://blogroll.it/lista/"
     />
   </Fragment>

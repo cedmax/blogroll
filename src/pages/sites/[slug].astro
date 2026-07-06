@@ -15,7 +15,7 @@ const { feed } = Astro.props
 ---
 
 <Base
-  title={`${feed.title} — Blogroll.it`}
+  title={`${feed.title} — blogroll.it`}
   description={feed.description}
   canonical={`https://blogroll.it/sites/${feed.slug}/`}
   activeNav=""
@@ -23,7 +23,7 @@ const { feed } = Astro.props
 >
   <Fragment slot="head">
     <SocialMeta
-      title={`${feed.title} — Blogroll.it`}
+      title={`${feed.title} — blogroll.it`}
       description={feed.description}
       url={`https://blogroll.it/sites/${feed.slug}/`}
     />

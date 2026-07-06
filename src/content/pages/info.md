@@ -1,6 +1,6 @@
 # Il progetto
 
-Blogroll.it è un aggregatore di feed di siti personali italiani: nasce come risposta al risorgimento dei siti personali, e che trae l'ispirazione da [Ye Olde Blogroll](https://blogroll.org) e [Engineering Blogs](https://engineeringblogs.xyz/).
+blogroll.it è un aggregatore di feed di siti personali italiani: nasce come risposta al risorgimento dei siti personali, e che trae l'ispirazione da [Ye Olde Blogroll](https://blogroll.org) e [Engineering Blogs](https://engineeringblogs.xyz/).
 
 ## Come aggiungere un sito
 

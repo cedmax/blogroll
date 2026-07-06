@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Grazie per il contributo! Blogroll.it raccoglie **siti in lingua italiana**.
+        Grazie per il contributo! blogroll.it raccoglie **siti in lingua italiana**.
 
         Prima di procedere, un paio di note:
         - I feed con contenuti in inglese **non** vengono pubblicati.

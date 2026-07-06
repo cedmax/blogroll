@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <opml version="1.0">
   <head>
-    <title>Blogroll.it</title>
+    <title>blogroll.it</title>
   </head>
   <body>
-    <outline text="Il Blogroll all'italiana" title="Il Blogroll all'italiana">
+    <outline text="Il blogroll all'italiana" title="Il blogroll all'italiana">
       <outline type="rss" text="Lorenzo Gerli" htmlUrl="https://www.lorenzogerli.net/" xmlUrl="https://www.lorenzogerli.net/feed/" />
       <outline type="rss" text="kOoLiNuS" htmlUrl="https://koolinus.net/blog/" xmlUrl="https://koolinus.net/blog/feed/" />
       <outline type="rss" text="Notiziole di .mau." htmlUrl="https://xmau.com/notiziole/" xmlUrl="https://xmau.com/notiziole/feed/" />

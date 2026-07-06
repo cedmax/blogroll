@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	userAgent      = "Blogroll.it/1.0 (+https://blogroll.it)"
+	userAgent      = "blogroll.it/1.0 (+https://blogroll.it)"
 	maxConcurrency = 30
 	connectTimeout = 10 * time.Second
 	readTimeout    = 15 * time.Second
