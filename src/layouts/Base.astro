@@ -97,31 +97,3 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
     </div>
   </body>
 </html>
-
-<script>
-  const wireCopy = (link: HTMLAnchorElement | null, label: Element | null) => {
-    if (!link || !label) return
-    const original = label.textContent
-    link.addEventListener("click", (e) => {
-      e.preventDefault()
-      navigator.clipboard.writeText(link.href).then(() => {
-        label.textContent = "Link copiato"
-        setTimeout(() => {
-          label.textContent = original
-        }, 1500)
-      })
-    })
-  }
-
-  // Copy the feed URL from the actions menu (feedback = the row label)
-  document.querySelectorAll<HTMLAnchorElement>(".feed-copy").forEach((link) => {
-    wireCopy(link, link.querySelector(".copy-label"))
-  })
-
-  // Close any open menu when clicking outside it
-  document.addEventListener("click", (e) => {
-    document.querySelectorAll<HTMLDetailsElement>("details.feed-menu[open]").forEach((menu) => {
-      if (!menu.contains(e.target as Node)) menu.removeAttribute("open")
-    })
-  })
-</script>

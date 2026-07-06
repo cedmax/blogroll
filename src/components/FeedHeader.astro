@@ -4,13 +4,11 @@ import type { Feed } from "../utils/feeds"
 
 interface Props {
   feed: Feed
-  size?: string
   linked?: boolean
   titleClass?: string
-  showReport?: boolean
 }
 
-const { feed, size, linked = true, titleClass = "", showReport = false } = Astro.props
+const { feed, linked = true, titleClass = "" } = Astro.props
 ---
 
 {
@@ -28,4 +26,4 @@ const { feed, size, linked = true, titleClass = "", showReport = false } = Astro
     <span class:list={["flex-1", titleClass]}>{feed.title}</span>
   )
 }
-<FeedActions feed={feed} size={size} showReport={showReport} />
+<FeedActions feed={feed} />
