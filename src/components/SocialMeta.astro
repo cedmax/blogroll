@@ -3,10 +3,12 @@ interface Props {
   title: string
   description: string
   url: string
-  twitter?: boolean
 }
 
-const { title, description, url, twitter = false } = Astro.props
+const { title, description, url } = Astro.props
+
+const image = "https://blogroll.it/og.png"
+const imageAlt = "blogroll.it — siti personali italiani, on a roll"
 ---
 
 <meta property="og:type" content="website" />
@@ -14,12 +16,8 @@ const { title, description, url, twitter = false } = Astro.props
 <meta property="og:description" content={description} />
 <meta property="og:url" content={url} />
 <meta property="og:site_name" content="blogroll.it" />
-{
-  twitter && (
-    <>
-      <meta name="twitter:card" content="summary" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
-    </>
-  )
-}
+<meta property="og:image" content={image} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={imageAlt} />
+<meta name="twitter:card" content="summary_large_image" />
