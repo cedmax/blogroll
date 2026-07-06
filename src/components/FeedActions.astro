@@ -6,11 +6,11 @@ import { reportUrl, type Feed } from "../utils/feeds"
 
 interface Props {
   feed: Feed
-  size?: string
-  showReport?: boolean
 }
 
-const { feed, showReport = false } = Astro.props
+const { feed } = Astro.props
+
+const rowClass = "flex items-center gap-3 px-4 py-3 min-h-11 text-ink no-underline hover:bg-bg"
 ---
 
 <details class="relative feed-menu">
@@ -35,33 +35,46 @@ const { feed, showReport = false } = Astro.props
   <div
     class="absolute font-light text-sm right-0 top-full z-20 mt-1 min-w-56 rounded-md border border-border bg-card shadow-lg overflow-hidden"
   >
-    <a
-      href={feed.htmlUrl}
-      target="_blank"
-      class="flex items-center gap-3 px-4 py-3 min-h-11 text-ink no-underline hover:bg-bg"
-    >
+    <a href={feed.htmlUrl} target="_blank" class={rowClass}>
       <ExternalIcon size="18" />
       Vai al sito
     </a>
-    <a
-      href={feed.xmlUrl}
-      data-copy
-      class="feed-copy flex items-center gap-3 px-4 py-3 min-h-11 text-ink no-underline hover:bg-bg"
-    >
+    <a href={feed.xmlUrl} target="_blank" class:list={["feed-copy", rowClass]}>
       <RssIcon size="18" />
       <span class="copy-label">Copia il link del feed</span>
     </a>
-    {
-      showReport && (
-        <a
-          href={reportUrl(feed.htmlUrl)}
-          target="_blank"
-          class="flex items-center gap-3 px-4 py-3 min-h-11 text-ink no-underline hover:bg-bg"
-        >
-          <WarningIcon size="18" />
-          Segnala il sito
-        </a>
-      )
-    }
+
+    <a href={reportUrl(feed.htmlUrl)} target="_blank" class={rowClass}>
+      <WarningIcon size="18" />
+      Segnala il sito
+    </a>
   </div>
 </details>
+
+<script>
+  const wireCopy = (link: HTMLAnchorElement | null, label: Element | null) => {
+    if (!link || !label) return
+    const original = label.textContent
+    link.addEventListener("click", (e) => {
+      e.preventDefault()
+      navigator.clipboard.writeText(link.href).then(() => {
+        label.textContent = "Link copiato"
+        setTimeout(() => {
+          label.textContent = original
+        }, 1500)
+      })
+    })
+  }
+
+  // Copy the feed URL from the actions menu (feedback = the row label)
+  document.querySelectorAll<HTMLAnchorElement>(".feed-copy").forEach((link) => {
+    wireCopy(link, link.querySelector(".copy-label"))
+  })
+
+  // Close any open menu when clicking outside it
+  document.addEventListener("click", (e) => {
+    document.querySelectorAll<HTMLDetailsElement>("details.feed-menu[open]").forEach((menu) => {
+      if (!menu.contains(e.target as Node)) menu.removeAttribute("open")
+    })
+  })
+</script>
