@@ -42,5 +42,9 @@ body:
     attributes:
       label: Conferma
       options:
-        - label: I contenuti del feed sono solo in Italiano
+        - label: Il sito è uno spazio personale, non un profilo su una piattaforma di publishing (es. Medium, Substack)
+          required: true
+        - label: I contenuti del sito sono personali, non commerciali
+          required: true
+        - label: I contenuti del feed sono solo in italiano
           required: true
