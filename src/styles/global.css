@@ -38,6 +38,16 @@
   --color-border-l: #2a2d30;
 }
 
+@layer base {
+  a {
+    @apply text-accent no-underline;
+  }
+
+  a:hover {
+    @apply text-accent-h underline;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
