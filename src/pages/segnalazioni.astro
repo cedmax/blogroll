@@ -1,0 +1,270 @@
+---
+import Base from "../layouts/Base.astro"
+import { opmlFile } from "../utils/feeds"
+
+const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? ""
+console.log(sitekey)
+---
+
+<Base
+  title="Proponi un sito — blogroll.it"
+  description="Segnala un sito italiano da aggiungere all'aggregatore."
+  canonical="https://blogroll.it/segnalazioni/"
+  activeNav=""
+  opmlFile={opmlFile}
+>
+  <h1 class="text-3xl font-black tracking-tight mb-6">Proponi un sito</h1>
+
+  <div
+    class="bg-card border border-border rounded py-6 px-5 mb-6 text-sm text-ink-muted leading-relaxed"
+  >
+    <p class="mb-2">
+      Grazie per il contributo! blogroll.it raccoglie <strong class="text-ink"
+        >siti in lingua italiana</strong
+      >.
+    </p>
+    <ul class="list-disc pl-5 space-y-1">
+      <li>
+        I feed con contenuti in inglese <strong class="text-ink">non</strong> vengono pubblicati.
+      </li>
+      <li>
+        Se il sito pubblica in più lingue, indica un feed che contenga <strong class="text-ink"
+          >solo</strong
+        > i post in italiano (molti CMS espongono un feed per categoria/lingua, es.&nbsp;<code
+          class="text-ink break-all">.../category/italiano/feed/</code
+        >).
+      </li>
+    </ul>
+  </div>
+
+  <form id="submit-form" novalidate>
+    <!-- Honeypot: visually hidden, not display:none, so bots fill it but humans don't see it -->
+    <div
+      aria-hidden="true"
+      style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"
+    >
+      <label for="website">Sito web</label>
+      <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <div class="space-y-5">
+      <div>
+        <label class="block text-sm font-semibold mb-1" for="site-name">Nome del sito</label>
+        <p class="text-xs text-ink-muted mb-1">Come dovrebbe comparire nell'elenco.</p>
+        <input
+          class="w-full bg-card border border-border rounded px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-accent"
+          type="text"
+          id="site-name"
+          name="siteName"
+          placeholder="es. cedmax.net"
+          required
+          autocomplete="off"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1" for="site-url">URL del sito</label>
+        <p class="text-xs text-ink-muted mb-1">L'indirizzo della homepage (non del feed).</p>
+        <input
+          class="w-full bg-card border border-border rounded px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-accent"
+          type="url"
+          id="site-url"
+          name="siteUrl"
+          placeholder="es. https://cedmax.net/"
+          required
+          autocomplete="off"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1" for="feed-url"
+          >URL del feed RSS/Atom</label
+        >
+        <p class="text-xs text-ink-muted mb-1">
+          Il feed da cui leggere i post. Deve contenere solo contenuti in italiano.
+        </p>
+        <input
+          class="w-full bg-card border border-border rounded px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-accent"
+          type="url"
+          id="feed-url"
+          name="feedUrl"
+          placeholder="es. https://cedmax.net/feeds/rssit"
+          required
+          autocomplete="off"
+        />
+      </div>
+
+      <fieldset class="border border-border rounded px-4 py-4">
+        <legend class="text-sm font-semibold px-1">Conferma</legend>
+        <div class="space-y-3 mt-2">
+          <label class="flex gap-3 items-start text-sm text-ink-muted cursor-pointer">
+            <input class="mt-0.5 accent-accent shrink-0" type="checkbox" id="ack1" required />
+            <span
+              >Il sito è uno spazio personale, non un profilo su una piattaforma di publishing
+              (es. Medium, Substack)</span
+            >
+          </label>
+          <label class="flex gap-3 items-start text-sm text-ink-muted cursor-pointer">
+            <input class="mt-0.5 accent-accent shrink-0" type="checkbox" id="ack2" required />
+            <span>I contenuti del sito sono personali, non commerciali</span>
+          </label>
+          <label class="flex gap-3 items-start text-sm text-ink-muted cursor-pointer">
+            <input class="mt-0.5 accent-accent shrink-0" type="checkbox" id="ack3" required />
+            <span>I contenuti del feed sono solo in italiano</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div id="cf-turnstile"></div>
+
+      <div>
+        <button
+          id="submit-btn"
+          type="submit"
+          disabled
+          class="bg-accent text-bg font-semibold text-sm px-5 py-2 rounded cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent-h transition-colors"
+        >
+          Invia segnalazione
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <div
+    id="form-success"
+    class="hidden bg-card border border-border rounded py-6 px-5 text-sm text-ink-muted"
+  >
+    <p class="font-semibold text-ink mb-1">Segnalazione inviata!</p>
+    <p>
+      Grazie. Verrà aperta automaticamente una pull request per aggiungere il sito all'elenco.
+    </p>
+  </div>
+
+  <p id="form-error" class="hidden mt-4 text-sm text-red-600 dark:text-red-400"></p>
+</Base>
+
+<script define:vars={{ sitekey }}>
+  const form = document.getElementById("submit-form")
+  const submitBtn = document.getElementById("submit-btn")
+  const successMsg = document.getElementById("form-success")
+  const errorMsg = document.getElementById("form-error")
+
+  const siteNameInput = document.getElementById("site-name")
+  const siteUrlInput = document.getElementById("site-url")
+  const feedUrlInput = document.getElementById("feed-url")
+  const ack1 = document.getElementById("ack1")
+  const ack2 = document.getElementById("ack2")
+  const ack3 = document.getElementById("ack3")
+  const honeypotInput = document.getElementById("website")
+
+  const isValidUrl = (s) => {
+    try {
+      const u = new URL(s)
+      return u.protocol === "http:" || u.protocol === "https:"
+    } catch {
+      return false
+    }
+  }
+
+  const updateSubmitState = () => {
+    const ready =
+      siteNameInput.value.trim() !== "" &&
+      isValidUrl(siteUrlInput.value.trim()) &&
+      isValidUrl(feedUrlInput.value.trim()) &&
+      ack1.checked &&
+      ack2.checked &&
+      ack3.checked
+    submitBtn.disabled = !ready
+  }
+
+  for (const el of [siteNameInput, siteUrlInput, feedUrlInput, ack1, ack2, ack3]) {
+    el.addEventListener("input", updateSubmitState)
+    el.addEventListener("change", updateSubmitState)
+  }
+
+  // Turnstile: appearance "interaction-only" shows nothing unless a challenge is needed;
+  // execution "execute" lets us trigger the check at submit time via turnstile.execute()
+  let widgetId = null
+  let resolveToken = null
+
+  window.onTurnstileLoad = () => {
+    widgetId = window.turnstile.render("#cf-turnstile", {
+      sitekey: sitekey || "1x00000000000000000000AA", // demo key if not configured
+      appearance: "interaction-only",
+      execution: "execute",
+      callback: (token) => {
+        if (resolveToken) {
+          resolveToken(token)
+          resolveToken = null
+        }
+      },
+      "error-callback": () => {
+        if (resolveToken) {
+          resolveToken("")
+          resolveToken = null
+        }
+      },
+    })
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault()
+    errorMsg.classList.add("hidden")
+    submitBtn.disabled = true
+    submitBtn.textContent = "Invio in corso…"
+
+    let token = ""
+    if (widgetId !== null) {
+      token = await Promise.race([
+        new Promise((resolve) => {
+          resolveToken = resolve
+          window.turnstile.execute(widgetId)
+        }),
+        new Promise((resolve) => setTimeout(() => resolve(""), 8000)),
+      ])
+    }
+
+    const payload = {
+      siteName: siteNameInput.value.trim(),
+      siteUrl: siteUrlInput.value.trim(),
+      feedUrl: feedUrlInput.value.trim(),
+      ack1: ack1.checked,
+      ack2: ack2.checked,
+      ack3: ack3.checked,
+      turnstileToken: token,
+      honeypot: honeypotInput.value,
+    }
+
+    try {
+      const resp = await fetch("/api/submit-blog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      const data = await resp.json()
+
+      if (resp.ok && data.ok) {
+        form.classList.add("hidden")
+        successMsg.classList.remove("hidden")
+      } else {
+        errorMsg.textContent = data.error ?? "Errore imprevisto. Riprova più tardi."
+        errorMsg.classList.remove("hidden")
+        submitBtn.disabled = false
+        submitBtn.textContent = "Invia segnalazione"
+        if (widgetId !== null) window.turnstile.reset(widgetId)
+      }
+    } catch {
+      errorMsg.textContent = "Errore di rete. Controlla la connessione e riprova."
+      errorMsg.classList.remove("hidden")
+      submitBtn.disabled = false
+      submitBtn.textContent = "Invia segnalazione"
+      if (widgetId !== null) window.turnstile.reset(widgetId)
+    }
+  })
+</script>
+
+<script
+  is:inline
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit"
+  async
+  defer></script>

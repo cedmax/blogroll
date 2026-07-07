@@ -17,11 +17,6 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      # actions-netlify writes back to GitHub on each deploy:
-      contents: write # commit comment
-      statuses: write # commit status (green check)
-      pull-requests: write # PR preview-link comment
     steps:
       - uses: actions/checkout@v4
 
@@ -73,22 +68,22 @@ jobs:
       - run: npm run build
         env:
           SITE_URL: ${{ github.event_name == 'pull_request' && format('https://deploy-preview-{0}--blogroll-it.netlify.app', github.event.number) || '' }}
+          PUBLIC_TURNSTILE_SITEKEY: ${{ secrets.TURNSTILE_SITEKEY }}
 
       # Fork PRs can't read the Netlify secrets, so the deploy would fail red;
       # skip it there (the build and feed checks above still run).
+      # netlify-cli instead of nwtgck/actions-netlify: the action's API-based
+      # deploy ships function bundles the current Netlify runtime can't boot
+      # (Internal Error, no function logs); the CLI packages them correctly and
+      # reads netlify.toml ([functions] directory + included_files) natively.
       - name: Deploy to Netlify
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: nwtgck/actions-netlify@v3
-        with:
-          publish-dir: dist
-          # prod on push/schedule/dispatch; draft preview on pull_request
-          production-deploy: ${{ github.event_name != 'pull_request' }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: ${{ github.event_name }} ${{ github.sha }}
-          # deterministic preview URL, must match SITE_URL in the build step
-          alias: ${{ github.event_name == 'pull_request' && format('deploy-preview-{0}', github.event.number) || '' }}
-          # skip the Environments deployment record (not needed)
-          enable-github-deployment: false
+        # prod on push/schedule/dispatch; on pull_request an aliased draft:
+        # deterministic preview URL, must match SITE_URL in the build step
+        run: >
+          npx netlify-cli deploy --no-build --dir dist
+          --message "${{ github.event_name }} ${{ github.sha }}"
+          ${{ github.event_name != 'pull_request' && '--prod' || format('--alias deploy-preview-{0}', github.event.number) }}
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

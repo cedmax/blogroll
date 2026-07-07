@@ -5,3 +5,5 @@ dist/
 node_modules/
 .astro
 blogroll
+# Local Netlify folder
+.netlify
