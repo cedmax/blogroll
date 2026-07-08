@@ -17,6 +17,9 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # PR preview-link comment
     steps:
       - uses: actions/checkout@v4
 
@@ -71,10 +74,11 @@ jobs:
 
       # Fork PRs can't read the Netlify secrets, so the deploy would fail red;
       # skip it there (the build and feed checks above still run).
-      # netlify-cli instead of nwtgck/actions-netlify: the action's API-based
-      # deploy ships function bundles the current Netlify runtime can't boot
-      # (Internal Error, no function logs); the CLI packages them correctly and
-      # reads netlify.toml ([functions] directory) natively.
+      # netlify-cli instead of nwtgck/actions-netlify (tried v3 and v4): the
+      # action's API-based deploy ships function bundles the current Netlify
+      # runtime can't boot (Internal Error, no function logs), even for a
+      # single dependency-free function file; the CLI packages them correctly
+      # and reads netlify.toml ([functions] directory) natively.
       - name: Deploy to Netlify
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         # prod on push/schedule/dispatch; on pull_request an aliased draft:
@@ -86,3 +90,19 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      # Preview-link comment (was provided by actions-netlify). The aliased
+      # URL is stable across pushes, so comment once and skip if present.
+      - name: Comment preview URL on PR
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          url="https://deploy-preview-${PR_NUMBER}--blogroll-it.netlify.app"
+          existing=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+            --jq "[.[] | select(.body | contains(\"${url}\"))] | length")
+          if [ "$existing" = "0" ]; then
+            gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+              -f body="🚀 Deploy preview: ${url}"
+          fi
