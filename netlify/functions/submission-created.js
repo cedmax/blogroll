@@ -1,6 +1,3 @@
-const fs = require("fs")
-const path = require("path")
-
 // Easy to extend — add hostnames (without www.) here to reject suggestions
 const BLOCKED_HOSTNAMES = [
   "medium.com",
@@ -14,24 +11,6 @@ const BLOCKED_HOSTNAMES = [
   "livejournal.com",
   "blogger.com",
 ]
-
-// Mirrors the normalizeUrl in add-feed-to-opml.mjs
-const normalizeUrl = (raw) => {
-  try {
-    const u = new URL(raw)
-    const host = u.hostname.toLowerCase().replace(/^www\./, "")
-    return `${host}${u.pathname.replace(/\/$/, "")}${u.search}`
-  } catch {
-    return raw
-  }
-}
-
-const unescapeXmlAttr = (s) =>
-  s
-    .replace(/&quot;/g, '"')
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&")
 
 exports.handler = async (event) => {
   try {
@@ -79,24 +58,8 @@ exports.handler = async (event) => {
       }
     }
 
-    // OPML duplicate check — file bundled at deploy time via netlify.toml included_files
-    try {
-      const opml = fs.readFileSync(path.join(__dirname, "public/ita.opml"), "utf8")
-
-      const normAttr = (v) => normalizeUrl(unescapeXmlAttr(v))
-      const existingFeeds = [...opml.matchAll(/xmlUrl="([^"]+)"/g)].map(([, v]) => normAttr(v))
-      if (existingFeeds.includes(normalizeUrl(feedUrl))) {
-        console.error(`Submission rejected: feed already present (${feedUrl})`)
-        return { statusCode: 200 }
-      }
-      const existingSites = [...opml.matchAll(/htmlUrl="([^"]+)"/g)].map(([, v]) => normAttr(v))
-      if (existingSites.includes(normalizeUrl(siteUrl))) {
-        console.error(`Submission rejected: site already present (${siteUrl})`)
-        return { statusCode: 200 }
-      }
-    } catch (err) {
-      console.warn("OPML duplicate check skipped:", err.message)
-    }
+    // Duplicates are rejected downstream: add-feed-to-opml.mjs fails the
+    // feed-suggestion workflow if the feed/site is already in the OPML.
 
     // Create GitHub issue — body format must match what stefanbuck/github-issue-parser@v3
     // expects when parsing against add-feed.yml (headings mirror the template's field labels)

@@ -1,3 +1,2 @@
 [functions]
   directory = "netlify/functions"
-  included_files = ["public/ita.opml"]

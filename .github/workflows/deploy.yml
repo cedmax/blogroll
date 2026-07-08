@@ -74,7 +74,7 @@ jobs:
       # netlify-cli instead of nwtgck/actions-netlify: the action's API-based
       # deploy ships function bundles the current Netlify runtime can't boot
       # (Internal Error, no function logs); the CLI packages them correctly and
-      # reads netlify.toml ([functions] directory + included_files) natively.
+      # reads netlify.toml ([functions] directory) natively.
       - name: Deploy to Netlify
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         # prod on push/schedule/dispatch; on pull_request an aliased draft:
