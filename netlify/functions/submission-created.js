@@ -15,12 +15,6 @@ const BLOCKED_HOSTNAMES = [
   "blogger.com",
 ]
 
-const json = (statusCode, body) => ({
-  statusCode,
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(body),
-})
-
 // Mirrors the normalizeUrl in add-feed-to-opml.mjs
 const normalizeUrl = (raw) => {
   try {
@@ -41,27 +35,19 @@ const unescapeXmlAttr = (s) =>
 
 exports.handler = async (event) => {
   try {
-    if (event.httpMethod !== "POST") {
-      return { statusCode: 405, body: "Method Not Allowed" }
-    }
+    const { data } = JSON.parse(event.body).payload
+    const { siteName, siteUrl, feedUrl, ack1, ack2, ack3, website } = data
 
-    let body
-    try {
-      body = JSON.parse(event.body)
-    } catch {
-      return json(400, { error: "Richiesta non valida." })
-    }
-
-    const { siteName, siteUrl, feedUrl, ack1, ack2, ack3, turnstileToken, honeypot } = body
-
-    // Honeypot — bots fill it, humans don't; silently succeed
-    if (honeypot) {
-      return json(200, { ok: true })
+    // Honeypot — Netlify already filters these before this function fires,
+    // but re-check defensively in case that filtering changes or lags
+    if (website) {
+      return { statusCode: 200 }
     }
 
     // Server-side re-check of acknowledgments
     if (!ack1 || !ack2 || !ack3) {
-      return json(400, { error: "Tutte le conferme sono obbligatorie." })
+      console.error("Submission rejected: missing acknowledgment checkbox(es)")
+      return { statusCode: 200 }
     }
 
     // URL validation
@@ -73,7 +59,8 @@ exports.handler = async (event) => {
         const u = new URL(value)
         if (u.protocol !== "http:" && u.protocol !== "https:") throw new Error()
       } catch {
-        return json(400, { error: `URL del ${label} non valido.` })
+        console.error(`Submission rejected: invalid URL del ${label}: ${value}`)
+        return { statusCode: 200 }
       }
     }
 
@@ -87,39 +74,8 @@ exports.handler = async (event) => {
         siteHost === blocked ||
         siteHost.endsWith("." + blocked)
       ) {
-        return json(400, {
-          error:
-            "Questo tipo di piattaforma non è accettata. Solo siti personali indipendenti.",
-        })
-      }
-    }
-
-    // Turnstile verification (fail open on network errors or missing token)
-    const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET
-    if (TURNSTILE_SECRET && turnstileToken) {
-      try {
-        const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 5000)
-        let verifyData
-        try {
-          const verifyResp = await fetch(
-            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ secret: TURNSTILE_SECRET, response: turnstileToken }),
-              signal: controller.signal,
-            },
-          )
-          verifyData = await verifyResp.json()
-        } finally {
-          clearTimeout(timeout)
-        }
-        if (!verifyData.success) {
-          return json(400, { error: "Verifica di sicurezza fallita. Riprova." })
-        }
-      } catch (err) {
-        console.warn("Turnstile verify failed, proceeding:", err.message)
+        console.error(`Submission rejected: blocked hostname (${feedHost}, ${siteHost})`)
+        return { statusCode: 200 }
       }
     }
 
@@ -130,11 +86,13 @@ exports.handler = async (event) => {
       const normAttr = (v) => normalizeUrl(unescapeXmlAttr(v))
       const existingFeeds = [...opml.matchAll(/xmlUrl="([^"]+)"/g)].map(([, v]) => normAttr(v))
       if (existingFeeds.includes(normalizeUrl(feedUrl))) {
-        return json(400, { error: "Questo feed è già presente nella lista." })
+        console.error(`Submission rejected: feed already present (${feedUrl})`)
+        return { statusCode: 200 }
       }
       const existingSites = [...opml.matchAll(/htmlUrl="([^"]+)"/g)].map(([, v]) => normAttr(v))
       if (existingSites.includes(normalizeUrl(siteUrl))) {
-        return json(400, { error: "Questo sito è già presente nella lista." })
+        console.error(`Submission rejected: site already present (${siteUrl})`)
+        return { statusCode: 200 }
       }
     } catch (err) {
       console.warn("OPML duplicate check skipped:", err.message)
@@ -183,19 +141,14 @@ exports.handler = async (event) => {
       if (!issueResp.ok) {
         const text = await issueResp.text()
         console.error("GitHub API error:", issueResp.status, text)
-        return json(500, {
-          error: "Errore durante la creazione della segnalazione. Riprova più tardi.",
-        })
       }
     } catch (err) {
       console.error("GitHub issue creation failed:", err.message)
-      return json(500, {
-        error: "Errore durante la creazione della segnalazione. Riprova più tardi.",
-      })
     }
 
-    return json(200, { ok: true })
-  } catch (e) {
-    return json(500, { error: e.message })
+    return { statusCode: 200 }
+  } catch (err) {
+    console.error("submission-created handler failed:", err.message)
+    return { statusCode: 200 }
   }
 }

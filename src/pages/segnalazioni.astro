@@ -1,9 +1,6 @@
 ---
 import Base from "../layouts/Base.astro"
 import { opmlFile } from "../utils/feeds"
-
-const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? ""
-console.log(sitekey)
 ---
 
 <Base
@@ -37,7 +34,16 @@ console.log(sitekey)
     </ul>
   </div>
 
-  <form id="submit-form" novalidate>
+  <form
+    id="submit-form"
+    name="segnalazioni"
+    method="POST"
+    data-netlify="true"
+    netlify-honeypot="website"
+    novalidate
+  >
+    <input type="hidden" name="form-name" value="segnalazioni" />
+
     <!-- Honeypot: visually hidden, not display:none, so bots fill it but humans don't see it -->
     <div
       aria-hidden="true"
@@ -98,24 +104,40 @@ console.log(sitekey)
         <legend class="text-sm font-semibold px-1">Conferma</legend>
         <div class="space-y-3 mt-2">
           <label class="flex gap-3 items-start text-sm text-ink-muted cursor-pointer">
-            <input class="mt-0.5 accent-accent shrink-0" type="checkbox" id="ack1" required />
+            <input
+              class="mt-0.5 accent-accent shrink-0"
+              type="checkbox"
+              id="ack1"
+              name="ack1"
+              required
+            />
             <span
               >Il sito è uno spazio personale, non un profilo su una piattaforma di publishing
               (es. Medium, Substack)</span
             >
           </label>
           <label class="flex gap-3 items-start text-sm text-ink-muted cursor-pointer">
-            <input class="mt-0.5 accent-accent shrink-0" type="checkbox" id="ack2" required />
+            <input
+              class="mt-0.5 accent-accent shrink-0"
+              type="checkbox"
+              id="ack2"
+              name="ack2"
+              required
+            />
             <span>I contenuti del sito sono personali, non commerciali</span>
           </label>
           <label class="flex gap-3 items-start text-sm text-ink-muted cursor-pointer">
-            <input class="mt-0.5 accent-accent shrink-0" type="checkbox" id="ack3" required />
+            <input
+              class="mt-0.5 accent-accent shrink-0"
+              type="checkbox"
+              id="ack3"
+              name="ack3"
+              required
+            />
             <span>I contenuti del feed sono solo in italiano</span>
           </label>
         </div>
       </fieldset>
-
-      <div id="cf-turnstile"></div>
 
       <div>
         <button
@@ -143,7 +165,7 @@ console.log(sitekey)
   <p id="form-error" class="hidden mt-4 text-sm text-red-600 dark:text-red-400"></p>
 </Base>
 
-<script define:vars={{ sitekey }}>
+<script>
   const form = document.getElementById("submit-form")
   const submitBtn = document.getElementById("submit-btn")
   const successMsg = document.getElementById("form-success")
@@ -155,7 +177,6 @@ console.log(sitekey)
   const ack1 = document.getElementById("ack1")
   const ack2 = document.getElementById("ack2")
   const ack3 = document.getElementById("ack3")
-  const honeypotInput = document.getElementById("website")
 
   const isValidUrl = (s) => {
     try {
@@ -182,89 +203,33 @@ console.log(sitekey)
     el.addEventListener("change", updateSubmitState)
   }
 
-  // Turnstile: appearance "interaction-only" shows nothing unless a challenge is needed;
-  // execution "execute" lets us trigger the check at submit time via turnstile.execute()
-  let widgetId = null
-  let resolveToken = null
-
-  window.onTurnstileLoad = () => {
-    widgetId = window.turnstile.render("#cf-turnstile", {
-      sitekey: sitekey || "1x00000000000000000000AA", // demo key if not configured
-      appearance: "interaction-only",
-      execution: "execute",
-      callback: (token) => {
-        if (resolveToken) {
-          resolveToken(token)
-          resolveToken = null
-        }
-      },
-      "error-callback": () => {
-        if (resolveToken) {
-          resolveToken("")
-          resolveToken = null
-        }
-      },
-    })
-  }
-
   form.addEventListener("submit", async (e) => {
     e.preventDefault()
     errorMsg.classList.add("hidden")
     submitBtn.disabled = true
     submitBtn.textContent = "Invio in corso…"
 
-    let token = ""
-    if (widgetId !== null) {
-      token = await Promise.race([
-        new Promise((resolve) => {
-          resolveToken = resolve
-          window.turnstile.execute(widgetId)
-        }),
-        new Promise((resolve) => setTimeout(() => resolve(""), 8000)),
-      ])
-    }
-
-    const payload = {
-      siteName: siteNameInput.value.trim(),
-      siteUrl: siteUrlInput.value.trim(),
-      feedUrl: feedUrlInput.value.trim(),
-      ack1: ack1.checked,
-      ack2: ack2.checked,
-      ack3: ack3.checked,
-      turnstileToken: token,
-      honeypot: honeypotInput.value,
-    }
-
     try {
-      const resp = await fetch("/api/submit-blog", {
+      const resp = await fetch("/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(new FormData(form)).toString(),
       })
-      const data = await resp.json()
 
-      if (resp.ok && data.ok) {
+      if (resp.ok) {
         form.classList.add("hidden")
         successMsg.classList.remove("hidden")
       } else {
-        errorMsg.textContent = data.error ?? "Errore imprevisto. Riprova più tardi."
+        errorMsg.textContent = "Errore imprevisto. Riprova più tardi."
         errorMsg.classList.remove("hidden")
         submitBtn.disabled = false
         submitBtn.textContent = "Invia segnalazione"
-        if (widgetId !== null) window.turnstile.reset(widgetId)
       }
     } catch {
       errorMsg.textContent = "Errore di rete. Controlla la connessione e riprova."
       errorMsg.classList.remove("hidden")
       submitBtn.disabled = false
       submitBtn.textContent = "Invia segnalazione"
-      if (widgetId !== null) window.turnstile.reset(widgetId)
     }
   })
 </script>
-
-<script
-  is:inline
-  src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit"
-  async
-  defer></script>

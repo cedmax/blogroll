@@ -68,7 +68,6 @@ jobs:
       - run: npm run build
         env:
           SITE_URL: ${{ github.event_name == 'pull_request' && format('https://deploy-preview-{0}--blogroll-it.netlify.app', github.event.number) || '' }}
-          PUBLIC_TURNSTILE_SITEKEY: ${{ secrets.TURNSTILE_SITEKEY }}
 
       # Fork PRs can't read the Netlify secrets, so the deploy would fail red;
       # skip it there (the build and feed checks above still run).
