@@ -18,4 +18,4 @@ I siti con contenuti illegali, in violazione di copyright verranno eliminati. Ci
 
 ## Come segnalare un sito per la rimozione
 
-Apri una [richiesta di rimozione](https://github.com/cedmax/blogroll/issues/new?template=remove-feed.yml) su github, indicando l'URL e il motivo. Le segnalazioni verranno valutate manualmente.
+Usa l'azione **Segnala il sito** nel menu di ciascun sito nell'elenco, indicando il motivo. Le richieste verranno valutate manualmente.

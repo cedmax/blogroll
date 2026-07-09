@@ -19,7 +19,7 @@ const overrides = {
 
 export default [
   {
-    ignores: ["dist/*", "public/*", ".astro/*"],
+    ignores: ["dist/*", "public/*", ".astro/*", "netlify/*"],
   },
   {
     files: ["**/*.{js,mjs,cjs,ts}"],

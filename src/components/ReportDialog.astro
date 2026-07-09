@@ -1,0 +1,134 @@
+---
+
+---
+
+<!--
+  <dialog> nests inside <form>, not the other way around: Netlify's
+  build-time crawler apparently can't parse a <form> that's a descendant of
+  <dialog>, and separately builds its field schema by walking the form's own
+  DOM descendants (not the `form="..."` cross-reference attribute) — so
+  fields living outside the form via that attribute get silently dropped
+  from recorded submissions even though the browser happily includes them.
+  Nesting dialog inside form satisfies both: the form is trivially detected
+  as a top-level element, and every field is a genuine descendant of it.
+-->
+<form
+  id="report-form"
+  name="segnalazioni"
+  method="POST"
+  data-netlify="true"
+  netlify-honeypot="website"
+  novalidate
+>
+  <input type="hidden" name="form-name" value="segnalazioni" />
+  <input type="hidden" id="report-site-url" name="siteUrl" />
+
+  <!-- Honeypot: visually hidden, not display:none, so bots fill it but humans don't see it -->
+  <div
+    aria-hidden="true"
+    style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"
+  >
+    <label for="report-website">Sito web</label>
+    <input type="text" id="report-website" name="website" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <dialog
+    id="report-dialog"
+    class="bg-card text-ink border border-border rounded p-6 mx-auto mt-[8vh] mb-auto w-[calc(100%-2rem)] max-w-md max-h-[calc(100%-2rem)] overflow-y-auto backdrop:bg-black/50"
+  >
+    <h2 class="text-lg font-black tracking-tight mb-1">Segnala un sito</h2>
+    <p class="text-xs text-ink-muted mb-4">
+      Le richieste di rimozione vengono valutate manualmente.
+    </p>
+
+    <div id="report-fields" class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold mb-1" for="report-reason">Motivo</label>
+        <textarea
+          class="w-full bg-card border border-border rounded px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-accent"
+          id="report-reason"
+          name="reason"
+          rows="4"
+          placeholder="Descrivi il motivo della richiesta."
+          required></textarea>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button
+          type="button"
+          id="report-cancel-btn"
+          class="text-sm text-ink-muted hover:text-accent px-3 py-2 cursor-pointer"
+        >
+          Annulla
+        </button>
+        <button
+          id="report-submit-btn"
+          type="submit"
+          disabled
+          class="bg-accent text-bg font-semibold text-sm px-5 py-2 rounded cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent-h transition-colors"
+        >
+          Invia segnalazione
+        </button>
+      </div>
+    </div>
+
+    <div id="report-success" class="hidden text-sm text-ink-muted">
+      <p class="font-semibold text-ink mb-1">Segnalazione inviata!</p>
+      <p>Grazie.</p>
+    </div>
+
+    <p id="report-error" class="hidden mt-4 text-sm text-red-600 dark:text-red-400">
+      Errore durante l'invio. Controlla la connessione e riprova più tardi.
+    </p>
+  </dialog>
+</form>
+
+<script>
+  import { wireNetlifyForm, isNonEmpty } from "../scripts/netlify-form"
+
+  const dialog = document.getElementById("report-dialog") as HTMLDialogElement
+  const form = document.getElementById("report-form") as HTMLFormElement
+  const fields = document.getElementById("report-fields") as HTMLElement
+  const submitBtn = document.getElementById("report-submit-btn") as HTMLButtonElement
+  const successEl = document.getElementById("report-success") as HTMLElement
+  const errorEl = document.getElementById("report-error") as HTMLElement
+  const siteUrlInput = document.getElementById("report-site-url") as HTMLInputElement
+  const cancelBtn = document.getElementById("report-cancel-btn") as HTMLButtonElement
+  const submitLabel = "Invia segnalazione"
+
+  document.querySelectorAll<HTMLButtonElement>(".report-trigger").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      siteUrlInput.value = btn.dataset.siteUrl ?? ""
+      btn.closest("details.feed-menu")?.removeAttribute("open")
+      dialog.showModal()
+    })
+  })
+
+  cancelBtn.addEventListener("click", () => dialog.close())
+
+  // Close on backdrop click (the click target is the dialog itself, not its content)
+  dialog.addEventListener("click", (e) => {
+    if (e.target === dialog) dialog.close()
+  })
+
+  // Covers every close path (cancel, backdrop click, Escape) so a reopened
+  // dialog never shows a stale success/error state from a previous report
+  dialog.addEventListener("close", () => {
+    form.reset()
+    fields.classList.remove("hidden")
+    successEl.classList.add("hidden")
+    errorEl.classList.add("hidden")
+    submitBtn.disabled = true
+    submitBtn.textContent = submitLabel
+  })
+
+  wireNetlifyForm({
+    form,
+    contentEl: fields,
+    submitBtn,
+    successEl,
+    errorEl,
+    submitLabel,
+    isValid: (data) => isNonEmpty(data.get("reason") as string),
+  })
+</script>

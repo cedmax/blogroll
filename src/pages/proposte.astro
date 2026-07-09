@@ -1,0 +1,175 @@
+---
+import Base from "../layouts/Base.astro"
+import { opmlFile } from "../utils/feeds"
+---
+
+<Base
+  title="Proponi un sito — blogroll.it"
+  description="Segnala un sito italiano da aggiungere all'aggregatore."
+  canonical="https://blogroll.it/proposte/"
+  activeNav=""
+  opmlFile={opmlFile}
+>
+  <h1 class="text-3xl font-black tracking-tight mb-1">Proponi un sito</h1>
+  <p class="text-xs text-ink-muted mb-6">
+    Prima di segnalare, dai un'occhiata ai <a class="underline" href="/info/"
+      >requisiti completi</a
+    >.
+  </p>
+
+  <form
+    id="submit-form"
+    name="proposte"
+    method="POST"
+    data-netlify="true"
+    netlify-honeypot="website"
+    novalidate
+  >
+    <input type="hidden" name="form-name" value="proposte" />
+
+    <!-- Honeypot: visually hidden, not display:none, so bots fill it but humans don't see it -->
+    <div
+      aria-hidden="true"
+      style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"
+    >
+      <label for="website">Sito web</label>
+      <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <div class="space-y-5">
+      <div>
+        <label class="block text-sm font-semibold mb-1" for="site-name">Nome del sito</label>
+        <p class="text-xs text-ink-muted mb-1">Come dovrebbe comparire nell'elenco.</p>
+        <input
+          class="w-full bg-card border border-border rounded px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-accent"
+          type="text"
+          id="site-name"
+          name="siteName"
+          placeholder="es. cedmax.net"
+          required
+          autocomplete="off"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1" for="site-url">URL del sito</label>
+        <p class="text-xs text-ink-muted mb-1">L'indirizzo della homepage (non del feed).</p>
+        <input
+          class="w-full bg-card border border-border rounded px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-accent"
+          type="url"
+          id="site-url"
+          name="siteUrl"
+          placeholder="es. https://cedmax.net/"
+          required
+          autocomplete="off"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1" for="feed-url"
+          >URL del feed RSS/Atom</label
+        >
+        <p class="text-xs text-ink-muted mb-1">
+          Il feed da cui leggere i post. Deve contenere solo contenuti in italiano.
+        </p>
+        <input
+          class="w-full bg-card border border-border rounded px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-accent"
+          type="url"
+          id="feed-url"
+          name="feedUrl"
+          placeholder="es. https://cedmax.net/feeds/rssit"
+          required
+          autocomplete="off"
+        />
+      </div>
+
+      <fieldset class="border border-border rounded px-4 py-4">
+        <legend class="text-sm font-semibold px-1">Conferma</legend>
+        <div class="space-y-3 mt-2">
+          <label class="flex gap-3 items-start text-sm text-ink-muted cursor-pointer">
+            <input
+              class="mt-0.5 accent-accent shrink-0"
+              type="checkbox"
+              id="ack1"
+              name="ack1"
+              required
+            />
+            <span
+              >Il sito è uno spazio personale, non un profilo su una piattaforma di publishing
+              (es. Medium, Substack)</span
+            >
+          </label>
+          <label class="flex gap-3 items-start text-sm text-ink-muted cursor-pointer">
+            <input
+              class="mt-0.5 accent-accent shrink-0"
+              type="checkbox"
+              id="ack2"
+              name="ack2"
+              required
+            />
+            <span>I contenuti del sito sono personali, non commerciali</span>
+          </label>
+          <label class="flex gap-3 items-start text-sm text-ink-muted cursor-pointer">
+            <input
+              class="mt-0.5 accent-accent shrink-0"
+              type="checkbox"
+              id="ack3"
+              name="ack3"
+              required
+            />
+            <span>I contenuti del feed sono solo in italiano</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div>
+        <button
+          id="submit-btn"
+          type="submit"
+          disabled
+          class="bg-accent text-bg font-semibold text-sm px-5 py-2 rounded cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent-h transition-colors"
+        >
+          Invia proposta
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <div
+    id="form-success"
+    class="hidden bg-card border border-border rounded py-6 px-5 text-sm text-ink-muted"
+  >
+    <p class="font-semibold text-ink mb-1">Proposta inviata!</p>
+    <p>
+      Grazie. La proposta verrà valutata dal team (a.k.a. <a
+        href="https://cedmax.net"
+        target="_blank">ced</a
+      > & <a href="https://cantina.ragnate.la/" target="_blank">Ed</a>)
+    </p>
+  </div>
+
+  <p id="form-error" class="hidden mt-4 text-sm text-red-600 dark:text-red-400">
+    Errore durante l'invio. Controlla la connessione e riprova più tardi.
+  </p>
+</Base>
+
+<script>
+  import { wireNetlifyForm, isValidUrl } from "../scripts/netlify-form"
+
+  wireNetlifyForm({
+    form: document.getElementById("submit-form") as HTMLFormElement,
+    submitBtn: document.getElementById("submit-btn") as HTMLButtonElement,
+    successEl: document.getElementById("form-success") as HTMLElement,
+    errorEl: document.getElementById("form-error") as HTMLElement,
+    submitLabel: "Invia proposta",
+    isValid: (data) =>
+      !!(
+        (data.get("siteName") as string).trim() &&
+        isValidUrl(data.get("siteUrl") as string) &&
+        isValidUrl(data.get("feedUrl") as string) &&
+        data.get("ack1") &&
+        data.get("ack2") &&
+        data.get("ack3")
+      ),
+  })
+</script>

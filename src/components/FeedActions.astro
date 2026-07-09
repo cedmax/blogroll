@@ -2,7 +2,7 @@
 import ExternalIcon from "./icons/ExternalIcon.astro"
 import RssIcon from "./icons/RssIcon.astro"
 import WarningIcon from "./icons/WarningIcon.astro"
-import { reportUrl, type Feed } from "../utils/feeds"
+import type { Feed } from "../utils/feeds"
 
 interface Props {
   feed: Feed
@@ -44,10 +44,14 @@ const rowClass = "flex items-center gap-3 px-4 py-3 min-h-11 text-ink no-underli
       <span class="copy-label">Copia il link del feed</span>
     </a>
 
-    <a href={reportUrl(feed.htmlUrl)} target="_blank" class={rowClass}>
+    <button
+      type="button"
+      class:list={["report-trigger w-full bg-transparent border-0 cursor-pointer", rowClass]}
+      data-site-url={feed.htmlUrl}
+    >
       <WarningIcon size="18" />
       Segnala il sito
-    </a>
+    </button>
   </div>
 </details>
 
