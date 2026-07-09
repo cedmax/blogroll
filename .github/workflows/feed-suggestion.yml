@@ -3,9 +3,13 @@ name: Feed suggestion → PR
 # When someone files a "Proponi un sito" issue, parse it and open a PR that
 # adds the feed to public/ita.opml for a maintainer to review. Re-runs (edits)
 # update the same PR because the branch is keyed by issue number.
+#
+# No `opened` trigger: issues created with the label (as the Netlify function
+# does) fire both `opened` and `labeled`, causing duplicate runs. `labeled`
+# alone covers API-created issues and manually labeled ones.
 on:
   issues:
-    types: [opened, edited, labeled]
+    types: [edited, labeled]
 
 permissions:
   contents: write
