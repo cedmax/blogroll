@@ -162,7 +162,9 @@ import { opmlFile } from "../utils/feeds"
     </p>
   </div>
 
-  <p id="form-error" class="hidden mt-4 text-sm text-red-600 dark:text-red-400"></p>
+  <p id="form-error" class="hidden mt-4 text-sm text-red-600 dark:text-red-400">
+    Errore durante l'invio. Controlla la connessione e riprova più tardi.
+  </p>
 </Base>
 
 <script>
@@ -171,36 +173,28 @@ import { opmlFile } from "../utils/feeds"
   const successMsg = document.getElementById("form-success")
   const errorMsg = document.getElementById("form-error")
 
-  const siteNameInput = document.getElementById("site-name")
-  const siteUrlInput = document.getElementById("site-url")
-  const feedUrlInput = document.getElementById("feed-url")
-  const ack1 = document.getElementById("ack1")
-  const ack2 = document.getElementById("ack2")
-  const ack3 = document.getElementById("ack3")
-
-  const isValidUrl = (s) => {
-    try {
-      const u = new URL(s)
-      return u.protocol === "http:" || u.protocol === "https:"
-    } catch {
-      return false
-    }
-  }
+  const httpUrlPattern = new URLPattern({ protocol: "http{s}?" })
+  const isValidUrl = (s) => httpUrlPattern.test(s.trim())
 
   const updateSubmitState = () => {
-    const ready =
-      siteNameInput.value.trim() !== "" &&
-      isValidUrl(siteUrlInput.value.trim()) &&
-      isValidUrl(feedUrlInput.value.trim()) &&
-      ack1.checked &&
-      ack2.checked &&
-      ack3.checked
-    submitBtn.disabled = !ready
+    const data = new FormData(form)
+    submitBtn.disabled = !(
+      data.get("siteName").trim() &&
+      isValidUrl(data.get("siteUrl")) &&
+      isValidUrl(data.get("feedUrl")) &&
+      data.get("ack1") &&
+      data.get("ack2") &&
+      data.get("ack3")
+    )
   }
 
-  for (const el of [siteNameInput, siteUrlInput, feedUrlInput, ack1, ack2, ack3]) {
-    el.addEventListener("input", updateSubmitState)
-    el.addEventListener("change", updateSubmitState)
+  form.addEventListener("input", updateSubmitState)
+  form.addEventListener("change", updateSubmitState)
+
+  const showError = () => {
+    errorMsg.classList.remove("hidden")
+    submitBtn.disabled = false
+    submitBtn.textContent = "Invia segnalazione"
   }
 
   form.addEventListener("submit", async (e) => {
@@ -216,20 +210,15 @@ import { opmlFile } from "../utils/feeds"
         body: new URLSearchParams(new FormData(form)).toString(),
       })
 
-      if (resp.ok) {
-        form.classList.add("hidden")
-        successMsg.classList.remove("hidden")
-      } else {
-        errorMsg.textContent = "Errore imprevisto. Riprova più tardi."
-        errorMsg.classList.remove("hidden")
-        submitBtn.disabled = false
-        submitBtn.textContent = "Invia segnalazione"
+      if (!resp.ok) {
+        showError()
+        return
       }
+
+      form.classList.add("hidden")
+      successMsg.classList.remove("hidden")
     } catch {
-      errorMsg.textContent = "Errore di rete. Controlla la connessione e riprova."
-      errorMsg.classList.remove("hidden")
-      submitBtn.disabled = false
-      submitBtn.textContent = "Invia segnalazione"
+      showError()
     }
   })
 </script>
