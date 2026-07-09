@@ -6,7 +6,7 @@ import { opmlFile } from "../utils/feeds"
 <Base
   title="Proponi un sito — blogroll.it"
   description="Segnala un sito italiano da aggiungere all'aggregatore."
-  canonical="https://blogroll.it/segnalazioni/"
+  canonical="https://blogroll.it/proposte/"
   activeNav=""
   opmlFile={opmlFile}
 >
@@ -19,13 +19,13 @@ import { opmlFile } from "../utils/feeds"
 
   <form
     id="submit-form"
-    name="segnalazioni"
+    name="proposte"
     method="POST"
     data-netlify="true"
     netlify-honeypot="website"
     novalidate
   >
-    <input type="hidden" name="form-name" value="segnalazioni" />
+    <input type="hidden" name="form-name" value="proposte" />
 
     <!-- Honeypot: visually hidden, not display:none, so bots fill it but humans don't see it -->
     <div
@@ -129,7 +129,7 @@ import { opmlFile } from "../utils/feeds"
           disabled
           class="bg-accent text-bg font-semibold text-sm px-5 py-2 rounded cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent-h transition-colors"
         >
-          Invia segnalazione
+          Invia proposta
         </button>
       </div>
     </div>
@@ -139,7 +139,7 @@ import { opmlFile } from "../utils/feeds"
     id="form-success"
     class="hidden bg-card border border-border rounded py-6 px-5 text-sm text-ink-muted"
   >
-    <p class="font-semibold text-ink mb-1">Segnalazione inviata!</p>
+    <p class="font-semibold text-ink mb-1">Proposta inviata!</p>
     <p>
       Grazie. Verrà aperta automaticamente una pull request per aggiungere il sito all'elenco.
     </p>
@@ -151,57 +151,22 @@ import { opmlFile } from "../utils/feeds"
 </Base>
 
 <script>
-  const form = document.getElementById("submit-form")
-  const submitBtn = document.getElementById("submit-btn")
-  const successMsg = document.getElementById("form-success")
-  const errorMsg = document.getElementById("form-error")
+  import { wireNetlifyForm, isValidUrl } from "../scripts/netlify-form"
 
-  const httpUrlPattern = new URLPattern({ protocol: "http{s}?" })
-  const isValidUrl = (s) => httpUrlPattern.test(s.trim())
-
-  const updateSubmitState = () => {
-    const data = new FormData(form)
-    submitBtn.disabled = !(
-      data.get("siteName").trim() &&
-      isValidUrl(data.get("siteUrl")) &&
-      isValidUrl(data.get("feedUrl")) &&
-      data.get("ack1") &&
-      data.get("ack2") &&
-      data.get("ack3")
-    )
-  }
-
-  form.addEventListener("input", updateSubmitState)
-  form.addEventListener("change", updateSubmitState)
-
-  const showError = () => {
-    errorMsg.classList.remove("hidden")
-    submitBtn.disabled = false
-    submitBtn.textContent = "Invia segnalazione"
-  }
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault()
-    errorMsg.classList.add("hidden")
-    submitBtn.disabled = true
-    submitBtn.textContent = "Invio in corso…"
-
-    try {
-      const resp = await fetch("/", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(new FormData(form)).toString(),
-      })
-
-      if (!resp.ok) {
-        showError()
-        return
-      }
-
-      form.classList.add("hidden")
-      successMsg.classList.remove("hidden")
-    } catch {
-      showError()
-    }
+  wireNetlifyForm({
+    form: document.getElementById("submit-form") as HTMLFormElement,
+    submitBtn: document.getElementById("submit-btn") as HTMLButtonElement,
+    successEl: document.getElementById("form-success") as HTMLElement,
+    errorEl: document.getElementById("form-error") as HTMLElement,
+    submitLabel: "Invia proposta",
+    isValid: (data) =>
+      !!(
+        (data.get("siteName") as string).trim() &&
+        isValidUrl(data.get("siteUrl") as string) &&
+        isValidUrl(data.get("feedUrl") as string) &&
+        data.get("ack1") &&
+        data.get("ack2") &&
+        data.get("ack3")
+      ),
   })
 </script>
