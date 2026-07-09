@@ -2,7 +2,6 @@
 import Base from "../layouts/Base.astro"
 import Prose from "../components/Prose.astro"
 import { Content } from "../content/pages/404.md"
-import { opmlFile } from "../utils/feeds"
 ---
 
 <Base
@@ -10,7 +9,6 @@ import { opmlFile } from "../utils/feeds"
   description="La pagina che cerchi non è (o non è più) nella lista."
   canonical="https://blogroll.it/404/"
   activeNav=""
-  opmlFile={opmlFile}
 >
   <Fragment slot="head">
     <meta name="robots" content="noindex" />

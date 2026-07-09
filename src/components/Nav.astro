@@ -1,0 +1,39 @@
+---
+import ThemeToggle from "./ThemeToggle.astro"
+import { opmlFile } from "../utils/feeds"
+
+const { activeNav } = Astro.props
+---
+
+<nav class="flex gap-5 text-sm">
+  {
+    activeNav === "home" ? (
+      <span class="text-ink font-semibold">post recenti</span>
+    ) : (
+      <a class="text-ink-muted hover:text-accent" href="/">
+        post recenti
+      </a>
+    )
+  }
+  {
+    activeNav === "lista" ? (
+      <span class="text-ink font-semibold">la lista</span>
+    ) : (
+      <a class="text-ink-muted hover:text-accent" href="/lista/">
+        la lista
+      </a>
+    )
+  }
+  {
+    activeNav === "info" ? (
+      <span class="text-ink font-semibold">il progetto</span>
+    ) : (
+      <a class="text-ink-muted  hover:text-accent" href="/info/">
+        il progetto
+      </a>
+    )
+  }
+
+  <a class="text-ink-muted hover:text-accent" target="_blank" href={`/${opmlFile}`}>OPML</a>
+  <ThemeToggle />
+</nav>

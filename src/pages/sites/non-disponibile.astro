@@ -2,7 +2,6 @@
 import Base from "../../layouts/Base.astro"
 import Prose from "../../components/Prose.astro"
 import { Content } from "../../content/pages/non-disponibile.md"
-import { opmlFile } from "../../utils/feeds"
 ---
 
 <Base
@@ -10,7 +9,6 @@ import { opmlFile } from "../../utils/feeds"
   description="Questo sito fa parte della lista, ma l'ultimo recupero del suo feed non è riuscito."
   canonical="https://blogroll.it/sites/non-disponibile/"
   activeNav=""
-  opmlFile={opmlFile}
 >
   <Fragment slot="head">
     <meta name="robots" content="noindex" />

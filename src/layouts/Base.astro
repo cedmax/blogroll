@@ -1,16 +1,16 @@
 ---
 import "../styles/global.css"
-import ThemeIcon from "../components/icons/ThemeIcon.astro"
 import ReportDialog from "../components/ReportDialog.astro"
+import Nav from "../components/Nav.astro"
+import { opmlFile } from "../utils/feeds"
 
 interface Props {
   title: string
   description?: string
   canonical: string
   activeNav: "home" | "lista" | "info" | ""
-  opmlFile: string
 }
-const { title, description, canonical, activeNav, opmlFile } = Astro.props
+const { title, description, canonical, activeNav } = Astro.props
 ---
 
 <!doctype html>
@@ -43,47 +43,10 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
         class="flex relative items-center justify-between flex-wrap gap-x-4 gap-y-2 mb-16 pb-4 border-b border-border"
       >
         <a class="text-4xl font-black tracking-tighter no-underline" href="/">blogroll.it</a>
-        <nav class="flex gap-5 text-sm">
-          {
-            activeNav === "home" ? (
-              <span class="text-ink font-semibold">post recenti</span>
-            ) : (
-              <a class="text-ink-muted hover:text-accent" href="/">
-                post recenti
-              </a>
-            )
-          }
-          {
-            activeNav === "lista" ? (
-              <span class="text-ink font-semibold">la lista</span>
-            ) : (
-              <a class="text-ink-muted hover:text-accent" href="/lista/">
-                la lista
-              </a>
-            )
-          }
-          {
-            activeNav === "info" ? (
-              <span class="text-ink font-semibold">il progetto</span>
-            ) : (
-              <a class="text-ink-muted  hover:text-accent" href="/info/">
-                il progetto
-              </a>
-            )
-          }
 
-          <a class="text-ink-muted hover:text-accent" target="_blank" href={`/${opmlFile}`}
-            >OPML</a
-          >
-          <button
-            id="theme-toggle"
-            aria-label="Cambia tema"
-            class="text-ink-muted hover:text-accent cursor-pointer bg-transparent border-0 p-0 leading-none"
-          >
-            <ThemeIcon />
-          </button>
-        </nav>
-        <div class="absolute -bottom-10 left-1">
+        <Nav activeNav={activeNav} />
+
+        <div class="absolute -bottom-6 w-full">
           <slot name="meta-line" />
         </div>
       </header>
@@ -96,17 +59,5 @@ const { title, description, canonical, activeNav, opmlFile } = Astro.props
     </div>
 
     <ReportDialog />
-    <script>
-      const btn = document.getElementById("theme-toggle")
-      btn?.addEventListener("click", () => {
-        const el = document.documentElement
-        const isDark =
-          el.dataset.theme === "dark" ||
-          (!el.dataset.theme && window.matchMedia("(prefers-color-scheme: dark)").matches)
-        const next = isDark ? "light" : "dark"
-        el.dataset.theme = next
-        localStorage.setItem("theme", next)
-      })
-    </script>
   </body>
 </html>

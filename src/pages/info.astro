@@ -2,7 +2,6 @@
 import Base from "../layouts/Base.astro"
 import Prose from "../components/Prose.astro"
 import { Content } from "../content/pages/info.md"
-import { opmlFile } from "../utils/feeds"
 ---
 
 <Base
@@ -10,7 +9,6 @@ import { opmlFile } from "../utils/feeds"
   description="Cos'è blogroll.it e come proporre un siti per la lista."
   canonical="https://blogroll.it/info/"
   activeNav="info"
-  opmlFile={opmlFile}
 >
   <Prose>
     <Content />

@@ -1,7 +1,7 @@
 ---
 import Base from "../layouts/Base.astro"
 import EntryRow from "../components/EntryRow.astro"
-import { getFeeds, sortFeedsByLatest, builtAt, opmlFile } from "../utils/feeds"
+import { getFeeds, sortFeedsByLatest, builtAt } from "../utils/feeds"
 import FeedHeader from "../components/FeedHeader.astro"
 import Card from "../components/Card.astro"
 import SocialMeta from "../components/SocialMeta.astro"
@@ -15,7 +15,6 @@ const feeds = sortFeedsByLatest(await getFeeds())
   description={`Tutti i ${feeds.length} siti personali italiani raccolti in blogroll.it.`}
   canonical="https://blogroll.it/lista/"
   activeNav="lista"
-  opmlFile={opmlFile}
 >
   <Fragment slot="head">
     <SocialMeta

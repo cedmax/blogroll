@@ -1,6 +1,6 @@
 ---
 import Base from "../layouts/Base.astro"
-import { getFeeds, builtAt, opmlFile } from "../utils/feeds"
+import { getFeeds, builtAt } from "../utils/feeds"
 import { fmtLong, dayKey } from "../utils/dates"
 import FeedHeader from "../components/FeedHeader.astro"
 import Card from "../components/Card.astro"
@@ -50,7 +50,6 @@ const collapsedByDate = Object.fromEntries(
   description={`Post recenti da ${feeds.length} siti personali italiani, aggiornati ogni poche ore. Niente algoritmi, niente account, solo link.`}
   canonical="https://blogroll.it/"
   activeNav="home"
-  opmlFile={opmlFile}
 >
   <Fragment slot="head">
     <SocialMeta
@@ -63,6 +62,14 @@ const collapsedByDate = Object.fromEntries(
   <MetaLine slot="meta-line">
     {entryCount} post da {feeds.length} siti negli ultimi {MAX_DAYS} giorni &mdash; {builtAt}
   </MetaLine>
+
+  <div class="prose bg-card border border-border rounded py-6 px-5 mb-10">
+    <span class="text-sm text-ink-muted font-medium bottom-0"
+      >Una raccolta di siti personali in italiano, aggiornata ogni poche ore senza algoritmi o
+      account: solo link, in ordine di pubblicazione. Per un web fatto di persone, non di
+      piattaforme.
+    </span>
+  </div>
 
   {
     groupDates.map((date) => (

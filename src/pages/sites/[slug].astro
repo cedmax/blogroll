@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro"
 import EntryRow from "../../components/EntryRow.astro"
-import { getFeeds, builtAt, opmlFile } from "../../utils/feeds"
+import { getFeeds, builtAt } from "../../utils/feeds"
 import FeedHeader from "../../components/FeedHeader.astro"
 import SocialMeta from "../../components/SocialMeta.astro"
 import MetaLine from "../../components/MetaLine.astro"
@@ -19,7 +19,6 @@ const { feed } = Astro.props
   description={feed.description}
   canonical={`https://blogroll.it/sites/${feed.slug}/`}
   activeNav=""
-  opmlFile={opmlFile}
 >
   <Fragment slot="head">
     <SocialMeta

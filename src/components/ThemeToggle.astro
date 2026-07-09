@@ -1,0 +1,74 @@
+---
+interface Props {
+  size?: string
+}
+
+const { size = "16" } = Astro.props
+---
+
+<button
+  id="theme-toggle"
+  aria-label="Cambia tema"
+  class="text-ink-muted hover:text-accent cursor-pointer bg-transparent border-0 p-0 leading-none"
+>
+  <svg
+    width={size}
+    height={size}
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 256 256"
+    aria-hidden="true"
+    class="theme-icon"
+  >
+    <g class="icon-sun">
+      <circle cx="128" cy="128" r="60" fill="currentcolor"></circle>
+      <path
+        fill="currentcolor"
+        d="M128 40a12 12 0 0 1 12 12v16a12 12 0 0 1-24 0V52a12 12 0 0 1 12-12zm0 136a12 12 0 0 1 12 12v16a12 12 0 0 1-24 0v-16a12 12 0 0 1 12-12zm88-76a12 12 0 0 1 0 24h-16a12 12 0 0 1 0-24zm-160 0a12 12 0 0 1 0 24H40a12 12 0 0 1 0-24zm133.14-64a12 12 0 0 1 0 16.97l-11.31 11.31a12 12 0 0 1-16.97-16.97l11.31-11.31a12 12 0 0 1 16.97 0zM72.14 183.86a12 12 0 0 1 0 16.97L60.83 212.14a12 12 0 0 1-16.97-16.97l11.31-11.31a12 12 0 0 1 16.97 0zm111.72 0a12 12 0 0 1 16.97 0l11.31 11.31a12 12 0 0 1-16.97 16.97l-11.31-11.31a12 12 0 0 1 0-16.97zM60.83 43.86a12 12 0 0 1 16.97 0l11.31 11.31A12 12 0 0 1 72.14 72.14L60.83 60.83a12 12 0 0 1 0-16.97z"
+      ></path>
+    </g>
+    <path
+      class="icon-moon"
+      fill="currentcolor"
+      d="M236.37 139.4a12 12 0 0 0-12-3A84.07 84.07 0 0 1 119.6 31.63a12 12 0 0 0-15-15A108 108 0 1 0 239.4 151.4a12 12 0 0 0-3-12z"
+    ></path>
+  </svg>
+</button>
+
+<script>
+  const btn = document.getElementById("theme-toggle")
+  btn?.addEventListener("click", () => {
+    const el = document.documentElement
+    const isDark =
+      el.dataset.theme === "dark" ||
+      (!el.dataset.theme && window.matchMedia("(prefers-color-scheme: dark)").matches)
+    const next = isDark ? "light" : "dark"
+    el.dataset.theme = next
+    localStorage.setItem("theme", next)
+  })
+</script>
+
+<style>
+  .icon-sun {
+    display: none;
+  }
+
+  :global([data-theme="dark"]) .icon-sun {
+    display: block;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .icon-sun {
+      display: block;
+    }
+  }
+
+  :global([data-theme="dark"]) .icon-moon {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .icon-moon {
+      display: none;
+    }
+  }
+</style>
