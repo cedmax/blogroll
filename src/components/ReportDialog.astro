@@ -3,10 +3,14 @@
 ---
 
 <!--
-  The <form> lives outside <dialog>: Netlify's build-time form crawler
-  doesn't reliably parse forms nested inside <dialog> elements. The visible
-  fields stay inside the dialog for layout and are wired back to this form
-  via the standard HTML `form="report-form"` attribute.
+  <dialog> nests inside <form>, not the other way around: Netlify's
+  build-time crawler apparently can't parse a <form> that's a descendant of
+  <dialog>, and separately builds its field schema by walking the form's own
+  DOM descendants (not the `form="..."` cross-reference attribute) — so
+  fields living outside the form via that attribute get silently dropped
+  from recorded submissions even though the browser happily includes them.
+  Nesting dialog inside form satisfies both: the form is trivially detected
+  as a top-level element, and every field is a genuine descendant of it.
 -->
 <form
   id="report-form"
@@ -27,59 +31,57 @@
     <label for="report-website">Sito web</label>
     <input type="text" id="report-website" name="website" tabindex="-1" autocomplete="off" />
   </div>
+
+  <dialog
+    id="report-dialog"
+    class="bg-card text-ink border border-border rounded p-6 mx-auto mt-[8vh] mb-auto w-[calc(100%-2rem)] max-w-md max-h-[calc(100%-2rem)] overflow-y-auto backdrop:bg-black/50"
+  >
+    <h2 class="text-lg font-black tracking-tight mb-1">Segnala un sito</h2>
+    <p class="text-xs text-ink-muted mb-4">
+      Le richieste di rimozione vengono valutate manualmente.
+    </p>
+
+    <div id="report-fields" class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold mb-1" for="report-reason">Motivo</label>
+        <textarea
+          class="w-full bg-card border border-border rounded px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-accent"
+          id="report-reason"
+          name="reason"
+          rows="4"
+          placeholder="Descrivi il motivo della richiesta."
+          required></textarea>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button
+          type="button"
+          id="report-cancel-btn"
+          class="text-sm text-ink-muted hover:text-accent px-3 py-2 cursor-pointer"
+        >
+          Annulla
+        </button>
+        <button
+          id="report-submit-btn"
+          type="submit"
+          disabled
+          class="bg-accent text-bg font-semibold text-sm px-5 py-2 rounded cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent-h transition-colors"
+        >
+          Invia segnalazione
+        </button>
+      </div>
+    </div>
+
+    <div id="report-success" class="hidden text-sm text-ink-muted">
+      <p class="font-semibold text-ink mb-1">Segnalazione inviata!</p>
+      <p>Grazie. Verrà valutata manualmente.</p>
+    </div>
+
+    <p id="report-error" class="hidden mt-4 text-sm text-red-600 dark:text-red-400">
+      Errore durante l'invio. Controlla la connessione e riprova più tardi.
+    </p>
+  </dialog>
 </form>
-
-<dialog
-  id="report-dialog"
-  class="bg-card text-ink border border-border rounded p-6 mx-auto mt-[8vh] mb-auto w-[calc(100%-2rem)] max-w-md max-h-[calc(100%-2rem)] overflow-y-auto backdrop:bg-black/50"
->
-  <h2 class="text-lg font-black tracking-tight mb-1">Segnala un sito</h2>
-  <p class="text-xs text-ink-muted mb-4">
-    Le richieste di rimozione vengono valutate manualmente.
-  </p>
-
-  <div id="report-fields" class="space-y-4">
-    <div>
-      <label class="block text-sm font-semibold mb-1" for="report-reason">Motivo</label>
-      <textarea
-        class="w-full bg-card border border-border rounded px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-accent"
-        id="report-reason"
-        name="reason"
-        form="report-form"
-        rows="4"
-        placeholder="Descrivi il motivo della richiesta."
-        required></textarea>
-    </div>
-
-    <div class="flex justify-end gap-3">
-      <button
-        type="button"
-        id="report-cancel-btn"
-        class="text-sm text-ink-muted hover:text-accent px-3 py-2 cursor-pointer"
-      >
-        Annulla
-      </button>
-      <button
-        id="report-submit-btn"
-        type="submit"
-        form="report-form"
-        disabled
-        class="bg-accent text-bg font-semibold text-sm px-5 py-2 rounded cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent-h transition-colors"
-      >
-        Invia segnalazione
-      </button>
-    </div>
-  </div>
-
-  <div id="report-success" class="hidden text-sm text-ink-muted">
-    <p class="font-semibold text-ink mb-1">Segnalazione inviata!</p>
-    <p>Grazie. Verrà valutata manualmente.</p>
-  </div>
-
-  <p id="report-error" class="hidden mt-4 text-sm text-red-600 dark:text-red-400">
-    Errore durante l'invio. Controlla la connessione e riprova più tardi.
-  </p>
-</dialog>
 
 <script>
   import { wireNetlifyForm, isNonEmpty } from "../scripts/netlify-form"
@@ -122,7 +124,6 @@
 
   wireNetlifyForm({
     form,
-    listenEl: dialog,
     contentEl: fields,
     submitBtn,
     successEl,

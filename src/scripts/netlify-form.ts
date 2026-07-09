@@ -4,12 +4,10 @@ export const isNonEmpty = (value: string) => value.trim().length > 0
 
 interface WireNetlifyFormOptions {
   form: HTMLFormElement
-  // Element to listen on for live-validation input/change events, and to
-  // hide on success. Defaults to `form` itself; pass these separately when
-  // the visible fields live outside the form's DOM subtree (associated via
-  // the HTML `form="..."` attribute instead — see ReportDialog.astro), since
-  // DOM events don't bubble through that association.
-  listenEl?: HTMLElement
+  // Element to hide on success. Defaults to `form` itself; pass this
+  // separately when the form has other visible content (e.g. a dialog
+  // title) that should stay put while the fields/buttons are replaced by
+  // the success message — see ReportDialog.astro.
   contentEl?: HTMLElement
   submitBtn: HTMLButtonElement
   successEl: HTMLElement
@@ -21,7 +19,6 @@ interface WireNetlifyFormOptions {
 
 export function wireNetlifyForm({
   form,
-  listenEl = form,
   contentEl = form,
   submitBtn,
   successEl,
@@ -34,8 +31,8 @@ export function wireNetlifyForm({
     submitBtn.disabled = !isValid(new FormData(form))
   }
 
-  listenEl.addEventListener("input", updateSubmitState)
-  listenEl.addEventListener("change", updateSubmitState)
+  form.addEventListener("input", updateSubmitState)
+  form.addEventListener("change", updateSubmitState)
   updateSubmitState()
 
   const showError = () => {
