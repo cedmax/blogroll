@@ -58,6 +58,13 @@ OPML.
 it is unreachable, unparseable, or yields no entries. Used by the
 "Validate submitted feed" PR check (`.github/workflows/feed-check.yml`).
 
+**GitHub Actions workflows (`.github/workflows/`):**
+
+- `deploy.yml` — builds and deploys to Netlify; warm builds restore `cache.json`, scheduled/dispatch builds don't
+- `feed-check.yml` — PR check: validates the submitted feed URL via `main.go -validate`
+- `feed-suggestion.yml` — when a "Proponi un sito" issue is filed, parses it and opens a PR adding the feed to `public/ita.opml`; re-runs on issue edits update the same PR (branch keyed by issue number)
+- `rebase-on-merge.yml` — when a feed PR merges into main, re-triggers `feed-suggestion` for every open feed-suggestion PR so they rebase onto the updated OPML
+
 **Slug generation:** derived from the feed's HTML URL hostname, minus a leading
 `www.` (e.g. `cedmax.net`); SHA1 fallback for collisions or unparseable URLs.
 
@@ -83,7 +90,7 @@ src/
     Card.astro, MetaLine.astro, SocialMeta.astro
     Prose.astro              ← styles Markdown via scoped `.prose :global(...)` (see below)
   pages/
-    index.astro              ← homepage (recent entries grouped by day)
+    index.astro              ← homepage (recent entries grouped by day; includes "un post a caso" link that picks a random entry from the last 30 days at click time via inline JS)
     lista.astro              ← all sites sorted by last post date (sortFeedsByLatest)
     info.astro               ← "il progetto" page (renders src/content/pages/info.md)
     proposte.astro           ← "Proponi un sito" submission form (Netlify form)
@@ -96,6 +103,11 @@ src/
     dates.ts                 ← fmtShort/fmtLong/dayKey, it-IT in Europe/Rome (build-machine-TZ independent)
     feeds.ts                 ← getFeeds (filters available), sortFeedsByLatest, builtAt, opmlFile
 integrations/netlify-redirects.mjs ← build hook: writes dist/_redirects (302s for unavailable feeds)
+netlify/
+  functions/
+    submission-created.js  ← Netlify function: receives form POSTs from proposte.astro,
+                              creates a GitHub issue via the feed-bot GitHub App (JWT auth
+                              using FEED_BOT_CLIENT_ID / FEED_BOT_PRIVATE_KEY_B64 env vars)
 ```
 
 Feeds are sorted by latest-entry date at render time in `sortFeedsByLatest`
