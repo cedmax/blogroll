@@ -1,0 +1,40 @@
+name: Rebase feed PRs on OPML change
+
+# When a feed is merged into main, rebase every open feed-suggestion PR branch
+# onto current main. The -X union strategy resolves OPML conflicts by keeping
+# both the newly merged entry and the PR's entry.
+on:
+  push:
+    branches: [main]
+    paths:
+      - public/ita.opml
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebase open feed-suggestion PR branches
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+          gh pr list --repo "$GITHUB_REPOSITORY" \
+            --label feed-suggestion --state open \
+            --json headRefName \
+            --jq '.[].headRefName | select(startswith("feed/issue-"))' \
+          | while read -r branch; do
+              git fetch origin "$branch"
+              git checkout -B "$branch" "origin/$branch"
+              git rebase -X union origin/main
+              git push --force-with-lease origin "$branch"
+            done
+        env:
+          GH_TOKEN: ${{ github.token }}
