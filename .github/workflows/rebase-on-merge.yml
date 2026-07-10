@@ -1,0 +1,32 @@
+name: Rebase feed PRs on OPML change
+
+# When a feed is merged into main, re-trigger feed-suggestion for every open
+# feed-suggestion PR. That workflow checks out current main, re-applies the
+# feed, and force-updates the PR branch via create-pull-request.
+on:
+  push:
+    branches: [main]
+    paths:
+      - public/ita.opml
+
+permissions:
+  actions: write
+  pull-requests: read
+
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch feed-suggestion for each open PR
+        run: |
+          gh pr list --repo "$GITHUB_REPOSITORY" \
+            --label feed-suggestion --state open \
+            --json headRefName \
+            --jq '.[].headRefName | select(startswith("feed/issue-")) | ltrimstr("feed/issue-")' \
+          | while read -r n; do
+              gh workflow run feed-suggestion.yml \
+                --repo "$GITHUB_REPOSITORY" \
+                -f issue_number="$n"
+            done
+        env:
+          GH_TOKEN: ${{ github.token }}

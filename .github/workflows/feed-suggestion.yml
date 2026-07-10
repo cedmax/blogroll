@@ -10,27 +10,45 @@ name: Feed suggestion → PR
 on:
   issues:
     types: [edited, labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue number to process
+        required: true
+        type: number
 
 permissions:
   contents: write
   pull-requests: write
 
 concurrency:
-  group: feed-suggestion-${{ github.event.issue.number }}
+  group: feed-suggestion-${{ inputs.issue_number || github.event.issue.number }}
   cancel-in-progress: true
 
 jobs:
   open-pr:
-    if: contains(github.event.issue.labels.*.name, 'feed-suggestion')
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.issue.labels.*.name, 'feed-suggestion')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Fetch issue body
+        id: issue-body
+        run: |
+          {
+            echo 'content<<EOF'
+            gh issue view "${{ inputs.issue_number || github.event.issue.number }}" --json body -q .body
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Parse issue form
         id: parse
         uses: stefanbuck/github-issue-parser@v3
         with:
           template-path: .github/ISSUE_TEMPLATE/add-feed.yml
+          issue-body: ${{ steps.issue-body.outputs.content }}
 
       - uses: actions/setup-node@v4
         with:
@@ -56,16 +74,16 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ steps.app-token.outputs.token }}
-          branch: feed/issue-${{ github.event.issue.number }}
+          branch: feed/issue-${{ inputs.issue_number || github.event.issue.number }}
           title: "Aggiungi sito: ${{ steps.opml.outputs.name }}"
           commit-message: "Aggiungi sito: ${{ steps.opml.outputs.name }}"
           labels: feed-suggestion
           body: |
-            Aggiunge **${{ steps.opml.outputs.name }}** a `public/ita.opml`, dalla issue #${{ github.event.issue.number }}.
+            Aggiunge **${{ steps.opml.outputs.name }}** a `public/ita.opml`, dalla issue #${{ inputs.issue_number || github.event.issue.number }}.
 
             - Sito: ${{ steps.opml.outputs.site_url }}
             - Feed: ${{ steps.opml.outputs.feed_url }}
 
             Un controllo dedicato (**Validate submitted feed**) fa il fetch del feed aggiunto: se non è raggiungibile o non è un feed RSS/Atom valido, il check fallisce.
 
-            Closes #${{ github.event.issue.number }}
+            Closes #${{ inputs.issue_number || github.event.issue.number }}
