@@ -1,3 +1,44 @@
+const { createSign } = require("crypto")
+
+function generateAppJWT(appId, privateKey) {
+  const now = Math.floor(Date.now() / 1000)
+  const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT" })).toString("base64url")
+  const payload = Buffer.from(
+    JSON.stringify({ iat: now - 60, exp: now + 600, iss: appId }),
+  ).toString("base64url")
+  const sign = createSign("RSA-SHA256")
+  sign.update(`${header}.${payload}`)
+  return `${header}.${payload}.${sign.sign(privateKey, "base64url")}`
+}
+
+async function getInstallationToken() {
+  const privateKey = Buffer.from(process.env.FEED_BOT_PRIVATE_KEY_B64, "base64").toString(
+    "utf8",
+  )
+  const jwt = generateAppJWT(process.env.FEED_BOT_CLIENT_ID, privateKey)
+  const headers = {
+    Authorization: `Bearer ${jwt}`,
+    Accept: "application/vnd.github+json",
+    "User-Agent": "blogroll.it",
+    "X-GitHub-Api-Version": "2022-11-28",
+  }
+  const instResp = await fetch("https://api.github.com/app/installations", { headers })
+  if (!instResp.ok)
+    throw new Error(`installations: ${instResp.status} ${await instResp.text()}`)
+  const [{ id }] = await instResp.json()
+  const tokenResp = await fetch(
+    `https://api.github.com/app/installations/${id}/access_tokens`,
+    {
+      method: "POST",
+      headers,
+    },
+  )
+  if (!tokenResp.ok)
+    throw new Error(`access_tokens: ${tokenResp.status} ${await tokenResp.text()}`)
+  const { token } = await tokenResp.json()
+  return token
+}
+
 // Easy to extend — add hostnames (without www.) here to reject suggestions
 const BLOCKED_HOSTNAMES = [
   "medium.com",
@@ -24,10 +65,11 @@ function isHttpUrl(value) {
 
 async function createGithubIssue({ title, body, labels }) {
   try {
+    const token = await getInstallationToken()
     const issueResp = await fetch("https://api.github.com/repos/cedmax/blogroll/issues", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+        Authorization: `Bearer ${token}`,
         Accept: "application/vnd.github+json",
         "Content-Type": "application/json",
         "User-Agent": "blogroll.it",
