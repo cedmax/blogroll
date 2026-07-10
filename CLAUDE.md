@@ -75,6 +75,10 @@ src/
     EntryRow.astro           ← date|title grid row (site pages + la lista)
     FeedHeader.astro         ← feed title + FeedActions
     FeedActions.astro        ← kebab (⋮) <details> menu: report / visit / copy-feed rows
+    ReportDialog.astro       ← modal dialog for reporting a feed (opened from FeedActions)
+    Logo.astro               ← SVG logo, accepts width prop
+    Nav.astro                ← navigation bar with activeNav highlighting + ThemeToggle
+    ThemeToggle.astro        ← light/dark theme switcher button
     icons/                   ← ExternalIcon, RssIcon, WarningIcon (shared SVGs)
     Card.astro, MetaLine.astro, SocialMeta.astro
     Prose.astro              ← styles Markdown via scoped `.prose :global(...)` (see below)
@@ -82,9 +86,12 @@ src/
     index.astro              ← homepage (recent entries grouped by day)
     lista.astro              ← all sites sorted by last post date (sortFeedsByLatest)
     info.astro               ← "il progetto" page (renders src/content/pages/info.md)
+    proposte.astro           ← "Proponi un sito" submission form (Netlify form)
     404.astro                ← renders src/content/pages/404.md
     sites/[slug].astro       ← one page per feed (getStaticPaths over feeds collection)
     sites/non-disponibile.astro ← "temporarily unavailable" explainer (302 target)
+  scripts/
+    netlify-form.ts          ← client-side form validation/wiring for the proposte form
   utils/
     dates.ts                 ← fmtShort/fmtLong/dayKey, it-IT in Europe/Rome (build-machine-TZ independent)
     feeds.ts                 ← getFeeds (filters available), sortFeedsByLatest, builtAt, opmlFile
@@ -94,7 +101,7 @@ integrations/netlify-redirects.mjs ← build hook: writes dist/_redirects (302s 
 Feeds are sorted by latest-entry date at render time in `sortFeedsByLatest`
 (`src/utils/feeds.ts`), not in Go.
 
-**`activeNav` prop** on `Base.astro` drives nav active state (`"home"`, `"lista"`, `"info"`, or `""` for site pages).
+**`activeNav` prop** on `Base.astro` is forwarded to `Nav.astro` and drives nav active state (`"home"`, `"lista"`, `"info"`, or `""` for site pages).
 
 **Styling:** Tailwind utility classes live directly in the markup; shared design
 tokens are defined in `src/styles/global.css`'s `@theme` block. Markdown/slotted
