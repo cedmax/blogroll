@@ -90,7 +90,7 @@ src/
     Card.astro, MetaLine.astro, SocialMeta.astro
     Prose.astro              ← styles Markdown via scoped `.prose :global(...)` (see below)
   pages/
-    index.astro              ← homepage (recent entries grouped by day; includes "un post a caso" link that picks a random entry from the last 30 days at click time via inline JS)
+    index.astro              ← homepage (recent entries grouped by day; includes "un post a caso" link that picks a random blog then a random entry from it, within the last 30 days, at click time via inline JS — blog-weighted so each site gets equal traffic probability)
     lista.astro              ← all sites sorted by last post date (sortFeedsByLatest)
     info.astro               ← "il progetto" page (renders src/content/pages/info.md)
     proposte.astro           ← "Proponi un sito" submission form (Netlify form)
