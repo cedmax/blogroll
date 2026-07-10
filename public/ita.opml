@@ -7,7 +7,6 @@
     <outline text="Il blogroll all'italiana" title="Il blogroll all'italiana">
       <outline type="rss" text="Lorenzo Gerli" htmlUrl="https://www.lorenzogerli.net/" xmlUrl="https://www.lorenzogerli.net/feed/" />
       <outline type="rss" text="kOoLiNuS" htmlUrl="https://koolinus.net/blog/" xmlUrl="https://koolinus.net/blog/feed/" />
-      <outline type="rss" text="Notiziole di .mau." htmlUrl="https://xmau.com/notiziole/" xmlUrl="https://xmau.com/notiziole/feed/" />
       <outline type="rss" text="Homelab Notes" htmlUrl="https://emanuelegori.uno/" xmlUrl="https://emanuelegori.uno/feed/" />
       <outline type="rss" text="Carlo scrive cose." htmlUrl="https://carlux.mataroa.blog/" xmlUrl="https://carlux.mataroa.blog/rss/" />
       <outline type="rss" text="Disassociating" htmlUrl="https://www.whysf.xyz/" xmlUrl="https://www.whysf.xyz/rss.xml" />
