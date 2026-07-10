@@ -20,6 +20,7 @@
       <outline type="rss" text="Raibaz." htmlUrl="https://raibaz.it" xmlUrl="https://raibaz.it/index.xml" />
       <outline type="rss" text="Terzo Livello" xmlUrl="https://xlthlx.com/feed/" htmlUrl="https://xlthlx.com" />
       <outline type="rss" text="Signal Pirate" htmlUrl="https://pinperepette.github.io/signal.pirate/" xmlUrl="https://pinperepette.github.io/signal.pirate/feed.xml?t=d" />
+      <outline type="rss" text="Il blog di Decarola. Old school!" htmlUrl="https://decaro.la/" xmlUrl="https://decaro.la/blog/feed.rss" />
     </outline>
   </body>
 </opml>
