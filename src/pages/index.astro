@@ -19,6 +19,7 @@ const entries = feeds
   )
   .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
 
+const allUrls = entries.map(({ url }) => url)
 const entryCount = entries.length
 // The YYYY-MM-DD day keys are parsed back with new Date(), i.e. UTC midnight;
 // fmtLong then renders them in Europe/Rome on the same calendar day only
@@ -63,12 +64,13 @@ const collapsedByDate = Object.fromEntries(
     {entryCount} post da {feeds.length} siti negli ultimi {MAX_DAYS} giorni &mdash; {builtAt}
   </MetaLine>
 
-  <div class="prose bg-card border border-border rounded py-6 px-5 mb-10">
-    <span class="text-sm text-ink-muted font-medium bottom-0"
-      >Una raccolta di siti personali in italiano, aggiornata ogni poche ore senza algoritmi o
-      account: solo link, in ordine di pubblicazione. Per un web fatto di persone, non di
-      piattaforme.
-    </span>
+  <div
+    class="bg-alt border border-border rounded prose mt-12 py-5 px-6 mb-10 text-base italic text-ink font-light"
+  >
+    blogroll.it è una raccolta curata di siti personali in italiano, aggiornata regolarmente e
+    senza algoritmi o account. Se non sai cosa fare, leggi del {" "}
+    <a class="underline" href="/info/" aria-label="Il progetto">progetto</a> o {" "}
+    <a id="lucky" class="underline" href="#" aria-label="Un post a caso">un post a caso</a>.
   </div>
 
   {
@@ -105,3 +107,11 @@ const collapsedByDate = Object.fromEntries(
     ))
   }
 </Base>
+
+<script define:vars={{ allUrls }}>
+  document.getElementById("lucky").addEventListener("click", (e) => {
+    e.preventDefault()
+    const url = allUrls[Math.floor(Math.random() * allUrls.length)]
+    if (url) window.open(url, "_blank")
+  })
+</script>
