@@ -29,7 +29,16 @@
     @apply underline;
   }
 
-  .prose :global(code) {
-    @apply text-ink break-all;
+  .prose :global(.astro-code) {
+    @apply text-sm py-3 px-4 mb-4;
+  }
+
+  .prose :global(pre.astro-code .line) {
+    @apply text-accent-h;
+  }
+
+  :root {
+    --astro-code-background: var(--color-alt);
+    --astro-code-foreground: var(--color-accent-h);
   }
 </style>
