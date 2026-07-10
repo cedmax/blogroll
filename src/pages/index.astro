@@ -19,7 +19,9 @@ const entries = feeds
   )
   .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
 
-const allUrls = entries.map(({ url }) => url)
+const urlsByFeed = Object.values(Object.groupBy(entries, (e) => e.feed.slug)).map(
+  (feedEntries) => feedEntries!.map((e) => e.url),
+)
 const entryCount = entries.length
 // The YYYY-MM-DD day keys are parsed back with new Date(), i.e. UTC midnight;
 // fmtLong then renders them in Europe/Rome on the same calendar day only
@@ -108,10 +110,11 @@ const collapsedByDate = Object.fromEntries(
   }
 </Base>
 
-<script define:vars={{ allUrls }}>
+<script define:vars={{ urlsByFeed }}>
   document.getElementById("lucky").addEventListener("click", (e) => {
     e.preventDefault()
-    const url = allUrls[Math.floor(Math.random() * allUrls.length)]
+    const feed = urlsByFeed[Math.floor(Math.random() * urlsByFeed.length)]
+    const url = feed?.[Math.floor(Math.random() * feed.length)]
     if (url) window.open(url, "_blank")
   })
 </script>
