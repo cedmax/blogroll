@@ -3,6 +3,10 @@ import { defineConfig } from "astro/config"
 import tailwindcss from "@tailwindcss/vite"
 
 import netlifyRedirects from "./integrations/netlify-redirects.mjs"
+import sitemap from "@astrojs/sitemap"
+import site from "./src/data/site.json" assert { type: "json" }
+
+const builtAt = new Date(site.builtAt).toISOString()
 
 export default defineConfig({
   // SITE_URL lets CI build previews against their own origin (absolute URLs
@@ -11,7 +15,16 @@ export default defineConfig({
 
   trailingSlash: "always",
 
-  integrations: [netlifyRedirects()],
+  integrations: [
+    netlifyRedirects(),
+    sitemap({
+      filter: (page) => !page.includes("/sites/non-disponibile/") && !page.includes("/404/"),
+      serialize: (item) => {
+        const isStatic = item.url.includes("/info/") || item.url.includes("/proposte/")
+        return { ...item, lastmod: builtAt, changefreq: isStatic ? "monthly" : "daily" }
+      },
+    }),
+  ],
 
   vite: {
     plugins: [tailwindcss()],

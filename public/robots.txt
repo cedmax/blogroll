@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://blogroll.it/sitemap-index.xml
