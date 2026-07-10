@@ -10,6 +10,7 @@ const BLOCKED_HOSTNAMES = [
   "beehiiv.com",
   "livejournal.com",
   "blogger.com",
+  "dev.to",
 ]
 
 function isHttpUrl(value) {
