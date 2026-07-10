@@ -1,0 +1,83 @@
+name: Feed removal → PR
+
+# When someone files a "Segnala un sito per la rimozione" issue, parse it and
+# open a PR that removes the feed from public/ita.opml for a maintainer to
+# review. Re-runs (edits) update the same PR because the branch is keyed by
+# issue number.
+#
+# No `opened` trigger: issues created with the label fire both `opened` and
+# `labeled`, causing duplicate runs. `labeled` alone covers both paths.
+on:
+  issues:
+    types: [edited, labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue number to process
+        required: true
+        type: number
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: feed-removal-${{ inputs.issue_number || github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  open-pr:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.issue.labels.*.name, 'feed-removal')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch issue body
+        id: issue-body
+        run: |
+          {
+            echo 'content<<EOF'
+            gh issue view "${{ inputs.issue_number || github.event.issue.number }}" --json body -q .body
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Parse issue form
+        id: parse
+        uses: stefanbuck/github-issue-parser@v3
+        with:
+          template-path: .github/ISSUE_TEMPLATE/remove-feed.yml
+          issue-body: ${{ steps.issue-body.outputs.content }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Remove feed from OPML
+        id: opml
+        env:
+          ISSUE_JSON: ${{ steps.parse.outputs.jsonString }}
+        run: node .github/scripts/remove-feed-from-opml.mjs
+
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.FEED_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.FEED_BOT_PRIVATE_KEY }}
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          branch: feed/removal-issue-${{ inputs.issue_number || github.event.issue.number }}
+          title: "Rimuovi sito: ${{ steps.opml.outputs.name }}"
+          commit-message: "Rimuovi sito: ${{ steps.opml.outputs.name }}"
+          labels: feed-removal
+          body: |
+            Rimuove **${{ steps.opml.outputs.name }}** da `public/ita.opml`, dalla issue #${{ inputs.issue_number || github.event.issue.number }}.
+
+            - Sito: ${{ steps.opml.outputs.site_url }}
+
+            Closes #${{ inputs.issue_number || github.event.issue.number }}
