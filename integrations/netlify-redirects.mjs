@@ -3,7 +3,7 @@ import fs from "node:fs"
 // Domain-level redirect rules, in Netlify `_redirects` syntax. Add lines here
 // (e.g. canonicalize the *.netlify.app host to blogroll.it). The per-feed 302s
 // for unavailable blogs are appended below at build time.
-const staticRedirects = ``
+const staticRedirects = `https://blogroll-it.netlify.app/* https://blogroll.it/:splat 301!\n`
 
 // Emits a Netlify `_redirects` file mapping each known-but-unavailable feed
 // (a slug present in the OPML whose latest fetch produced no entries) to the
