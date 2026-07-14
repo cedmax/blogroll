@@ -24,6 +24,7 @@
       <outline type="rss" text="sindro.me - feeling bold on the internet" htmlUrl="https://sindro.me/it/posts/" xmlUrl="https://sindro.me/it/posts/index.xml" />
       <outline type="rss" text="Zuppa in Bottiglia" htmlUrl="https://zuppainbottiglia.org/" xmlUrl="https://zuppainbottiglia.org/rss.xml" />
       <outline type="rss" text="emillo.net" htmlUrl="https://emillo.net" xmlUrl="https://emillo.net/feeds/all.atom.xml" />
+      <outline type="rss" text="La siepe di more" htmlUrl="https://lasiepedimore.com/" xmlUrl="https://lasiepedimore.com/feed/" />
     </outline>
   </body>
 </opml>
