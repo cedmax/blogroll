@@ -43,10 +43,7 @@ async function getInstallationToken() {
 const BLOCKED_HOSTNAMES = [
   "medium.com",
   "substack.com",
-  "wordpress.com",
-  "blogspot.com",
   "tumblr.com",
-  "ghost.io",
   "hashnode.dev",
   "beehiiv.com",
   "livejournal.com",
