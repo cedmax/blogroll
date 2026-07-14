@@ -77,6 +77,7 @@ jobs:
           branch: feed/issue-${{ inputs.issue_number || github.event.issue.number }}
           title: "Aggiungi sito: ${{ steps.opml.outputs.name }}"
           commit-message: "Aggiungi sito: ${{ steps.opml.outputs.name }}"
+          assignees: cedmax
           labels: feed-suggestion
           body: |
             Aggiunge **${{ steps.opml.outputs.name }}** a `public/ita.opml`, dalla issue #${{ inputs.issue_number || github.event.issue.number }}.

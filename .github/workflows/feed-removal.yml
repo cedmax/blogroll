@@ -74,6 +74,7 @@ jobs:
           branch: feed/removal-issue-${{ inputs.issue_number || github.event.issue.number }}
           title: "Rimuovi sito: ${{ steps.opml.outputs.name }}"
           commit-message: "Rimuovi sito: ${{ steps.opml.outputs.name }}"
+          assignees: cedmax
           labels: feed-removal
           body: |
             Rimuove **${{ steps.opml.outputs.name }}** da `public/ita.opml`, dalla issue #${{ inputs.issue_number || github.event.issue.number }}.
