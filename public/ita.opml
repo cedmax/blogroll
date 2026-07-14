@@ -25,6 +25,7 @@
       <outline type="rss" text="Zuppa in Bottiglia" htmlUrl="https://zuppainbottiglia.org/" xmlUrl="https://zuppainbottiglia.org/rss.xml" />
       <outline type="rss" text="emillo.net" htmlUrl="https://emillo.net" xmlUrl="https://emillo.net/feeds/all.atom.xml" />
       <outline type="rss" text="La siepe di more" htmlUrl="https://lasiepedimore.com/" xmlUrl="https://lasiepedimore.com/feed/" />
+      <outline type="rss" text="maletta.space" htmlUrl="https://mb.maletta.space" xmlUrl="https://mb.maletta.space/feed" />
     </outline>
   </body>
 </opml>
