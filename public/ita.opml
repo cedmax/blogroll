@@ -23,6 +23,7 @@
       <outline type="rss" text="Il blog di Decarola. Old school!" htmlUrl="https://decaro.la/" xmlUrl="https://decaro.la/blog/feed.rss" />
       <outline type="rss" text="sindro.me - feeling bold on the internet" htmlUrl="https://sindro.me/it/posts/" xmlUrl="https://sindro.me/it/posts/index.xml" />
       <outline type="rss" text="Zuppa in Bottiglia" htmlUrl="https://zuppainbottiglia.org/" xmlUrl="https://zuppainbottiglia.org/rss.xml" />
+      <outline type="rss" text="prova" htmlUrl="https://prova.wordpress.com" xmlUrl="https://prova.wordpress.com/feed/" />
     </outline>
   </body>
 </opml>
