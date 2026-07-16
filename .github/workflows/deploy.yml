@@ -65,6 +65,10 @@ jobs:
           path: cache.json
           key: feed-cache-${{ github.run_id }}
 
+      - name: Update feed state
+        if: github.event_name != 'pull_request'
+        run: node .github/scripts/update-feed-state.mjs
+
       # astro build → dist/ (incl. _redirects from the netlify-redirects integration)
       # PR builds bake the deploy-preview origin into absolute URLs (og:image);
       # the matching `alias` on the deploy step makes Netlify serve that URL.
