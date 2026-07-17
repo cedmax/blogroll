@@ -18,7 +18,10 @@ export default defineConfig({
   integrations: [
     netlifyRedirects(),
     sitemap({
-      filter: (page) => !page.includes("/sites/non-disponibile/") && !page.includes("/404/"),
+      filter: (page) =>
+        !page.includes("/sites/non-disponibile/") &&
+        !page.includes("/404/") &&
+        !page.includes("/rss.xml"),
       serialize: (item) => {
         const isStatic = item.url.includes("/info/") || item.url.includes("/proposte/")
         return { ...item, lastmod: builtAt, changefreq: isStatic ? "monthly" : "daily" }

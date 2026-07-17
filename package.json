@@ -50,6 +50,7 @@
     "esbuild@0.28.1": true
   },
   "dependencies": {
+    "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.3"
   }
 }

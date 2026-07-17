@@ -30,6 +30,7 @@ const { title, description, canonical, activeNav } = Astro.props
       title="blogroll.it OPML"
       href={`https://blogroll.it/${opmlFile}`}
     />
+    <link rel="alternate" type="application/rss+xml" title="blogroll.it RSS" href="/rss.xml" />
     <meta name="theme-color" content="#f5f0e8" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#15171a" media="(prefers-color-scheme: dark)" />
     <script is:inline>
