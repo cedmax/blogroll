@@ -5,13 +5,32 @@ const SITE_URL = "https://blogroll.it"
 const FEEDS_DIR = "src/data/feeds"
 const OUT_FILE = "public/stale.json"
 
-const res = await fetch(`${SITE_URL}/stale.json`).catch(() => null)
-if (!res?.ok) {
+const RETRIES = 4
+const BACKOFF_MS = 2000
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
+// Fetch the live state, tolerating transient failures. A 404 is definitive —
+// the file genuinely doesn't exist yet (first-ever deploy), so we start empty.
+// Network errors, timeouts and 5xx are inconclusive: retrying an empty state
+// here would silently reset every feed's accumulated `lastBuild` and restart
+// its unavailability clock, so we retry with backoff before giving up.
+const fetchLiveState = async () => {
+  for (let attempt = 1; attempt <= RETRIES; attempt++) {
+    const res = await fetch(`${SITE_URL}/stale.json`).catch(() => null)
+    if (res?.ok) return await res.json()
+    if (res?.status === 404) return {}
+    const detail = res ? `HTTP ${res.status}` : "network error"
+    console.error(`Attempt ${attempt}/${RETRIES} to fetch live stale.json failed (${detail}).`)
+    if (attempt < RETRIES) await sleep(BACKOFF_MS * attempt)
+  }
   console.error(
-    "Warning: could not fetch live stale.json — starting from empty state; accumulated feed aging may be lost.",
+    "Warning: could not fetch live stale.json after retries — starting from empty state; accumulated feed aging may be lost.",
   )
+  return {}
 }
-const state = res?.ok ? await res.json() : {}
+
+const state = await fetchLiveState()
 
 const now = new Date().toISOString()
 const seenXmlUrls = new Set()
