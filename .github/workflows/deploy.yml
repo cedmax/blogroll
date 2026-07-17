@@ -19,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write # PR preview-link comment
     steps:
       - uses: actions/checkout@v4
 
@@ -91,10 +90,17 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
+  # Separate job so a transient failure here doesn't force a full build+deploy rerun.
+  comment:
+    needs: deploy
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
       # Preview-link comment (was provided by actions-netlify). The aliased
       # URL is stable across pushes, so comment once and skip if present.
       - name: Comment preview URL on PR
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.number }}
@@ -106,3 +112,4 @@ jobs:
             gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
               -f body="🚀 Deploy preview: ${url}"
           fi
+
