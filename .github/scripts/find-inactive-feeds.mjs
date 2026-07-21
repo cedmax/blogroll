@@ -15,8 +15,13 @@ const ghFetch = (path, opts = {}) =>
     },
   })
 
+// A 404 is definitive — stale.json genuinely doesn't exist yet (first-ever
+// deploy) — so there's nothing to check. Anything else (network error,
+// timeout, 5xx) is inconclusive and must fail loudly rather than silently
+// skipping detection every time it happens.
 const res = await fetch(`${SITE_URL}/stale.json`).catch(() => null)
-if (!res?.ok) process.exit(0)
+if (res?.status === 404) process.exit(0)
+if (!res?.ok) throw new Error(`Failed to fetch ${SITE_URL}/stale.json: ${res ? res.status : "network error"}`)
 const state = await res.json()
 
 const now = Date.now()
