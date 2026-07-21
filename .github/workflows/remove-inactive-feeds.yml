@@ -16,9 +16,6 @@ on:
         required: false
         type: string
 
-permissions:
-  issues: write
-
 jobs:
   open-issues:
     runs-on: ubuntu-latest
@@ -29,9 +26,19 @@ jobs:
         with:
           node-version-file: .nvmrc
 
+      # A GitHub App token so the created issues trigger `feed-removal.yml`
+      # (labeled with feed-removal). Events raised by the default GITHUB_TOKEN
+      # never start new runs, which would leave every issue unprocessed.
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.FEED_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.FEED_BOT_PRIVATE_KEY }}
+
       - name: Open removal issues
         run: node .github/scripts/find-inactive-feeds.mjs
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           UNAVAIL_DAYS: ${{ inputs.unavailable_days || '21' }}
           STALE_DAYS: ${{ inputs.stale_days || '365' }}
