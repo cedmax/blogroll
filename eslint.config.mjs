@@ -3,7 +3,7 @@ import js from "@eslint/js"
 import astro from "eslint-plugin-astro"
 import typescript from "@typescript-eslint/eslint-plugin"
 import parser from "@typescript-eslint/parser"
-import astroParser from "astro-eslint-parser"
+import * as astroParser from "astro-eslint-parser"
 
 const overrides = {
   "@typescript-eslint/no-unused-vars": [
