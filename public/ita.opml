@@ -33,6 +33,7 @@
       <outline type="rss" text="JacPreSta" htmlUrl="https://www.jacpresta.it" xmlUrl="https://www.jacpresta.it/index.xml" />
       <outline type="rss" text="due chiacchiere" htmlUrl="https://duechiacchiere.it" xmlUrl="https://duechiacchiere.it/feed" />
       <outline type="rss" text="Bluebabbler" htmlUrl="https://bluebabbler.it" xmlUrl="https://bluebabbler.it/feed.php" />
+      <outline type="rss" text="Strelnik | blog" htmlUrl="https://www.strelnik.it/blog/" xmlUrl="https://www.strelnik.it/blog/feed/" />
     </outline>
   </body>
 </opml>
