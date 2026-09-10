@@ -29,7 +29,7 @@
     "@tailwindcss/vite": "4.3.3",
     "@typescript-eslint/eslint-plugin": "8.65.0",
     "@typescript-eslint/parser": "8.65.0",
-    "astro": "7.1.3",
+    "astro": "7.2.8",
     "astro-eslint-parser": "3.0.0",
     "eslint": "10.8.0",
     "eslint-plugin-astro": "3.0.1",
