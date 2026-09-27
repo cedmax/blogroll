@@ -47,8 +47,6 @@ async function curatedLookup() {
 
 const latest = (feed: ProfileFeed) => feed.entries[0]?.published ?? ""
 
-type ProfileSite = { feed: ProfileFeed; followers: Pick<Profile, "slug" | "displayName">[] }
-
 const hasPosts = (feed: ProfileFeed) => feed.available && feed.entries.length > 0
 
 // Static pages under /sites/
@@ -59,9 +57,9 @@ const RESERVED_SLUGS = new Set(["non-disponibile"])
 // posts get their curated page back, from the profile data.
 async function buildFeedLinks() {
   const curated = await curatedLookup()
-  const byUrl = new Map<string, ProfileSite & { slug: string }>()
+  const byUrl = new Map<string, { slug: string; feed: ProfileFeed }>()
   const rescued = new Map<string, ProfileFeed>()
-  for (const { slug, displayName, feeds } of await getProfiles()) {
+  for (const { feeds } of await getProfiles()) {
     for (const feed of feeds) {
       if (curated.page(feed)) continue
       const cur = curated.unavailable(feed)
@@ -74,24 +72,21 @@ async function buildFeedLinks() {
       if (curated.inOpml(feed)) continue
       const key = normalizeUrl(feed.xmlUrl)
       const prev = byUrl.get(key)
-      if (!prev) byUrl.set(key, { slug: feed.slug, feed, followers: [{ slug, displayName }] })
-      else {
-        prev.followers.push({ slug, displayName })
-        if (latest(feed) > latest(prev.feed)) prev.feed = feed
-      }
+      if (!prev) byUrl.set(key, { slug: feed.slug, feed })
+      else if (latest(feed) > latest(prev.feed)) prev.feed = feed
     }
   }
   const keysBySlug = new Map<string, string[]>()
   for (const [key, { slug }] of byUrl)
     keysBySlug.set(slug, [...(keysBySlug.get(slug) ?? []), key])
-  const sites = new Map<string, ProfileSite>()
+  const sites = new Map<string, ProfileFeed>()
   for (const [slug, keys] of keysBySlug) {
     if (keys.length > 1 || curated.slugs.has(slug) || RESERVED_SLUGS.has(slug)) {
       console.warn(`profiles: feed slug "${slug}" is taken, no /sites/ page`)
       continue
     }
-    const { feed, followers } = byUrl.get(keys[0])!
-    if (hasPosts(feed)) sites.set(slug, { feed: { ...feed, slug }, followers })
+    const { feed } = byUrl.get(keys[0])!
+    if (hasPosts(feed)) sites.set(slug, { ...feed, slug })
   }
   const sitePage = (feed: ProfileFeed) => {
     const cur = curated.unavailable(feed)
