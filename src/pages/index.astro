@@ -20,7 +20,7 @@ const urlsByFeed = Object.values(Object.groupBy(entries, (e) => e.feed.slug)).ma
 
 <Base
   title={`blogroll.it — ${entryCount} post da ${feeds.length} siti`}
-  description={`Post recenti da ${feeds.length} siti personali italiani, aggiornati ogni poche ore. Niente algoritmi, nessun account richiesto, solo link.`}
+  description={`Post recenti da ${feeds.length} siti personali italiani, aggiornati ogni poche ore. Niente algoritmi o necessità di registrarsi, solo link.`}
   canonical="https://blogroll.it/"
   activeNav="home"
 >
@@ -40,7 +40,7 @@ const urlsByFeed = Object.values(Object.groupBy(entries, (e) => e.feed.slug)).ma
     class="bg-alt border border-border rounded prose mt-12 py-5 px-6 mb-10 text-base italic text-ink font-light"
   >
     blogroll.it è una raccolta curata di siti personali in italiano, aggiornata regolarmente e
-    senza algoritmi o la necessità di aprire un account. Se non sai cosa fare, leggi del {" "}
+    senza algoritmi o bisogno di registrarsi. Se non sai cosa fare, leggi del {" "}
     <a class="underline" href="/info/" aria-label="Il progetto">progetto</a> o {" "}
     <a id="lucky" class="underline" href="#" aria-label="Un post a caso">un post a caso</a>.
   </div>
