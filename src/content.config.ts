@@ -22,14 +22,11 @@ const feeds = defineCollection({
   schema: feedSchema,
 })
 
-// Optional, written by scripts/fetch-profiles.mjs; empty when the profiles API
-// isn't configured. `_meta.json` is bookkeeping, not a profile.
+// Optional (scripts/fetch-profiles.mjs); `_meta.json` excluded.
 const profilesGlob = glob({ pattern: ["*.json", "!_*.json"], base: "./src/data/profiles" })
 
 const profiles = defineCollection({
-  // The glob loader returns early on a directory with no matching files,
-  // leaving the previous build's entries in Astro's persisted data store, so
-  // profiles removed since would still get /u/ pages. Start from a clean slate.
+  // glob keeps stale store entries when no files match; clear first.
   loader: {
     ...profilesGlob,
     load: (context) => {

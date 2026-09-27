@@ -101,8 +101,7 @@
   document.querySelectorAll<HTMLButtonElement>(".report-trigger").forEach((btn) => {
     btn.addEventListener("click", () => {
       siteUrlInput.value = btn.dataset.siteUrl ?? ""
-      // Profile-only feeds aren't in the OPML: flagged so their report gets a
-      // label the OPML removal workflow doesn't listen to
+      // Not in the OPML: skip the removal workflow
       profileFeedInput.value = "profileFeed" in btn.dataset ? "true" : ""
       btn.closest("details.feed-menu")?.removeAttribute("open")
       dialog.showModal()

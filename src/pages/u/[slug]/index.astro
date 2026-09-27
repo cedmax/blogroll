@@ -15,7 +15,7 @@ export async function getStaticPaths() {
 
 const { profile } = Astro.props
 const curated = await curatedLookup()
-// No cutoff: the profiles API sends up to 15 entries per feed, possibly all old.
+// No cutoff: entries may all be old.
 const { groupDates, collapsedByDate } = groupEntriesByDay(profile.feeds)
 const canonical = `https://blogroll.it/u/${profile.slug}/`
 ---

@@ -5,9 +5,7 @@ type GroupableFeed = {
   entries: { title: string; url: string; published: string }[]
 }
 
-// Flattens feeds into entries grouped by day (newest first), collapsing each
-// feed to its oldest entry of the day plus a count of the others. With
-// maxDays, entries older than that many days are dropped.
+// Entries by day, newest first; one per feed per day plus a count of the rest.
 export function groupEntriesByDay<F extends GroupableFeed>(feeds: F[], maxDays?: number) {
   const cutoff = maxDays === undefined ? -Infinity : Date.now() - maxDays * 24 * 60 * 60 * 1000
   const entries = feeds

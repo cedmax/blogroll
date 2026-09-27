@@ -6,8 +6,7 @@ import type { Feed } from "../utils/feeds"
 
 interface Props {
   feed: Feed
-  // Feed only on a /u/ profile, not in the OPML: its report skips the OPML
-  // removal pipeline (see ReportDialog and submission-created.js).
+  // Not in the OPML: report skips the removal workflow
   profileFeed?: boolean
 }
 

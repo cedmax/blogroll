@@ -3,8 +3,7 @@ import { getCollection } from "astro:content"
 import { builtAt } from "./feeds"
 import { fmtLong } from "./dates"
 
-// Personal profiles from the optional profiles API (scripts/fetch-profiles.mjs).
-// Only /u/ pages read these: profile feeds never reach curated surfaces.
+// Read by /u/ pages only.
 export async function getProfiles() {
   const entries = await getCollection("profiles")
   return entries.map((e) => e.data)
@@ -13,8 +12,7 @@ export async function getProfiles() {
 export type Profile = Awaited<ReturnType<typeof getProfiles>>[number]
 export type ProfileFeed = Profile["feeds"][number]
 
-// Mirrors .github/scripts/remove-feed-from-opml.mjs, so "is this feed in the
-// OPML?" gets the same answer the removal pipeline will.
+// Mirrors remove-feed-from-opml.mjs.
 const normalizeUrl = (raw: string) => {
   try {
     const u = new URL(raw)
@@ -25,10 +23,7 @@ const normalizeUrl = (raw: string) => {
   }
 }
 
-// How profile feeds relate to the curated ones. `page` links only to available
-// curated feeds (unavailable ones 302 away); `inOpml` covers every curated
-// feed and matches the reported site URL (htmlUrl) the way the removal
-// workflow does, so a report it couldn't act on is never labelled feed-removal.
+// `page`: available curated feeds. `inOpml`: all, by htmlUrl, like the removal script.
 export async function curatedLookup() {
   const all = (await getCollection("feeds")).map((e) => e.data)
   const inOpml = new Set(all.flatMap((f) => [normalizeUrl(f.xmlUrl), normalizeUrl(f.htmlUrl)]))
@@ -44,8 +39,7 @@ export async function curatedLookup() {
   }
 }
 
-// Read at build time rather than imported: the file doesn't exist when the
-// profiles API isn't configured, and a static import would break the build.
+// Not imported: the file may not exist.
 const readFetchedAt = () => {
   try {
     const { fetchedAt } = JSON.parse(readFileSync("src/data/profiles/_meta.json", "utf8"))
@@ -56,6 +50,5 @@ const readFetchedAt = () => {
   }
 }
 
-// When the profiles export was fetched: after an API outage this is the age
-// of the cached data on the page, not the build time.
+// Export time, not build time.
 export const profilesFetchedAt = readFetchedAt()

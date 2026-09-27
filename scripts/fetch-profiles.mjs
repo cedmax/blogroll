@@ -1,9 +1,7 @@
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 
-// Optional: fetches personal profiles (/u/<slug> pages) from the profiles API.
-// Never fails the build — unset, down or garbage all exit 0 and the curated
-// site builds exactly as without it.
+// Optional profiles API fetch for /u/ pages. Always exits 0.
 
 const PROFILES_DIR = "src/data/profiles"
 const META_FILE = join(PROFILES_DIR, "_meta.json")
@@ -16,7 +14,7 @@ const SLUG_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/
 
 const { PROFILES_API_URL: url, PROFILES_API_TOKEN: token } = process.env
 
-// Mirrors main.go's validLink: absolute http(s) URLs only.
+// Mirrors main.go's validLink.
 const validLink = (value) => {
   try {
     const u = new URL(value)
@@ -107,7 +105,7 @@ const normaliseProfile = (profile) => {
     )
     return null
   }
-  // Feed slugs key the per-feed grouping on /u/ pages, so they must be unique
+  // Slugs key the per-feed grouping
   const seenFeeds = new Set()
   const feeds = (Array.isArray(profile.feeds) ? profile.feeds : [])
     .map((feed) => normaliseFeed(feed, profile.slug))
@@ -172,8 +170,7 @@ try {
   process.exit(0)
 }
 
-// Normalise fully in memory first, so a bad response can't leave a
-// half-written directory behind.
+// Normalise before touching the directory.
 const seen = new Set()
 const profiles = raw.map(normaliseProfile).filter((profile) => {
   if (!profile) return false
