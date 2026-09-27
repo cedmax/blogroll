@@ -137,16 +137,18 @@ netlify/
 random-post picker or `stale.json` (which lists curated feeds only). A profile feed that is
 also curated (URLs compared the way `remove-feed-from-opml.mjs` does) links to its curated
 `/sites/` page. A profile-only feed with posts gets `/sites/<slug>/` too (one per feed URL),
-but `noindex`, out of the sitemap, and marked "Questo sito non fa parte della lista curata,
-ma di un blogroll personale"; a slug that is curated, `non-disponibile`, or sent for different
+but `noindex`, out of the sitemap, and marked "Questo sito non fa parte della lista curata, ma
+di un blogroll personale"; a slug that is curated, `non-disponibile`, or sent for different
 feeds gets no page. A curated feed that is unavailable but has posts in a profile gets its
 normal (indexed) page from the profile data (only there: not on the home page, `/lista` or
 `rss.xml`); `netlify-redirects.mjs` skips its 302 because the page exists, and
 `update-feed-state.mjs` takes its `lastPost` from the profiles so it isn't flagged as
-unavailable. `/u/` pages are `noindex` and out of the sitemap. Without the profiles API (forks,
-local checkouts, fork/Dependabot PRs) the build is today's curated site. Reports on feeds whose
-site URL isn't in the OPML (even when unavailable, curated feeds count as in it) are labelled
-`profile-feed-removal` (no workflow listens to it) and handled manually for now.
+unavailable. `/u/` pages are `noindex`, out of the sitemap, and served with `X-Robots-Tag:
+noindex, nofollow` (`public/_headers`, which also covers the profile OPML). Invalid profile
+data is dropped silently: the build logs never name profiles or feeds. Without the profiles API
+(forks, local checkouts, fork/Dependabot PRs) the build is today's curated site. Reports on
+feeds whose site URL isn't in the OPML (even when unavailable, curated feeds count as in it)
+are labelled `profile-feed-removal` (no workflow listens to it) and handled manually for now.
 
 Feeds are sorted by latest-entry date at render time in `sortFeedsByLatest`
 (`src/utils/feeds.ts`), not in Go.

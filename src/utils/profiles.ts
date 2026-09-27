@@ -76,10 +76,7 @@ async function buildFeedLinks() {
     keysBySlug.set(slug, [...(keysBySlug.get(slug) ?? []), key])
   const sites = new Map<string, ProfileFeed>()
   for (const [slug, keys] of keysBySlug) {
-    if (keys.length > 1 || curated.slugs.has(slug) || RESERVED_SLUGS.has(slug)) {
-      console.warn(`profiles: feed slug "${slug}" is taken, no /sites/ page`)
-      continue
-    }
+    if (keys.length > 1 || curated.slugs.has(slug) || RESERVED_SLUGS.has(slug)) continue
     const { feed } = byUrl.get(keys[0])!
     if (hasPosts(feed)) sites.set(slug, { ...feed, slug })
   }

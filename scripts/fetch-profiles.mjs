@@ -53,7 +53,7 @@ const cachedExportNote = () => {
   }
 }
 
-const normaliseEntries = (entries, where) => {
+const normaliseEntries = (entries) => {
   const maxTime = Date.now() + FUTURE_SLACK_MS
   const kept = []
   for (const entry of Array.isArray(entries) ? entries : []) {
@@ -64,10 +64,8 @@ const normaliseEntries = (entries, where) => {
       typeof entry?.published !== "string" ||
       Number.isNaN(published.getTime()) ||
       published.getTime() > maxTime
-    ) {
-      console.warn(`profiles: ${where}: dropping invalid entry ${JSON.stringify(entry?.url)}`)
+    )
       continue
-    }
     kept.push({ title: entry.title, url: entry.url, published: published.toISOString() })
   }
   return kept
@@ -75,24 +73,15 @@ const normaliseEntries = (entries, where) => {
     .slice(0, MAX_ENTRIES)
 }
 
-const normaliseFeed = (feed, profileSlug) => {
-  const where = `profile "${profileSlug}"`
+const normaliseFeed = (feed) => {
   if (
     typeof feed?.slug !== "string" ||
     !FEED_SLUG_RE.test(feed.slug) ||
     !isNonEmpty(feed?.htmlUrl) ||
-    !validLink(feed.htmlUrl)
-  ) {
-    const name = JSON.stringify(feed?.slug ?? feed?.xmlUrl)
-    console.warn(
-      `profiles: ${where}: skipping feed ${name} with missing/invalid slug or htmlUrl`,
-    )
+    !validLink(feed.htmlUrl) ||
+    !validLink(feed.xmlUrl)
+  )
     return null
-  }
-  if (!validLink(feed.xmlUrl)) {
-    console.warn(`profiles: ${where}: skipping feed "${feed.slug}" with invalid xmlUrl`)
-    return null
-  }
   return {
     title: isNonEmpty(feed.title) ? feed.title : new URL(feed.htmlUrl).hostname,
     xmlUrl: feed.xmlUrl,
@@ -100,35 +89,21 @@ const normaliseFeed = (feed, profileSlug) => {
     description: typeof feed.description === "string" ? feed.description : "",
     slug: feed.slug,
     available: typeof feed.available === "boolean" ? feed.available : true,
-    entries: normaliseEntries(feed.entries, `${where}, feed "${feed.slug}"`),
+    entries: normaliseEntries(feed.entries),
   }
 }
 
 const normaliseProfile = (profile) => {
-  if (typeof profile?.slug !== "string" || !SLUG_RE.test(profile.slug)) {
-    console.warn(
-      `profiles: dropping profile with invalid slug ${JSON.stringify(profile?.slug)}`,
-    )
-    return null
-  }
+  if (typeof profile?.slug !== "string" || !SLUG_RE.test(profile.slug)) return null
   const seenFeeds = new Set()
   const feeds = (Array.isArray(profile.feeds) ? profile.feeds : [])
-    .map((feed) => normaliseFeed(feed, profile.slug))
+    .map(normaliseFeed)
     .filter((feed) => {
-      if (!feed) return false
-      if (seenFeeds.has(feed.slug)) {
-        console.warn(
-          `profiles: profile "${profile.slug}": skipping duplicate feed "${feed.slug}"`,
-        )
-        return false
-      }
+      if (!feed || seenFeeds.has(feed.slug)) return false
       seenFeeds.add(feed.slug)
       return true
     })
-  if (feeds.length === 0) {
-    console.warn(`profiles: dropping profile "${profile.slug}" with no valid feeds`)
-    return null
-  }
+  if (feeds.length === 0) return null
   return {
     slug: profile.slug,
     displayName: isNonEmpty(profile.displayName) ? profile.displayName : profile.slug,
@@ -178,10 +153,7 @@ try {
 const seen = new Set()
 const profiles = raw.map(normaliseProfile).filter((profile) => {
   if (!profile) return false
-  if (seen.has(profile.slug)) {
-    console.warn(`profiles: dropping duplicate profile "${profile.slug}"`)
-    return false
-  }
+  if (seen.has(profile.slug)) return false
   seen.add(profile.slug)
   return true
 })
