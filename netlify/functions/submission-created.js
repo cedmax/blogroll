@@ -182,10 +182,13 @@ async function handleSegnalazione(data) {
     reason,
   ].join("\n")
 
+  // Feeds only on a /u/ profile aren't in the OPML, so they must not reach
+  // feed-removal.yml (remove-feed-from-opml.mjs would fail). No workflow listens
+  // to profile-feed-removal; those reports are handled manually.
   await createGithubIssue({
     title: `Rimuovi sito: ${siteUrl}`,
     body: issueBody,
-    labels: ["feed-removal"],
+    labels: data.profileFeed === "true" ? ["profile-feed-removal"] : ["feed-removal"],
   })
 }
 

@@ -47,11 +47,29 @@ jobs:
           key: feed-cache-
           restore-keys: feed-cache-
 
+      # Restore the newest profiles export on every event, schedule and
+      # dispatch included. Unlike the feed cache this isn't about sparing
+      # anyone's servers: it's the outage fallback, so a profiles API that's
+      # down degrades /u/ pages to the last good export instead of dropping
+      # them. fetch-profiles.mjs overwrites it whenever the API answers.
+      - name: Restore profiles cache
+        uses: actions/cache/restore@v4
+        with:
+          path: src/data/profiles
+          # the key never matches exactly; the prefix picks the newest cache
+          key: profiles-cache-
+          restore-keys: profiles-cache-
+
       # postinstall runs `go run main.go`: writes src/data/. It keys off whether
       # cache.json exists — present (PR/merge builds, from the restore above)
       # means serve cached feeds and fetch only misses; absent (scheduled and
-      # dispatch builds) means refetch everything fresh.
+      # dispatch builds) means refetch everything fresh. It then runs
+      # scripts/fetch-profiles.mjs, which never fails the build. Fork and
+      # Dependabot PRs get no secrets, so they simply build without profiles.
       - run: npm ci
+        env:
+          PROFILES_API_URL: ${{ secrets.PROFILES_API_URL }}
+          PROFILES_API_TOKEN: ${{ secrets.PROFILES_API_TOKEN }}
 
       # Save the just-written cache as the new baseline. Keys are immutable, so
       # save under a per-run key; the prefix restore above picks the newest. PR
@@ -74,6 +92,17 @@ jobs:
       - run: npm run build
         env:
           SITE_URL: ${{ github.event_name == 'pull_request' && format('https://deploy-preview-{0}--blogroll-it.netlify.app', github.event.number) || '' }}
+
+      # Save the profiles export only after a successful build, so a bad one is
+      # never promoted to the outage fallback. Per-run key, same as the feed
+      # cache. hashFiles guards the one case where there's nothing to save:
+      # secrets set, fetch failed, and no cache restored yet.
+      - name: Save profiles cache
+        if: github.event_name != 'pull_request' && hashFiles('src/data/profiles/_meta.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: src/data/profiles
+          key: profiles-cache-${{ github.run_id }}
 
       # Fork PRs can't read the Netlify secrets, so the deploy would fail red;
       # skip it there (the build and feed checks above still run).

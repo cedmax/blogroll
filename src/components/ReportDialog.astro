@@ -22,6 +22,7 @@
 >
   <input type="hidden" name="form-name" value="segnalazioni" />
   <input type="hidden" id="report-site-url" name="siteUrl" />
+  <input type="hidden" id="report-profile-feed" name="profileFeed" value="" />
 
   <!-- Honeypot: visually hidden, not display:none, so bots fill it but humans don't see it -->
   <div
@@ -93,12 +94,16 @@
   const successEl = document.getElementById("report-success") as HTMLElement
   const errorEl = document.getElementById("report-error") as HTMLElement
   const siteUrlInput = document.getElementById("report-site-url") as HTMLInputElement
+  const profileFeedInput = document.getElementById("report-profile-feed") as HTMLInputElement
   const cancelBtn = document.getElementById("report-cancel-btn") as HTMLButtonElement
   const submitLabel = "Invia segnalazione"
 
   document.querySelectorAll<HTMLButtonElement>(".report-trigger").forEach((btn) => {
     btn.addEventListener("click", () => {
       siteUrlInput.value = btn.dataset.siteUrl ?? ""
+      // Profile-only feeds aren't in the OPML: flagged so their report gets a
+      // label the OPML removal workflow doesn't listen to
+      profileFeedInput.value = "profileFeed" in btn.dataset ? "true" : ""
       btn.closest("details.feed-menu")?.removeAttribute("open")
       dialog.showModal()
     })

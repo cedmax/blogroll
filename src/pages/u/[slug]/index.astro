@@ -1,0 +1,77 @@
+---
+import Base from "../../../layouts/Base.astro"
+import { getProfiles, curatedHrefs, feedHref, profilesFetchedAt } from "../../../utils/profiles"
+import { fmtLong } from "../../../utils/dates"
+import { groupEntriesByDay } from "../../../utils/entries"
+import FeedHeader from "../../../components/FeedHeader.astro"
+import Card from "../../../components/Card.astro"
+import MetaLine from "../../../components/MetaLine.astro"
+import ProfileHeader from "../../../components/ProfileHeader.astro"
+
+export async function getStaticPaths() {
+  const profiles = await getProfiles()
+  return profiles.map((profile) => ({ params: { slug: profile.slug }, props: { profile } }))
+}
+
+const { profile } = Astro.props
+const curated = await curatedHrefs()
+// No cutoff: the profiles API sends up to 15 entries per feed, possibly all old.
+const { groupDates, collapsedByDate } = groupEntriesByDay(profile.feeds)
+const canonical = `https://blogroll.it/u/${profile.slug}/`
+---
+
+<Base title={`${profile.displayName} — blogroll.it`} canonical={canonical} activeNav="">
+  <Fragment slot="head">
+    <meta name="robots" content="noindex,nofollow" />
+  </Fragment>
+
+  <MetaLine slot="meta-line">
+    {profile.feeds.length} siti &mdash; aggiornato il {profilesFetchedAt}
+  </MetaLine>
+
+  <ProfileHeader profile={profile} tab="recenti" />
+
+  {
+    groupDates.map((date) => (
+      <div class="mb-6">
+        <h2 class="text-3xl font-black tracking-tight text-ink-muted mb-3 pb-2 border-b-2 border-ink-muted">
+          {fmtLong(new Date(date))}
+        </h2>
+        {collapsedByDate[date]!.map((entry) => {
+          const href = feedHref(entry.feed, curated)
+          const isCurated = curated.has(entry.feed.xmlUrl)
+          const more = `+ ${entry.extraCount === 1 ? "un altro" : `altri ${entry.extraCount}`} post`
+          return (
+            <Card class="pb-1.5 mb-2">
+              <div class="bg-card block rounded border-b border-border-l px-3 py-2.5">
+                <a
+                  class="pr inline-flex items-center text-base font-semibold leading-snug visited:text-ink-muted"
+                  href={entry.url}
+                  target="_blank"
+                >
+                  {entry.title}{" "}
+                </a>{" "}
+                {entry.extraCount > 0 &&
+                  (isCurated ? (
+                    <a class="pr-3 text-xs text-ink-muted inline" href={href}>
+                      {more}
+                    </a>
+                  ) : (
+                    <span class="pr-3 text-xs text-ink-muted inline">{more}</span>
+                  ))}
+              </div>
+              <div class="px-3 pt-0.5 text-ink-muted flex items-center gap-2 justify-center">
+                <FeedHeader
+                  feed={entry.feed}
+                  href={href}
+                  profileFeed={!isCurated}
+                  titleClass="text-xs"
+                />
+              </div>
+            </Card>
+          )
+        })}
+      </div>
+    ))
+  }
+</Base>

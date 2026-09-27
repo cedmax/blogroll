@@ -1,0 +1,57 @@
+---
+import Base from "../../../layouts/Base.astro"
+import EntryRow from "../../../components/EntryRow.astro"
+import { sortFeedsByLatest } from "../../../utils/feeds"
+import { getProfiles, curatedHrefs, feedHref, profilesFetchedAt } from "../../../utils/profiles"
+import FeedHeader from "../../../components/FeedHeader.astro"
+import Card from "../../../components/Card.astro"
+import MetaLine from "../../../components/MetaLine.astro"
+import ProfileHeader from "../../../components/ProfileHeader.astro"
+
+export async function getStaticPaths() {
+  const profiles = await getProfiles()
+  return profiles.map((profile) => ({ params: { slug: profile.slug }, props: { profile } }))
+}
+
+const { profile } = Astro.props
+const curated = await curatedHrefs()
+const feeds = sortFeedsByLatest(profile.feeds)
+const canonical = `https://blogroll.it/u/${profile.slug}/lista/`
+---
+
+<Base
+  title={`${profile.displayName} — La lista — blogroll.it`}
+  canonical={canonical}
+  activeNav=""
+>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex,nofollow" />
+  </Fragment>
+
+  <MetaLine slot="meta-line">{feeds.length} siti — aggiornato il {profilesFetchedAt}</MetaLine>
+
+  <ProfileHeader profile={profile} tab="lista" />
+
+  <div class="flex flex-col gap-4">
+    {
+      feeds.map((feed) => (
+        <Card>
+          <div class="py-2.5 px-3 bg-card rounded border-b border-border-l flex items-center gap-2 justify-center">
+            <FeedHeader
+              feed={feed}
+              href={feedHref(feed, curated)}
+              profileFeed={!curated.has(feed.xmlUrl)}
+              titleClass="text-base font-bold leading-snug"
+            />
+          </div>
+
+          {feed.entries[0] && (
+            <div class="-mt-1">
+              <EntryRow {...feed.entries[0]} />
+            </div>
+          )}
+        </Card>
+      ))
+    }
+  </div>
+</Base>

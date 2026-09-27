@@ -1,0 +1,41 @@
+---
+import type { Profile } from "../utils/profiles"
+
+interface Props {
+  profile: Profile
+  tab: "recenti" | "lista"
+}
+
+const { profile, tab } = Astro.props
+const base = `/u/${profile.slug}/`
+---
+
+<div class="mt-12 mb-10">
+  <h1 class="text-3xl font-black tracking-tight mb-1">{profile.displayName}</h1>
+  <p class="text-sm text-ink-muted mb-4">
+    I siti che {profile.displayName} segue, con i post più recenti.
+  </p>
+  <nav class="flex gap-5 text-sm">
+    {
+      tab === "recenti" ? (
+        <span class="text-ink font-semibold">post recenti</span>
+      ) : (
+        <a class="text-ink-muted hover:text-accent" href={base}>
+          post recenti
+        </a>
+      )
+    }
+    {
+      tab === "lista" ? (
+        <span class="text-ink font-semibold">la lista</span>
+      ) : (
+        <a class="text-ink-muted hover:text-accent" href={`${base}lista/`}>
+          la lista
+        </a>
+      )
+    }
+    <a class="text-ink-muted hover:text-accent" target="_blank" href={`/u/${profile.slug}.opml`}
+      >OPML</a
+    >
+  </nav>
+</div>
