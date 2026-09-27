@@ -112,12 +112,11 @@ src/
     info.astro               ← "il progetto" page (renders src/content/pages/info.md)
     proposte.astro           ← "Proponi un sito" submission form (Netlify form)
     404.astro                ← renders src/content/pages/404.md
-    sites/[slug].astro       ← one page per feed (getStaticPaths over feeds collection)
+    sites/[slug].astro       ← one page per feed (curated + profile feeds, see Profiles)
     sites/non-disponibile.astro ← "temporarily unavailable" explainer (302 target)
     u/[slug]/index.astro     ← profile "post recenti" (entries grouped by day, no cutoff)
     u/[slug]/lista.astro     ← profile "la lista" (feeds sorted by latest post)
     u/[slug].opml.ts         ← profile OPML export
-    u/sites/[slug].astro     ← page per profile-only feed (like sites/[slug], noindex)
   scripts/
     netlify-form.ts          ← client-side form validation/wiring for the proposte form
   utils/
@@ -134,16 +133,18 @@ netlify/
                               using FEED_BOT_CLIENT_ID / FEED_BOT_PRIVATE_KEY_B64 env vars)
 ```
 
-**Profiles (optional):** personal feeds appear only on `/u/<slug>/` pages — never on the
-home page, `/lista`, `/sites/*`, `rss.xml`, the random-post picker, `netlify-redirects.mjs`
-or `stale.json`. A profile feed that is also curated (URLs compared the way
-`remove-feed-from-opml.mjs` does) links to its `/sites/` page when available (an unavailable one links to
-its site); a profile-only feed gets `/u/sites/<feed-slug>/` (profile slug `sites` is reserved;
-a feed slug sent for different feeds gets no page). `/u/` pages are `noindex` and excluded from the sitemap. Without the profiles API
-(forks, local checkouts, fork/Dependabot PRs) the build is today's curated site minus `/u/`.
-Reports on feeds whose site URL isn't in the OPML (even when unavailable, curated
-feeds count as in it) are labelled `profile-feed-removal` (no workflow listens to it)
-and handled manually for now.
+**Profiles (optional):** personal feeds never appear on the home page, `/lista`, `rss.xml`,
+the random-post picker or `stale.json`. A profile feed that is also curated (URLs compared the
+way `remove-feed-from-opml.mjs` does) links to its curated `/sites/` page. A profile-only feed
+gets `/sites/<slug>/` too, but `noindex`, out of the sitemap, and marked "Non fa parte della
+lista curata" with links to the profiles following it; curated slugs win, and a slug sent for
+different feeds gets no page. A curated feed that is unavailable but has posts in a profile
+gets its normal (indexed) page from the profile data, and `netlify-redirects.mjs` skips its
+302 because the page exists. `/u/` pages are `noindex` and out of the sitemap. Without the
+profiles API (forks, local checkouts, fork/Dependabot PRs) the build is today's curated site.
+Reports on feeds whose site URL isn't in the OPML (even when unavailable, curated feeds count
+as in it) are labelled `profile-feed-removal` (no workflow listens to it) and handled manually
+for now.
 
 Feeds are sorted by latest-entry date at render time in `sortFeedsByLatest`
 (`src/utils/feeds.ts`), not in Go.

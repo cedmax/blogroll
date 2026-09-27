@@ -28,49 +28,80 @@ async function curatedLookup() {
   const all = (await getCollection("feeds")).map((e) => e.data)
   const inOpml = new Set(all.flatMap((f) => [normalizeUrl(f.xmlUrl), normalizeUrl(f.htmlUrl)]))
   const pages = new Map<string, string>()
-  for (const f of all.filter((f) => f.available)) {
-    pages.set(normalizeUrl(f.xmlUrl), `/sites/${f.slug}/`)
-    pages.set(normalizeUrl(f.htmlUrl), `/sites/${f.slug}/`)
+  const unavailable = new Map<string, (typeof all)[number]>()
+  for (const f of all) {
+    for (const url of [normalizeUrl(f.xmlUrl), normalizeUrl(f.htmlUrl)]) {
+      if (f.available) pages.set(url, `/sites/${f.slug}/`)
+      else unavailable.set(url, f)
+    }
   }
+  const match = <T>(map: Map<string, T>, feed: ProfileFeed) =>
+    map.get(normalizeUrl(feed.xmlUrl)) ?? map.get(normalizeUrl(feed.htmlUrl))
   return {
-    page: (feed: ProfileFeed) =>
-      pages.get(normalizeUrl(feed.xmlUrl)) ?? pages.get(normalizeUrl(feed.htmlUrl)),
+    slugs: new Set(all.map((f) => f.slug)),
+    page: (feed: ProfileFeed) => match(pages, feed),
+    unavailable: (feed: ProfileFeed) => match(unavailable, feed),
     inOpml: (feed: ProfileFeed) => inOpml.has(normalizeUrl(feed.htmlUrl)),
   }
 }
 
 const latest = (feed: ProfileFeed) => feed.entries[0]?.published ?? ""
 
-// Profile-only feeds get /u/sites/<slug>/; a slug sent for different feeds gets none.
+type ProfileSite = { feed: ProfileFeed; followers: Pick<Profile, "slug" | "displayName">[] }
+
+// Profile-only feeds get /sites/<slug>/ unless a curated feed owns the slug or the
+// slug is sent for different feeds. Unavailable curated feeds with profile posts
+// get their curated page back, from the profile data.
 async function buildFeedLinks() {
   const curated = await curatedLookup()
-  const sites = new Map<string, ProfileFeed>()
+  const sites = new Map<string, ProfileSite>()
+  const rescued = new Map<string, ProfileFeed>()
   const clashes = new Set<string>()
-  for (const feed of (await getProfiles()).flatMap((p) => p.feeds)) {
-    if (curated.page(feed) || curated.inOpml(feed)) continue
-    const prev = sites.get(feed.slug)
-    if (!prev) sites.set(feed.slug, feed)
-    else if (normalizeUrl(prev.xmlUrl) !== normalizeUrl(feed.xmlUrl)) clashes.add(feed.slug)
-    else if (latest(feed) > latest(prev)) sites.set(feed.slug, feed)
+  for (const { slug, displayName, feeds } of await getProfiles()) {
+    for (const feed of feeds) {
+      if (curated.page(feed)) continue
+      const cur = curated.unavailable(feed)
+      if (cur) {
+        const prev = rescued.get(cur.slug)
+        if (feed.available && feed.entries.length && (!prev || latest(feed) > latest(prev)))
+          rescued.set(cur.slug, { ...cur, entries: feed.entries })
+        continue
+      }
+      if (curated.inOpml(feed)) continue
+      const prev = sites.get(feed.slug)
+      if (!prev) sites.set(feed.slug, { feed, followers: [{ slug, displayName }] })
+      else if (normalizeUrl(prev.feed.xmlUrl) !== normalizeUrl(feed.xmlUrl))
+        clashes.add(feed.slug)
+      else {
+        prev.followers.push({ slug, displayName })
+        if (latest(feed) > latest(prev.feed)) prev.feed = feed
+      }
+    }
+  }
+  for (const slug of sites.keys()) {
+    if (curated.slugs.has(slug)) clashes.add(slug)
   }
   for (const slug of clashes) {
-    console.warn(`profiles: feed slug "${slug}" used for different feeds, no /u/sites/ page`)
+    console.warn(`profiles: feed slug "${slug}" is taken, no /sites/ page`)
     sites.delete(slug)
   }
   const sitePage = (feed: ProfileFeed) => {
+    const cur = curated.unavailable(feed)
+    if (cur) return rescued.has(cur.slug) ? `/sites/${cur.slug}/` : undefined
     const site = sites.get(feed.slug)
-    return site && normalizeUrl(site.xmlUrl) === normalizeUrl(feed.xmlUrl)
-      ? `/u/sites/${feed.slug}/`
+    return site && normalizeUrl(site.feed.xmlUrl) === normalizeUrl(feed.xmlUrl)
+      ? `/sites/${feed.slug}/`
       : undefined
   }
   return {
     sites,
+    rescued,
     page: (feed: ProfileFeed) => curated.page(feed) ?? sitePage(feed),
     inOpml: curated.inOpml,
   }
 }
 
-// Internal page (curated or /u/sites/) and OPML membership for profile feeds.
+// Internal page and OPML membership for profile feeds.
 let feedLinksPromise: ReturnType<typeof buildFeedLinks> | undefined
 export const feedLinks = () => (feedLinksPromise ??= buildFeedLinks())
 

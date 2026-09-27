@@ -19,7 +19,9 @@ export default function netlifyRedirects() {
         for (const file of fs.readdirSync(feedsDir)) {
           if (!file.endsWith(".json")) continue
           const feed = JSON.parse(fs.readFileSync(new URL(file, feedsDir), "utf8"))
-          if (!feed.available) {
+          // A page from profile data may exist for it: keep that
+          const page = new URL(`./sites/${feed.slug}/index.html`, dir)
+          if (!feed.available && !fs.existsSync(page)) {
             lines.push(`/sites/${feed.slug}/  /sites/non-disponibile/  302`)
           }
         }
