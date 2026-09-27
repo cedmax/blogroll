@@ -3,7 +3,6 @@
     "postinstall": "go run main.go && node --env-file-if-exists=.env scripts/fetch-profiles.mjs",
     "reset": "rm -f cache.json",
     "build": "astro build",
-    "predev": "node --env-file-if-exists=.env scripts/fetch-profiles.mjs",
     "dev": "astro dev --host",
     "preview": "astro preview",
     "format": "prettier --write .",
