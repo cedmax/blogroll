@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm install     # fetch feeds + profiles, write src/data/ (postinstall: go run main.go && node scripts/fetch-profiles.mjs)
+npm install     # fetch feeds + profiles, write src/data/ (postinstall; profiles env read from .env if present)
 npm run build   # astro build → dist/  (requires src/data/ from install)
 npm run dev     # start Astro dev server (localhost:4321)
 npm run preview # serve dist/ locally
@@ -15,7 +15,7 @@ go run main.go -opml <file> # use a different OPML file
 npm run reset               # delete cache.json (forces the next run to refetch all)
 
 # optional: fetch personal profiles into src/data/profiles/ (skips unless both are set)
-PROFILES_API_URL=… PROFILES_API_TOKEN=… node scripts/fetch-profiles.mjs
+node --env-file-if-exists=.env scripts/fetch-profiles.mjs   # or export PROFILES_API_URL / PROFILES_API_TOKEN
 ```
 
 ## Architecture

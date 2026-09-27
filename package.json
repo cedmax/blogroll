@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "postinstall": "go run main.go && node scripts/fetch-profiles.mjs",
+    "postinstall": "go run main.go && node --env-file-if-exists=.env scripts/fetch-profiles.mjs",
     "reset": "rm -f cache.json",
     "build": "astro build",
     "dev": "astro dev --host",
