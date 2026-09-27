@@ -2,16 +2,28 @@
 import Base from "../../layouts/Base.astro"
 import EntryRow from "../../components/EntryRow.astro"
 import { getFeeds, builtAt } from "../../utils/feeds"
+import { feedLinks, profilesFetchedAt } from "../../utils/profiles"
 import FeedHeader from "../../components/FeedHeader.astro"
 import SocialMeta from "../../components/SocialMeta.astro"
 import MetaLine from "../../components/MetaLine.astro"
 
 export async function getStaticPaths() {
   const feeds = await getFeeds()
-  return feeds.map((feed) => ({ params: { slug: feed.slug }, props: { feed } }))
+  const { sites, rescued } = await feedLinks()
+  return [
+    ...feeds.map((feed) => ({ params: { slug: feed.slug }, props: { feed } })),
+    ...[...rescued].map(([slug, feed]) => ({
+      params: { slug },
+      props: { feed, fromProfiles: true },
+    })),
+    ...[...sites].map(([slug, feed]) => ({
+      params: { slug },
+      props: { feed, profileOnly: true },
+    })),
+  ]
 }
 
-const { feed } = Astro.props
+const { feed, profileOnly, fromProfiles } = Astro.props
 ---
 
 <Base
@@ -21,22 +33,46 @@ const { feed } = Astro.props
   activeNav=""
 >
   <Fragment slot="head">
-    <SocialMeta
-      title={`${feed.title} — blogroll.it`}
-      description={feed.description}
-      url={`https://blogroll.it/sites/${feed.slug}/`}
-    />
+    {
+      profileOnly ? (
+        <meta name="robots" content="noindex,nofollow" />
+      ) : (
+        <SocialMeta
+          title={`${feed.title} — blogroll.it`}
+          description={feed.description}
+          url={`https://blogroll.it/sites/${feed.slug}/`}
+        />
+      )
+    }
   </Fragment>
 
-  <MetaLine slot="meta-line">aggiornato il {builtAt}</MetaLine>
+  <MetaLine slot="meta-line"
+    >aggiornato il {profileOnly || fromProfiles ? profilesFetchedAt : builtAt}</MetaLine
+  >
 
   <div class="bg-card border border-border rounded py-4 px-5 mb-4">
     <div class="text-lg font-bold mb-1 flex items-baseline gap-2 flex-wrap">
-      <FeedHeader feed={feed} linked={false} titleClass="text-lg font-bold" />
+      <FeedHeader
+        feed={feed}
+        linked={false}
+        profileFeed={profileOnly}
+        titleClass="text-lg font-bold"
+      />
     </div>
     {
       feed.description && (
         <div class="text-sm text-ink-muted leading-relaxed">{feed.description}</div>
+      )
+    }
+    {
+      profileOnly && (
+        <p class="text-xs text-ink-muted mt-6 italic">
+          Questo sito non fa parte della{" "}
+          <a class="underline" href="/lista/">
+            lista curata
+          </a>
+          , ma di un blogroll personale.
+        </p>
       )
     }
   </div>

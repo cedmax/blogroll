@@ -47,11 +47,23 @@ jobs:
           key: feed-cache-
           restore-keys: feed-cache-
 
+      # Profiles outage fallback, restored on every event
+      - name: Restore profiles cache
+        uses: actions/cache/restore@v4
+        with:
+          path: src/data/profiles
+          # the key never matches exactly; the prefix picks the newest cache
+          key: profiles-cache-
+          restore-keys: profiles-cache-
+
       # postinstall runs `go run main.go`: writes src/data/. It keys off whether
       # cache.json exists — present (PR/merge builds, from the restore above)
       # means serve cached feeds and fetch only misses; absent (scheduled and
       # dispatch builds) means refetch everything fresh.
       - run: npm ci
+        env:
+          PROFILES_API_URL: ${{ secrets.PROFILES_API_URL }}
+          PROFILES_API_TOKEN: ${{ secrets.PROFILES_API_TOKEN }}
 
       # Save the just-written cache as the new baseline. Keys are immutable, so
       # save under a per-run key; the prefix restore above picks the newest. PR
@@ -74,6 +86,14 @@ jobs:
       - run: npm run build
         env:
           SITE_URL: ${{ github.event_name == 'pull_request' && format('https://deploy-preview-{0}--blogroll-it.netlify.app', github.event.number) || '' }}
+
+      # After the build, so a failed one never becomes the fallback
+      - name: Save profiles cache
+        if: github.event_name != 'pull_request' && hashFiles('src/data/profiles/_meta.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: src/data/profiles
+          key: profiles-cache-${{ github.run_id }}
 
       # Fork PRs can't read the Netlify secrets, so the deploy would fail red;
       # skip it there (the build and feed checks above still run).

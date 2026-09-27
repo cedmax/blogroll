@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "postinstall": "go run main.go",
+    "postinstall": "go run main.go && node --env-file-if-exists=.env scripts/fetch-profiles.mjs",
     "reset": "rm -f cache.json",
     "build": "astro build",
     "dev": "astro dev --host",
@@ -29,7 +29,7 @@
     "@tailwindcss/vite": "4.3.3",
     "@typescript-eslint/eslint-plugin": "8.65.0",
     "@typescript-eslint/parser": "8.65.0",
-    "astro": "7.1.3",
+    "astro": "^7.3.5",
     "astro-eslint-parser": "3.0.0",
     "eslint": "10.8.0",
     "eslint-plugin-astro": "3.0.1",
@@ -51,6 +51,6 @@
   },
   "dependencies": {
     "@astrojs/rss": "4.0.19",
-    "@astrojs/sitemap": "3.7.3"
+    "@astrojs/sitemap": "^3.7.4"
   }
 }

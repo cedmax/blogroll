@@ -167,8 +167,7 @@ async function handleSegnalazione(data) {
   // No BLOCKED_HOSTNAMES check here — that list exists to keep platforms out
   // of new proposals, but a legitimate removal report may well target one.
   // No OPML-membership check either — same "let manual review catch it"
-  // approach as handleProposta; there's no automation on feed-removal issues
-  // to fail out of even if there were.
+  // approach as handleProposta.
 
   // Headings mirror remove-feed.yml's field labels verbatim, matching the
   // same convention as handleProposta above.
@@ -182,10 +181,11 @@ async function handleSegnalazione(data) {
     reason,
   ].join("\n")
 
+  // Not in the OPML: no removal workflow
   await createGithubIssue({
     title: `Rimuovi sito: ${siteUrl}`,
     body: issueBody,
-    labels: ["feed-removal"],
+    labels: data.profileFeed === "true" ? ["profile-feed-removal"] : ["feed-removal"],
   })
 }
 

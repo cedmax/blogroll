@@ -6,9 +6,10 @@ import type { Feed } from "../utils/feeds"
 
 interface Props {
   feed: Feed
+  profileFeed?: boolean
 }
 
-const { feed } = Astro.props
+const { feed, profileFeed } = Astro.props
 
 const rowClass = "flex items-center gap-3 px-4 py-3 min-h-11 text-ink no-underline hover:bg-bg"
 ---
@@ -48,6 +49,7 @@ const rowClass = "flex items-center gap-3 px-4 py-3 min-h-11 text-ink no-underli
       type="button"
       class:list={["report-trigger w-full bg-transparent border-0 cursor-pointer", rowClass]}
       data-site-url={feed.htmlUrl}
+      data-profile-feed={profileFeed || undefined}
     >
       <WarningIcon size="18" />
       Segnala il sito
