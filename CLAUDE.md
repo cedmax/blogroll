@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm install     # fetch feeds + profiles, write src/data/ (postinstall; profiles env read from .env if present)
 npm run build   # astro build → dist/  (requires src/data/ from install)
-npm run dev     # start Astro dev server (localhost:4321)
+npm run dev     # refetch profiles (predev), then start Astro dev server (localhost:4321)
 npm run preview # serve dist/ locally
 
 go run main.go              # fetch feeds manually + write src/data/
