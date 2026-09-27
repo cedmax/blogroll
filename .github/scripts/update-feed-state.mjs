@@ -44,8 +44,7 @@ const normalizeUrl = (raw) => {
   }
 }
 
-// Latest post per feed URL from profiles: a curated feed we can't fetch but the
-// profiles can is rescued on /sites/, so it isn't unavailable
+// Curated feeds rescued by profile posts aren't unavailable
 const profilePosts = new Map()
 if (existsSync(PROFILES_DIR)) {
   for (const file of readdirSync(PROFILES_DIR).filter((f) => /^[^_].*\.json$/.test(f))) {

@@ -47,7 +47,7 @@ jobs:
           key: feed-cache-
           restore-keys: feed-cache-
 
-      # Last good profiles export, restored on every event: outage fallback for /u/.
+      # Profiles outage fallback, restored on every event
       - name: Restore profiles cache
         uses: actions/cache/restore@v4
         with:
@@ -59,8 +59,7 @@ jobs:
       # postinstall runs `go run main.go`: writes src/data/. It keys off whether
       # cache.json exists — present (PR/merge builds, from the restore above)
       # means serve cached feeds and fetch only misses; absent (scheduled and
-      # dispatch builds) means refetch everything fresh. Then fetch-profiles.mjs
-      # (never fails; no secrets on fork/Dependabot PRs → no profiles).
+      # dispatch builds) means refetch everything fresh.
       - run: npm ci
         env:
           PROFILES_API_URL: ${{ secrets.PROFILES_API_URL }}
@@ -88,7 +87,7 @@ jobs:
         env:
           SITE_URL: ${{ github.event_name == 'pull_request' && format('https://deploy-preview-{0}--blogroll-it.netlify.app', github.event.number) || '' }}
 
-      # After a successful build only; hashFiles skips an empty export.
+      # After the build, so a failed one never becomes the fallback
       - name: Save profiles cache
         if: github.event_name != 'pull_request' && hashFiles('src/data/profiles/_meta.json') != ''
         uses: actions/cache/save@v4

@@ -1,7 +1,7 @@
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 
-// Optional profiles API fetch for /u/ pages. Always exits 0.
+// Always exits 0: never fails the build.
 
 const PROFILES_DIR = "src/data/profiles"
 const META_FILE = join(PROFILES_DIR, "_meta.json")
@@ -11,7 +11,6 @@ const FUTURE_SLACK_MS = 24 * 60 * 60 * 1000
 const MAX_BYTES = 10 * 1024 * 1024 // same cap as main.go
 
 const SLUG_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/
-// Feed slugs are hostnames, like main.go's
 const FEED_SLUG_RE = /^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/
 
 const { PROFILES_API_URL: url, PROFILES_API_TOKEN: token } = process.env
@@ -112,7 +111,6 @@ const normaliseProfile = (profile) => {
     )
     return null
   }
-  // Slugs key the per-feed grouping
   const seenFeeds = new Set()
   const feeds = (Array.isArray(profile.feeds) ? profile.feeds : [])
     .map((feed) => normaliseFeed(feed, profile.slug))
@@ -177,7 +175,6 @@ try {
   process.exit(0)
 }
 
-// Normalise before touching the directory.
 const seen = new Set()
 const profiles = raw.map(normaliseProfile).filter((profile) => {
   if (!profile) return false

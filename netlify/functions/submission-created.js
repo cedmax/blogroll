@@ -181,7 +181,7 @@ async function handleSegnalazione(data) {
     reason,
   ].join("\n")
 
-  // Not in the OPML: keep out of feed-removal.yml; handled manually.
+  // Not in the OPML: no removal workflow
   await createGithubIssue({
     title: `Rimuovi sito: ${siteUrl}`,
     body: issueBody,

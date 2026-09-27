@@ -3,7 +3,6 @@ import { getCollection } from "astro:content"
 import { builtAt } from "./feeds"
 import { fmtLong } from "./dates"
 
-// Read by /u/ pages only.
 export async function getProfiles() {
   const entries = await getCollection("profiles")
   return entries.map((e) => e.data)
@@ -23,7 +22,7 @@ const normalizeUrl = (raw: string) => {
   }
 }
 
-// `page`: available curated feeds. `inOpml`: all, by htmlUrl, like the removal script.
+// `inOpml` covers unavailable feeds too, by htmlUrl like the removal script
 async function curatedLookup() {
   const all = (await getCollection("feeds")).map((e) => e.data)
   const inOpml = new Set(all.flatMap((f) => [normalizeUrl(f.xmlUrl), normalizeUrl(f.htmlUrl)]))
@@ -49,12 +48,8 @@ const latest = (feed: ProfileFeed) => feed.entries[0]?.published ?? ""
 
 const hasPosts = (feed: ProfileFeed) => feed.available && feed.entries.length > 0
 
-// Static pages under /sites/
 const RESERVED_SLUGS = new Set(["non-disponibile"])
 
-// Profile-only feeds with posts get /sites/<slug>/, one per feed URL, unless the slug is
-// curated, reserved or sent for different feeds. Unavailable curated feeds with profile
-// posts get their curated page back, from the profile data.
 async function buildFeedLinks() {
   const curated = await curatedLookup()
   const byUrl = new Map<string, { slug: string; feed: ProfileFeed }>()
@@ -102,7 +97,6 @@ async function buildFeedLinks() {
   }
 }
 
-// Internal page and OPML membership for profile feeds.
 let feedLinksPromise: ReturnType<typeof buildFeedLinks> | undefined
 export const feedLinks = () => (feedLinksPromise ??= buildFeedLinks())
 
@@ -117,5 +111,4 @@ const readFetchedAt = () => {
   }
 }
 
-// Export time, not build time.
 export const profilesFetchedAt = readFetchedAt()

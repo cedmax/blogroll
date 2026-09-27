@@ -22,7 +22,6 @@ const feeds = defineCollection({
   schema: feedSchema,
 })
 
-// Optional (scripts/fetch-profiles.mjs); `_meta.json` excluded.
 const profilesGlob = glob({ pattern: ["*.json", "!_*.json"], base: "./src/data/profiles" })
 
 const profiles = defineCollection({

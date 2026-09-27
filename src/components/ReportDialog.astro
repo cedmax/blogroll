@@ -101,7 +101,6 @@
   document.querySelectorAll<HTMLButtonElement>(".report-trigger").forEach((btn) => {
     btn.addEventListener("click", () => {
       siteUrlInput.value = btn.dataset.siteUrl ?? ""
-      // Not in the OPML: skip the removal workflow
       profileFeedInput.value = "profileFeed" in btn.dataset ? "true" : ""
       btn.closest("details.feed-menu")?.removeAttribute("open")
       dialog.showModal()

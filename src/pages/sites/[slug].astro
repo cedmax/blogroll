@@ -12,12 +12,10 @@ export async function getStaticPaths() {
   const { sites, rescued } = await feedLinks()
   return [
     ...feeds.map((feed) => ({ params: { slug: feed.slug }, props: { feed } })),
-    // Curated but unavailable: posts from profiles
     ...[...rescued].map(([slug, feed]) => ({
       params: { slug },
       props: { feed, fromProfiles: true },
     })),
-    // Followed via profiles only: noindex, out of the sitemap
     ...[...sites].map(([slug, feed]) => ({
       params: { slug },
       props: { feed, profileOnly: true },

@@ -15,7 +15,6 @@ export async function getStaticPaths() {
 
 const { profile } = Astro.props
 const links = await feedLinks()
-// No cutoff: entries may all be old.
 const { groupDates, collapsedByDate } = groupEntriesByDay(profile.feeds)
 const canonical = `https://blogroll.it/u/${profile.slug}/`
 ---

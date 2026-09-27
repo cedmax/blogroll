@@ -9,7 +9,6 @@ import fs from "node:fs"
 
 const builtAt = new Date(site.builtAt).toISOString()
 
-// Only curated feeds' /sites/ pages go in the sitemap; profile-only ones are noindex
 const curatedSlugs = new Set(
   fs
     .readdirSync("src/data/feeds")
