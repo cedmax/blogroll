@@ -34,15 +34,16 @@ astro build  → reads src/data/ via Content Layer → outputs dist/
 3. `buildFeedData()` — groups entries by feed, sorts each feed's entries desc, sorts feeds by latest entry date
 4. `writeSiteJSON()` → `src/data/site.json` (builtAt, opmlFile)
 5. `writeFeedFiles()` → `src/data/feeds/<slug>.json` (one file per feed; clears existing `*.json` first so removed feeds don't leave stale pages)
-6. Astro reads the `feeds` collection via `src/content.config.ts` and generates all HTML in `dist/`
-7. Optional: `scripts/fetch-profiles.mjs` (second half of `postinstall`) reads personal profiles
-   from the profiles API (`PROFILES_API_URL` + `PROFILES_API_TOKEN`), validates them like
-   `main.go` does feeds, and writes `src/data/profiles/<slug>.json` plus `_meta.json`
-   (`fetchedAt`). It never fails the build: env unset → clears the directory (no `/u/`
-   pages); fetch/parse failure → warns with the cached export's age and leaves the
+6. Optional: `scripts/fetch-profiles.mjs` (second half of `postinstall`, so before Astro)
+   reads personal profiles from the profiles API (`PROFILES_API_URL` + `PROFILES_API_TOKEN`),
+   validates them like `main.go` does feeds, and writes `src/data/profiles/<slug>.json` plus
+   `_meta.json` (`fetchedAt`). It never fails the build: env unset → clears the directory
+   (no `/u/` pages); fetch/parse failure → warns with the cached export's age and leaves the
    directory untouched. In CI the directory is restored from and saved to an actions cache
    (`profiles-cache-*`, every event type, saved only after a successful build), so an API
    outage keeps serving the last good export on `/u/` instead of dropping the pages.
+7. Astro reads the `feeds` (and `profiles`) collections via `src/content.config.ts` and
+   generates all HTML in `dist/`
 
 The OPML source of truth is `public/ita.opml` — Astro copies `public/` into `dist/` as-is, so it's both the build input and the published, downloadable file (no copy step).
 
@@ -120,7 +121,7 @@ src/
     dates.ts                 ← fmtShort/fmtLong/dayKey, it-IT in Europe/Rome (build-machine-TZ independent)
     feeds.ts                 ← getFeeds (filters available), sortFeedsByLatest, builtAt, opmlFile
     entries.ts               ← groupEntriesByDay (home page + profile "post recenti")
-    profiles.ts              ← getProfiles, curatedHrefs/feedHref, profilesFetchedAt
+    profiles.ts              ← getProfiles, curatedLookup (page/inOpml), profilesFetchedAt
 scripts/fetch-profiles.mjs   ← optional profiles API fetch → src/data/profiles/
 integrations/netlify-redirects.mjs ← build hook: writes dist/_redirects (302s for unavailable feeds)
 netlify/
@@ -132,10 +133,12 @@ netlify/
 
 **Profiles (optional):** personal feeds appear only on `/u/<slug>/` pages — never on the
 home page, `/lista`, `/sites/*`, `rss.xml`, the random-post picker, `netlify-redirects.mjs`
-or `stale.json`. A profile feed that is also curated links to its `/sites/` page; otherwise to
+or `stale.json`. A profile feed that is also curated (URLs compared the way
+`remove-feed-from-opml.mjs` does) links to its `/sites/` page when available; otherwise to
 its site. `/u/` pages are `noindex` and excluded from the sitemap. Without the profiles API
 (forks, local checkouts, fork/Dependabot PRs) the build is today's curated site minus `/u/`.
-Reports on profile-only feeds are labelled `profile-feed-removal` (no workflow listens to it)
+Reports on feeds whose site URL isn't in the OPML (even when unavailable, curated
+feeds count as in it) are labelled `profile-feed-removal` (no workflow listens to it)
 and handled manually for now.
 
 Feeds are sorted by latest-entry date at render time in `sortFeedsByLatest`

@@ -1,6 +1,6 @@
 ---
 import Base from "../../../layouts/Base.astro"
-import { getProfiles, curatedHrefs, feedHref, profilesFetchedAt } from "../../../utils/profiles"
+import { getProfiles, curatedLookup, profilesFetchedAt } from "../../../utils/profiles"
 import { fmtLong } from "../../../utils/dates"
 import { groupEntriesByDay } from "../../../utils/entries"
 import FeedHeader from "../../../components/FeedHeader.astro"
@@ -14,7 +14,7 @@ export async function getStaticPaths() {
 }
 
 const { profile } = Astro.props
-const curated = await curatedHrefs()
+const curated = await curatedLookup()
 // No cutoff: the profiles API sends up to 15 entries per feed, possibly all old.
 const { groupDates, collapsedByDate } = groupEntriesByDay(profile.feeds)
 const canonical = `https://blogroll.it/u/${profile.slug}/`
@@ -31,6 +31,8 @@ const canonical = `https://blogroll.it/u/${profile.slug}/`
 
   <ProfileHeader profile={profile} tab="recenti" />
 
+  {groupDates.length === 0 && <p class="text-sm text-ink-muted">Nessun post recente.</p>}
+
   {
     groupDates.map((date) => (
       <div class="mb-6">
@@ -38,8 +40,7 @@ const canonical = `https://blogroll.it/u/${profile.slug}/`
           {fmtLong(new Date(date))}
         </h2>
         {collapsedByDate[date]!.map((entry) => {
-          const href = feedHref(entry.feed, curated)
-          const isCurated = curated.has(entry.feed.xmlUrl)
+          const page = curated.page(entry.feed)
           const more = `+ ${entry.extraCount === 1 ? "un altro" : `altri ${entry.extraCount}`} post`
           return (
             <Card class="pb-1.5 mb-2">
@@ -52,8 +53,8 @@ const canonical = `https://blogroll.it/u/${profile.slug}/`
                   {entry.title}{" "}
                 </a>{" "}
                 {entry.extraCount > 0 &&
-                  (isCurated ? (
-                    <a class="pr-3 text-xs text-ink-muted inline" href={href}>
+                  (page ? (
+                    <a class="pr-3 text-xs text-ink-muted inline" href={page}>
                       {more}
                     </a>
                   ) : (
@@ -63,8 +64,8 @@ const canonical = `https://blogroll.it/u/${profile.slug}/`
               <div class="px-3 pt-0.5 text-ink-muted flex items-center gap-2 justify-center">
                 <FeedHeader
                   feed={entry.feed}
-                  href={href}
-                  profileFeed={!isCurated}
+                  href={page ?? entry.feed.htmlUrl}
+                  profileFeed={!curated.inOpml(entry.feed)}
                   titleClass="text-xs"
                 />
               </div>

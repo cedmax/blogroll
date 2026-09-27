@@ -167,8 +167,8 @@ async function handleSegnalazione(data) {
   // No BLOCKED_HOSTNAMES check here — that list exists to keep platforms out
   // of new proposals, but a legitimate removal report may well target one.
   // No OPML-membership check either — same "let manual review catch it"
-  // approach as handleProposta; there's no automation on feed-removal issues
-  // to fail out of even if there were.
+  // approach as handleProposta: feed-removal.yml only opens a removal PR for
+  // review, and fails on a URL that isn't in the OPML.
 
   // Headings mirror remove-feed.yml's field labels verbatim, matching the
   // same convention as handleProposta above.

@@ -10,6 +10,7 @@ const META_FILE = join(PROFILES_DIR, "_meta.json")
 const TIMEOUT_MS = 15000
 const MAX_ENTRIES = 15
 const FUTURE_SLACK_MS = 24 * 60 * 60 * 1000
+const MAX_BYTES = 10 * 1024 * 1024 // same cap as main.go
 
 const SLUG_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/
 
@@ -106,9 +107,21 @@ const normaliseProfile = (profile) => {
     )
     return null
   }
+  // Feed slugs key the per-feed grouping on /u/ pages, so they must be unique
+  const seenFeeds = new Set()
   const feeds = (Array.isArray(profile.feeds) ? profile.feeds : [])
     .map((feed) => normaliseFeed(feed, profile.slug))
-    .filter(Boolean)
+    .filter((feed) => {
+      if (!feed) return false
+      if (seenFeeds.has(feed.slug)) {
+        console.warn(
+          `profiles: profile "${profile.slug}": skipping duplicate feed "${feed.slug}"`,
+        )
+        return false
+      }
+      seenFeeds.add(feed.slug)
+      return true
+    })
   if (feeds.length === 0) {
     console.warn(`profiles: dropping profile "${profile.slug}" with no valid feeds`)
     return null
@@ -126,9 +139,19 @@ const fetchProfiles = async () => {
     signal: AbortSignal.timeout(TIMEOUT_MS),
   })
   if (res.status !== 200) throw new Error(`HTTP ${res.status}`)
-  const body = await res.json().catch(() => {
+  const chunks = []
+  let size = 0
+  for await (const chunk of res.body) {
+    size += chunk.length
+    if (size > MAX_BYTES) throw new Error(`response larger than ${MAX_BYTES} bytes`)
+    chunks.push(chunk)
+  }
+  let body
+  try {
+    body = JSON.parse(Buffer.concat(chunks).toString("utf8"))
+  } catch {
     throw new Error("invalid JSON")
-  })
+  }
   if (!Array.isArray(body)) throw new Error("response is not an array")
   return body
 }
