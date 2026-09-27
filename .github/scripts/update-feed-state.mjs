@@ -1,8 +1,9 @@
-import { readdirSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 
 const SITE_URL = "https://blogroll.it"
 const FEEDS_DIR = "src/data/feeds"
+const PROFILES_DIR = "src/data/profiles"
 const OUT_FILE = "public/stale.json"
 
 const RETRIES = 4
@@ -32,12 +33,41 @@ const fetchLiveState = async () => {
 
 const state = await fetchLiveState()
 
+// Mirrors remove-feed-from-opml.mjs
+const normalizeUrl = (raw) => {
+  try {
+    const u = new URL(raw)
+    const host = u.hostname.toLowerCase().replace(/^www\./, "")
+    return `${host}${u.pathname.replace(/\/$/, "")}${u.search}`
+  } catch {
+    return raw
+  }
+}
+
+// Latest post per feed URL from profiles: a curated feed we can't fetch but the
+// profiles can is rescued on /sites/, so it isn't unavailable
+const profilePosts = new Map()
+if (existsSync(PROFILES_DIR)) {
+  for (const file of readdirSync(PROFILES_DIR).filter((f) => /^[^_].*\.json$/.test(f))) {
+    for (const f of JSON.parse(readFileSync(join(PROFILES_DIR, file), "utf8")).feeds) {
+      const latest = f.entries[0]?.published
+      if (!f.available || !latest) continue
+      for (const url of [normalizeUrl(f.xmlUrl), normalizeUrl(f.htmlUrl)]) {
+        if (!(profilePosts.get(url) > latest)) profilePosts.set(url, latest)
+      }
+    }
+  }
+}
+
 const now = new Date().toISOString()
 const seenXmlUrls = new Set()
 
 for (const file of readdirSync(FEEDS_DIR).filter((f) => f.endsWith(".json"))) {
   const feed = JSON.parse(readFileSync(join(FEEDS_DIR, file), "utf8"))
   seenXmlUrls.add(feed.xmlUrl)
+  const rescuedPost =
+    profilePosts.get(normalizeUrl(feed.xmlUrl)) ?? profilePosts.get(normalizeUrl(feed.htmlUrl))
+  if (rescuedPost && !feed.entries?.length) feed.entries = [{ published: rescuedPost }]
   if (!feed.entries || feed.entries.length === 0) {
     if (!state[feed.xmlUrl]) {
       state[feed.xmlUrl] = {

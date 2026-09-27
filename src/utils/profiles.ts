@@ -49,49 +49,55 @@ const latest = (feed: ProfileFeed) => feed.entries[0]?.published ?? ""
 
 type ProfileSite = { feed: ProfileFeed; followers: Pick<Profile, "slug" | "displayName">[] }
 
-// Profile-only feeds get /sites/<slug>/ unless a curated feed owns the slug or the
-// slug is sent for different feeds. Unavailable curated feeds with profile posts
-// get their curated page back, from the profile data.
+const hasPosts = (feed: ProfileFeed) => feed.available && feed.entries.length > 0
+
+// Static pages under /sites/
+const RESERVED_SLUGS = new Set(["non-disponibile"])
+
+// Profile-only feeds with posts get /sites/<slug>/, one per feed URL, unless the slug is
+// curated, reserved or sent for different feeds. Unavailable curated feeds with profile
+// posts get their curated page back, from the profile data.
 async function buildFeedLinks() {
   const curated = await curatedLookup()
-  const sites = new Map<string, ProfileSite>()
+  const byUrl = new Map<string, ProfileSite & { slug: string }>()
   const rescued = new Map<string, ProfileFeed>()
-  const clashes = new Set<string>()
   for (const { slug, displayName, feeds } of await getProfiles()) {
     for (const feed of feeds) {
       if (curated.page(feed)) continue
       const cur = curated.unavailable(feed)
       if (cur) {
         const prev = rescued.get(cur.slug)
-        if (feed.available && feed.entries.length && (!prev || latest(feed) > latest(prev)))
+        if (hasPosts(feed) && (!prev || latest(feed) > latest(prev)))
           rescued.set(cur.slug, { ...cur, entries: feed.entries })
         continue
       }
       if (curated.inOpml(feed)) continue
-      const prev = sites.get(feed.slug)
-      if (!prev) sites.set(feed.slug, { feed, followers: [{ slug, displayName }] })
-      else if (normalizeUrl(prev.feed.xmlUrl) !== normalizeUrl(feed.xmlUrl))
-        clashes.add(feed.slug)
+      const key = normalizeUrl(feed.xmlUrl)
+      const prev = byUrl.get(key)
+      if (!prev) byUrl.set(key, { slug: feed.slug, feed, followers: [{ slug, displayName }] })
       else {
         prev.followers.push({ slug, displayName })
         if (latest(feed) > latest(prev.feed)) prev.feed = feed
       }
     }
   }
-  for (const slug of sites.keys()) {
-    if (curated.slugs.has(slug)) clashes.add(slug)
-  }
-  for (const slug of clashes) {
-    console.warn(`profiles: feed slug "${slug}" is taken, no /sites/ page`)
-    sites.delete(slug)
+  const keysBySlug = new Map<string, string[]>()
+  for (const [key, { slug }] of byUrl)
+    keysBySlug.set(slug, [...(keysBySlug.get(slug) ?? []), key])
+  const sites = new Map<string, ProfileSite>()
+  for (const [slug, keys] of keysBySlug) {
+    if (keys.length > 1 || curated.slugs.has(slug) || RESERVED_SLUGS.has(slug)) {
+      console.warn(`profiles: feed slug "${slug}" is taken, no /sites/ page`)
+      continue
+    }
+    const { feed, followers } = byUrl.get(keys[0])!
+    if (hasPosts(feed)) sites.set(slug, { feed: { ...feed, slug }, followers })
   }
   const sitePage = (feed: ProfileFeed) => {
     const cur = curated.unavailable(feed)
     if (cur) return rescued.has(cur.slug) ? `/sites/${cur.slug}/` : undefined
-    const site = sites.get(feed.slug)
-    return site && normalizeUrl(site.feed.xmlUrl) === normalizeUrl(feed.xmlUrl)
-      ? `/sites/${feed.slug}/`
-      : undefined
+    const site = byUrl.get(normalizeUrl(feed.xmlUrl))
+    return site && sites.has(site.slug) ? `/sites/${site.slug}/` : undefined
   }
   return {
     sites,

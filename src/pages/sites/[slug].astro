@@ -73,10 +73,10 @@ const { feed, followers, fromProfiles } = Astro.props
           <a class="underline" href="/lista/">
             lista curata
           </a>
-          : lo segue{" "}
+          : {followers.length > 1 ? "lo seguono" : "lo segue"}{" "}
           {followers.map((f, i) => (
             <>
-              {i > 0 && ", "}
+              {i > 0 && (i === followers.length - 1 ? " e " : ", ")}
               <a class="underline" href={`/u/${f.slug}/`}>
                 {f.displayName}
               </a>
