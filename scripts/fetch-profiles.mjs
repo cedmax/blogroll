@@ -11,6 +11,10 @@ const FUTURE_SLACK_MS = 24 * 60 * 60 * 1000
 const MAX_BYTES = 10 * 1024 * 1024 // same cap as main.go
 
 const SLUG_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/
+// Feed slugs are hostnames, like main.go's
+const FEED_SLUG_RE = /^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/
+// Taken by /u/sites/<feed>/
+const RESERVED_SLUGS = new Set(["sites"])
 
 const { PROFILES_API_URL: url, PROFILES_API_TOKEN: token } = process.env
 
@@ -76,7 +80,12 @@ const normaliseEntries = (entries, where) => {
 
 const normaliseFeed = (feed, profileSlug) => {
   const where = `profile "${profileSlug}"`
-  if (!isNonEmpty(feed?.slug) || !isNonEmpty(feed?.htmlUrl) || !validLink(feed.htmlUrl)) {
+  if (
+    typeof feed?.slug !== "string" ||
+    !FEED_SLUG_RE.test(feed.slug) ||
+    !isNonEmpty(feed?.htmlUrl) ||
+    !validLink(feed.htmlUrl)
+  ) {
     const name = JSON.stringify(feed?.slug ?? feed?.xmlUrl)
     console.warn(
       `profiles: ${where}: skipping feed ${name} with missing/invalid slug or htmlUrl`,
@@ -99,7 +108,11 @@ const normaliseFeed = (feed, profileSlug) => {
 }
 
 const normaliseProfile = (profile) => {
-  if (typeof profile?.slug !== "string" || !SLUG_RE.test(profile.slug)) {
+  if (
+    typeof profile?.slug !== "string" ||
+    !SLUG_RE.test(profile.slug) ||
+    RESERVED_SLUGS.has(profile.slug)
+  ) {
     console.warn(
       `profiles: dropping profile with invalid slug ${JSON.stringify(profile?.slug)}`,
     )

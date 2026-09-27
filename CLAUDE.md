@@ -117,13 +117,14 @@ src/
     u/[slug]/index.astro     ← profile "post recenti" (entries grouped by day, no cutoff)
     u/[slug]/lista.astro     ← profile "la lista" (feeds sorted by latest post)
     u/[slug].opml.ts         ← profile OPML export
+    u/sites/[slug].astro     ← page per profile-only feed (like sites/[slug], noindex)
   scripts/
     netlify-form.ts          ← client-side form validation/wiring for the proposte form
   utils/
     dates.ts                 ← fmtShort/fmtLong/dayKey, it-IT in Europe/Rome (build-machine-TZ independent)
     feeds.ts                 ← getFeeds (filters available), sortFeedsByLatest, builtAt, opmlFile
     entries.ts               ← groupEntriesByDay (home page + profile "post recenti")
-    profiles.ts              ← getProfiles, curatedLookup (page/inOpml), profilesFetchedAt
+    profiles.ts              ← getProfiles, feedLinks (page/inOpml/sites), profilesFetchedAt
 scripts/fetch-profiles.mjs   ← optional profiles API fetch → src/data/profiles/
 integrations/netlify-redirects.mjs ← build hook: writes dist/_redirects (302s for unavailable feeds)
 netlify/
@@ -136,8 +137,9 @@ netlify/
 **Profiles (optional):** personal feeds appear only on `/u/<slug>/` pages — never on the
 home page, `/lista`, `/sites/*`, `rss.xml`, the random-post picker, `netlify-redirects.mjs`
 or `stale.json`. A profile feed that is also curated (URLs compared the way
-`remove-feed-from-opml.mjs` does) links to its `/sites/` page when available; otherwise to
-its site. `/u/` pages are `noindex` and excluded from the sitemap. Without the profiles API
+`remove-feed-from-opml.mjs` does) links to its `/sites/` page when available (an unavailable one links to
+its site); a profile-only feed gets `/u/sites/<feed-slug>/` (profile slug `sites` is reserved;
+a feed slug sent for different feeds gets no page). `/u/` pages are `noindex` and excluded from the sitemap. Without the profiles API
 (forks, local checkouts, fork/Dependabot PRs) the build is today's curated site minus `/u/`.
 Reports on feeds whose site URL isn't in the OPML (even when unavailable, curated
 feeds count as in it) are labelled `profile-feed-removal` (no workflow listens to it)
