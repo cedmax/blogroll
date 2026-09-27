@@ -7,3 +7,4 @@ node_modules/
 blogroll
 # Local Netlify folder
 .netlify
+.env
