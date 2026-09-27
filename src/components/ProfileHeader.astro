@@ -14,7 +14,7 @@ const base = `/u/${profile.slug}/`
   <div class="bg-card border border-border rounded py-4 px-5 mb-4">
     <div class="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
       <h1 class="min-w-0 wrap-anywhere text-xl font-black text-ink-muted">
-        /u/<span class="text-ink">{profile.displayName}</span>
+        /u/<span class="text-ink">{profile.slug}</span>
       </h1>
       <nav class="flex justify-center text-sm gap-5">
         {
@@ -42,5 +42,6 @@ const base = `/u/${profile.slug}/`
         >
       </nav>
     </div>
+    <div class="text-sm text-ink-muted mt-1">tutti i siti seguiti da {profile.displayName}</div>
   </div>
 </div>

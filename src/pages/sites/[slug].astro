@@ -69,20 +69,11 @@ const { feed, followers, fromProfiles } = Astro.props
     {
       followers && (
         <p class="text-xs text-ink-muted mt-6 italic">
-          Questo feed non fa parte della{" "}
+          Questo sito non fa parte della{" "}
           <a class="underline" href="/lista/">
             lista curata
           </a>
-          : {followers.length > 1 ? "lo seguono" : "lo segue"}{" "}
-          {followers.map((f, i) => (
-            <>
-              {i > 0 && (i === followers.length - 1 ? " e " : ", ")}
-              <a class="underline" href={`/u/${f.slug}/`}>
-                {f.displayName}
-              </a>
-            </>
-          ))}
-          .
+          , ma di un blogroll personale.
         </p>
       )
     }
