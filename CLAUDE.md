@@ -20,11 +20,13 @@ PROFILES_API_URL=… PROFILES_API_TOKEN=… node scripts/fetch-profiles.mjs
 
 ## Architecture
 
-Two-stage build: Go fetches feeds and writes JSON; Astro reads JSON and generates all HTML.
+Two-stage build: Go fetches feeds and writes JSON (followed by an optional profiles fetch that
+writes JSON too); Astro reads JSON and generates all HTML.
 
 ```
-main.go      → fetches feeds → writes src/data/site.json + src/data/feeds/*.json
-astro build  → reads src/data/ via Content Layer → outputs dist/
+main.go                     → fetches feeds → writes src/data/site.json + src/data/feeds/*.json
+scripts/fetch-profiles.mjs  → (optional) writes src/data/profiles/*.json
+astro build                 → reads src/data/ via Content Layer → outputs dist/
 ```
 
 **Data flow:**
