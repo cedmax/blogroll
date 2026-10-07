@@ -9,7 +9,9 @@ export async function getFeeds() {
 
 export type Feed = Awaited<ReturnType<typeof getFeeds>>[number]
 
-export function sortFeedsByLatest(feeds: Feed[]) {
+export function sortFeedsByLatest<
+  T extends { title: string; entries: { published: string }[] },
+>(feeds: T[]): T[] {
   return [...feeds].sort((a, b) => {
     if (!a.entries[0] && !b.entries[0]) return a.title.localeCompare(b.title)
     if (!a.entries[0]) return 1
