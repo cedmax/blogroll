@@ -35,6 +35,7 @@
       <outline type="rss" text="Bluebabbler" htmlUrl="https://bluebabbler.it" xmlUrl="https://bluebabbler.it/feed.php" />
       <outline type="rss" text="Strelnik | blog" htmlUrl="https://www.strelnik.it/blog/" xmlUrl="https://www.strelnik.it/blog/feed/" />
       <outline type="rss" text="Cronache di Betelgeuse" htmlUrl="https://cronachedibetelgeuse.wordpress.com/" xmlUrl="https://cronachedibetelgeuse.wordpress.com/feed/" />
+      <outline type="rss" text="Giochi di parole... con le parole" htmlUrl="https://giovanniventuri.com/" xmlUrl="https://giovanniventuri.com/rss/" />
     </outline>
   </body>
 </opml>
